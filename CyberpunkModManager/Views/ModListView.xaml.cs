@@ -7,6 +7,8 @@ using CyberpunkModManager.Services;
 using CyberpunkModManager.ViewModels;
 using CyberpunkModManager.Views;
 using System.IO;
+using System.Text.Json;
+using System.Collections.Generic;
 
 namespace CyberpunkModManager.Views
 {
@@ -67,6 +69,8 @@ namespace CyberpunkModManager.Views
 
             if (result == true && dialog.SelectedFileIds.Count > 0)
             {
+                bool anySuccess = false;
+
                 foreach (var fileId in dialog.SelectedFileIds)
                 {
                     var file = files.FirstOrDefault(f => f.FileId == fileId);
@@ -99,6 +103,9 @@ namespace CyberpunkModManager.Views
 
                     if (success)
                     {
+                        SaveDownloadMetadata(modId, selected.Name, file);
+                        anySuccess = true;
+
                         MessageBox.Show($"Downloaded '{file.FileName}' to Mods directory.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
@@ -106,8 +113,63 @@ namespace CyberpunkModManager.Views
                         MessageBox.Show($"Failed to download '{file.FileName}'.", "Download Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
+
+                if (anySuccess)
+                {
+                    selected.Status = "Downloaded";           // ✅ Update the status
+                    _viewModel.RefreshModList();              // ✅ Refresh the ListView display
+                }
             }
         }
 
+
+        private void SaveDownloadMetadata(int modId, string modName, ModFile file)
+        {
+            string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
+            var entry = new InstalledModInfo
+            {
+                ModId = modId,
+                ModName = modName,
+                FileId = file.FileId,
+                FileName = file.FileName,
+                UploadedTimestamp = file.UploadedTimestamp
+            };
+
+            List<InstalledModInfo> list = new();
+            if (File.Exists(metadataPath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(metadataPath);
+                    list = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WARN] Could not read existing metadata: {ex.Message}");
+                }
+            }
+
+            list.RemoveAll(m => m.ModId == entry.ModId && m.FileId == entry.FileId);
+            list.Add(entry);
+
+            try
+            {
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                File.WriteAllText(metadataPath, JsonSerializer.Serialize(list, options));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to write metadata: {ex.Message}");
+            }
+        }
+
+        private class InstalledModInfo
+        {
+            public int ModId { get; set; }
+            public string ModName { get; set; } = "";
+            public int FileId { get; set; }
+            public string FileName { get; set; } = "";
+            public DateTime UploadedTimestamp { get; set; }
+        }
     }
 }

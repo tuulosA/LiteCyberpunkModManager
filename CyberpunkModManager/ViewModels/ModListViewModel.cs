@@ -23,6 +23,12 @@ namespace CyberpunkModManager.ViewModels
             set { _statusMessage = value; OnPropertyChanged(); }
         }
 
+        public void RefreshModList()
+        {
+            // Notify the UI to re-read properties from items (especially for Status updates)
+            ModsGrouped.Refresh();
+        }
+
         public ModListViewModel(NexusApiService apiService)
         {
             _apiService = apiService;
