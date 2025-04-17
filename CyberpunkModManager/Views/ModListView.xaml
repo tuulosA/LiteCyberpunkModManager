@@ -11,6 +11,13 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <Button Content="Uninstall Files"
+        Width="150"
+        Height="30"
+        Click="UninstallFiles_Click"
+        HorizontalAlignment="Left"
+        Margin="320,0,0,10"/>
+
         <Button Content="Fetch Tracked Mods"
                 Width="150"
                 Height="30"

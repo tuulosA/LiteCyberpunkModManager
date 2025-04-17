@@ -21,7 +21,9 @@ namespace CyberpunkModManager.Views
 
         private void PopulateFileList()
         {
-            foreach (var file in _files)
+            var sortedFiles = _files.OrderByDescending(f => f.UploadedTimestamp).ToList();
+
+            foreach (var file in sortedFiles)
             {
                 double sizeInMb = file.FileSizeBytes / 1024.0 / 1024.0;
                 string sizeLabel = sizeInMb >= 1
@@ -45,6 +47,7 @@ namespace CyberpunkModManager.Views
                 FilesPanel.Children.Add(checkbox);
             }
         }
+
 
         private void DownloadSelected_Click(object sender, RoutedEventArgs e)
         {
