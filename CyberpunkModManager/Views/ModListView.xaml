@@ -19,11 +19,11 @@
                 Margin="0,0,0,10"/>
 
         <Button Content="Download Files"
-        Width="150"
-        Height="30"
-        Click="DownloadFiles_Click"
-        HorizontalAlignment="Left"
-        Margin="160,0,0,10"/>
+                Width="150"
+                Height="30"
+                Click="DownloadFiles_Click"
+                HorizontalAlignment="Left"
+                Margin="160,0,0,10"/>
 
         <ListView Grid.Row="1"
                   Name="ModsListView"
@@ -42,7 +42,37 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Mod Name" Width="300" DisplayMemberBinding="{Binding Name}" />
-                    <GridViewColumn Header="Status" Width="150" DisplayMemberBinding="{Binding Status}" />
+                    <GridViewColumn Header="Status" Width="180">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Status}"
+                                           Padding="4"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Left">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Status}" Value="Update Available!">
+                                                    <Setter Property="Foreground" Value="Red"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Latest Downloaded">
+                                                    <Setter Property="Foreground" Value="#1E3A8A"/>
+                                                    <!-- Deep blue -->
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Downloaded">
+                                                    <Setter Property="Foreground" Value="#1E3A8A"/>
+                                                    <!-- Deep blue -->
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Not Downloaded">
+                                                    <Setter Property="Foreground" Value="Gray"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>

@@ -161,13 +161,18 @@ namespace CyberpunkModManager.Services
                 var response = await _httpClient.GetAsync(url);
                 Console.WriteLine($"[DEBUG] Status Code: {response.StatusCode}");
 
-                response.EnsureSuccessStatusCode();
+                if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    Console.WriteLine($"[WARN] Mod ID {modId} is no longer accessible (403 Forbidden).");
+                    return new List<ModFile>();
+                }
+
+                response.EnsureSuccessStatusCode(); // Only call if status is OK
 
                 var json = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"[DEBUG] Raw JSON Response: {json}");
 
                 var root = JsonDocument.Parse(json).RootElement;
-
                 var files = new List<ModFile>();
 
                 if (root.TryGetProperty("files", out var filesArray) && filesArray.ValueKind == JsonValueKind.Array)
@@ -177,23 +182,15 @@ namespace CyberpunkModManager.Services
                     foreach (var file in filesArray.EnumerateArray())
                     {
                         int fileId;
-
                         try
                         {
                             var idElement = file.GetProperty("id");
-
-                            if (idElement.ValueKind == JsonValueKind.Number)
+                            fileId = idElement.ValueKind switch
                             {
-                                fileId = idElement.GetInt32();
-                            }
-                            else if (idElement.ValueKind == JsonValueKind.Array && idElement.GetArrayLength() > 0 && idElement[0].ValueKind == JsonValueKind.Number)
-                            {
-                                fileId = idElement[0].GetInt32(); // fallback like in Python
-                            }
-                            else
-                            {
-                                throw new InvalidOperationException("Invalid file ID format");
-                            }
+                                JsonValueKind.Number => idElement.GetInt32(),
+                                JsonValueKind.Array when idElement.GetArrayLength() > 0 && idElement[0].ValueKind == JsonValueKind.Number => idElement[0].GetInt32(),
+                                _ => throw new InvalidOperationException("Invalid file ID format")
+                            };
                         }
                         catch (Exception idEx)
                         {
@@ -250,6 +247,7 @@ namespace CyberpunkModManager.Services
                 return new List<ModFile>();
             }
         }
+
 
 
 
