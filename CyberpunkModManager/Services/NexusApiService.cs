@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using System.Windows;
 using CyberpunkModManager.Models;
 
 namespace CyberpunkModManager.Services
@@ -17,6 +18,61 @@ namespace CyberpunkModManager.Services
             _apiKey = apiKey;
             _httpClient.DefaultRequestHeaders.Add("apikey", _apiKey);
         }
+
+        private async Task<HttpResponseMessage?> GetWithRetryAsync(string url, int maxRetries = 3)
+        {
+            bool shownRateLimitMessage = false;
+
+            for (int attempt = 0; attempt < maxRetries; attempt++)
+            {
+                var response = await _httpClient.GetAsync(url);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                {
+                    if (!shownRateLimitMessage)
+                    {
+                        shownRateLimitMessage = true;
+                        Console.WriteLine("[WARN] Rate limited (429). Waiting before retrying...");
+
+                        // Notify the user
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show(
+                                "Nexus Mods API rate limit reached. Retrying shortly...\n\nTry again later if this continues.",
+                                "Rate Limit Triggered",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning
+                            );
+                        });
+                    }
+
+                    // Wait according to Retry-After header or fallback
+                    if (response.Headers.TryGetValues("Retry-After", out var values))
+                    {
+                        if (int.TryParse(values.FirstOrDefault(), out int retryAfterSec))
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(retryAfterSec));
+                        }
+                        else
+                        {
+                            await Task.Delay(3000);
+                        }
+                    }
+                    else
+                    {
+                        await Task.Delay(3000);
+                    }
+
+                    continue;
+                }
+
+                return response;
+            }
+
+            Console.WriteLine($"[ERROR] Failed after {maxRetries} attempts for URL: {url}");
+            return null;
+        }
+
 
         public async Task<bool> DownloadFileAsync(string downloadUrl, string savePath)
         {
@@ -83,7 +139,8 @@ namespace CyberpunkModManager.Services
             try
             {
                 Console.WriteLine("Fetching tracked mods...");
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(url);
+                if (response == null) return mods;
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
@@ -127,7 +184,8 @@ namespace CyberpunkModManager.Services
 
             try
             {
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(url);
+                if (response == null) return null;
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
@@ -158,7 +216,8 @@ namespace CyberpunkModManager.Services
 
             try
             {
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(url);
+                if (response == null) return new List<ModFile>();
                 Console.WriteLine($"[DEBUG] Status Code: {response.StatusCode}");
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
@@ -258,7 +317,8 @@ namespace CyberpunkModManager.Services
 
             try
             {
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(url);
+                if (response == null) return null;
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();

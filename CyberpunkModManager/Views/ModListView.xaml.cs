@@ -27,97 +27,6 @@ namespace CyberpunkModManager.Views
             DataContext = _viewModel;
         }
 
-        private void UninstallFiles_Click(object sender, RoutedEventArgs e)
-        {
-            if (ModsListView.SelectedItem is not ModDisplay selected)
-            {
-                MessageBox.Show("Please select a mod to uninstall files from.", "No Mod Selected", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            string sanitizedModName = string.Join("_", selected.Name.Split(Path.GetInvalidFileNameChars()));
-            string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModName);
-
-            if (!Directory.Exists(modFolderPath))
-            {
-                MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var installedFiles = Directory.GetFiles(modFolderPath).ToList();
-            if (installedFiles.Count == 0)
-            {
-                MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var dialog = new UninstallFileWindow(installedFiles);
-            var result = dialog.ShowDialog();
-
-            if (result == true && dialog.SelectedFiles.Count > 0)
-            {
-                string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
-                List<InstalledModInfo> metadataList = new();
-
-                if (File.Exists(metadataPath))
-                {
-                    try
-                    {
-                        string json = File.ReadAllText(metadataPath);
-                        metadataList = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[WARN] Failed to load installed_mods.json: {ex.Message}");
-                    }
-                }
-
-                foreach (var filePath in dialog.SelectedFiles)
-                {
-                    try
-                    {
-                        File.Delete(filePath);
-                        Console.WriteLine($"Deleted: {filePath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Failed to delete file: {filePath}\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-
-                // After deleting files, remove all entries related to this mod that no longer have corresponding files
-                string modFolder = Path.Combine(Settings.DefaultModsDir, sanitizedModName);
-                var remainingFiles = Directory.Exists(modFolder) ? Directory.GetFiles(modFolder).Select(Path.GetFileName).ToHashSet(StringComparer.OrdinalIgnoreCase) : new();
-
-                metadataList.RemoveAll(entry =>
-                    entry.ModId == selected.ModId &&
-                    !remainingFiles.Contains(entry.FileName));
-
-
-                // If no metadata entries remain for this ModId, clean it up fully
-                if (!metadataList.Any(e => e.ModId == selected.ModId))
-                {
-                    metadataList.RemoveAll(e => e.ModId == selected.ModId);
-                    selected.Status = "Not Downloaded";
-                }
-
-                try
-                {
-                    var options = new JsonSerializerOptions { WriteIndented = true };
-                    File.WriteAllText(metadataPath, JsonSerializer.Serialize(metadataList, options));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ERROR] Failed to update installed_mods.json: {ex.Message}");
-                }
-
-                MessageBox.Show("Selected files have been uninstalled.", "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-                _viewModel.RefreshModList();
-            }
-        }
-
-
-
         private async void FetchMods_Click(object sender, RoutedEventArgs e)
         {
             await _viewModel.LoadTrackedModsAsync();
@@ -214,6 +123,110 @@ namespace CyberpunkModManager.Views
         }
 
 
+
+        private void UninstallFiles_Click(object sender, RoutedEventArgs e)
+        {
+            if (ModsListView.SelectedItem is not ModDisplay selected)
+            {
+                MessageBox.Show("Please select a mod to uninstall files from.", "No Mod Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            string sanitizedModName = string.Join("_", selected.Name.Split(Path.GetInvalidFileNameChars()));
+            string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModName);
+
+            if (!Directory.Exists(modFolderPath))
+            {
+                MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var installedFiles = Directory.GetFiles(modFolderPath).ToList();
+            if (installedFiles.Count == 0)
+            {
+                MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dialog = new UninstallFileWindow(installedFiles);
+            var result = dialog.ShowDialog();
+
+            if (result == true && dialog.SelectedFiles.Count > 0)
+            {
+                string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
+                List<InstalledModInfo> metadataList = new();
+                List<string> uninstalledFileNames = new();
+
+                if (File.Exists(metadataPath))
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(metadataPath);
+                        metadataList = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[WARN] Failed to load installed_mods.json: {ex.Message}");
+                    }
+                }
+
+                foreach (var filePath in dialog.SelectedFiles)
+                {
+                    string fileName = Path.GetFileName(filePath);
+                    string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
+
+                    var matchingEntry = metadataList.FirstOrDefault(entry =>
+                        entry.ModId == selected.ModId &&
+                        Path.GetFileNameWithoutExtension(entry.FileName)
+                            .Equals(fileNameNoExt, StringComparison.OrdinalIgnoreCase));
+
+                    if (matchingEntry != null)
+                    {
+                        metadataList.Remove(matchingEntry);
+                        uninstalledFileNames.Add(fileName);
+                        Console.WriteLine($"Removed metadata entry for file: {fileName} (ID: {matchingEntry.FileId})");
+                    }
+
+                    // Delete the file from disk
+                    try
+                    {
+                        File.Delete(filePath);
+                        Console.WriteLine($"Deleted: {filePath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Failed to delete file: {filePath}\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+
+                // Update mod status if necessary
+                bool hasRemaining = metadataList.Any(e => e.ModId == selected.ModId);
+                if (!hasRemaining)
+                {
+                    selected.Status = "Not Downloaded";
+                }
+
+                try
+                {
+                    var options = new JsonSerializerOptions { WriteIndented = true };
+                    File.WriteAllText(metadataPath, JsonSerializer.Serialize(metadataList, options));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] Failed to update installed_mods.json: {ex.Message}");
+                }
+
+                string summary = uninstalledFileNames.Count > 0
+                    ? "Uninstalled files:\n- " + string.Join("\n- ", uninstalledFileNames)
+                    : "No matching metadata entries were found to remove.";
+
+                MessageBox.Show(summary, "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                _viewModel.RefreshModList();
+            }
+        }
+
+
+
         private void SaveDownloadMetadata(int modId, string modName, ModFile file)
         {
             string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
@@ -240,7 +253,7 @@ namespace CyberpunkModManager.Views
                 }
             }
 
-            list.RemoveAll(m => m.ModId == entry.ModId && m.FileId == entry.FileId);
+            list.RemoveAll(m => m.ModId == entry.ModId && m.FileName.Equals(entry.FileName, StringComparison.OrdinalIgnoreCase));
             list.Add(entry);
 
             try
@@ -253,6 +266,7 @@ namespace CyberpunkModManager.Views
                 Console.WriteLine($"[ERROR] Failed to write metadata: {ex.Message}");
             }
         }
+
 
         private class InstalledModInfo
         {

@@ -126,6 +126,30 @@ namespace CyberpunkModManager.ViewModels
         }
 
 
+        public void UpdateModStatus(int modId)
+        {
+            var installed = LoadInstalledMetadata();
+
+            var modDisplay = Mods.FirstOrDefault(m => m.ModId == modId);
+            if (modDisplay == null)
+                return;
+
+            var remoteFiles = _apiService.GetModFilesAsync("cyberpunk2077", modId).Result;
+
+            if (installed.Any(i => i.ModId == modId))
+            {
+                modDisplay.Status = GetUpdateStatus(modId, remoteFiles, installed);
+            }
+            else
+            {
+                modDisplay.Status = "Not Downloaded";
+            }
+
+            RefreshModList();
+        }
+
+
+
 
         public void RefreshModList()
         {
