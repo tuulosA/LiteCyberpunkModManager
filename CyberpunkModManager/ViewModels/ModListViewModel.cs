@@ -125,7 +125,6 @@ namespace CyberpunkModManager.ViewModels
             return "Downloaded";
         }
 
-
         public void UpdateModStatus(int modId)
         {
             var installed = LoadInstalledMetadata();
@@ -147,8 +146,6 @@ namespace CyberpunkModManager.ViewModels
 
             RefreshModList();
         }
-
-
 
 
         public void RefreshModList()

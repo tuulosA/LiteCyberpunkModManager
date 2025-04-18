@@ -19,6 +19,30 @@ namespace CyberpunkModManager.Services
             _httpClient.DefaultRequestHeaders.Add("apikey", _apiKey);
         }
 
+        private string GetCategoryName(int categoryId)
+        {
+            return categoryId switch
+            {
+                2 => "Miscellaneous",
+                3 => "Armour and Clothing",
+                4 => "Audio",
+                5 => "Characters",
+                6 => "Crafting",
+                7 => "Gameplay",
+                8 => "User Interface",
+                9 => "Utilities",
+                10 => "Visuals and Graphics",
+                11 => "Weapons",
+                12 => "Modders Resources",
+                13 => "Appearance",
+                14 => "Vehicles",
+                15 => "Animations",
+                16 => "Locations",
+                17 => "Scripts",
+                _ => "Unknown"
+            };
+        }
+
         private async Task<HttpResponseMessage?> GetWithRetryAsync(string url, int maxRetries = 3)
         {
             bool shownRateLimitMessage = false;
@@ -74,62 +98,81 @@ namespace CyberpunkModManager.Services
         }
 
 
-        public async Task<bool> DownloadFileAsync(string downloadUrl, string savePath)
+        public async Task<string?> GetDownloadLinkAsync(string game, int modId, int fileId)
+        {
+            var url = $"{BaseUrl}/games/{game}/mods/{modId}/files/{fileId}/download_link.json";
+
+            try
+            {
+                var response = await GetWithRetryAsync(url);
+                if (response == null) return null;
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                var links = JsonDocument.Parse(json).RootElement;
+
+                if (links.ValueKind == JsonValueKind.Array && links.GetArrayLength() > 0)
+                {
+                    return links[0].GetProperty("URI").GetString();
+                }
+
+                Console.WriteLine($"No download links returned for file {fileId} of mod {modId}.");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting download link for Mod ID {modId}, File ID {fileId}: {ex.Message}");
+                return null;
+            }
+        }
+
+
+        public async Task<bool> DownloadFileAsync(string downloadUrl, string savePath, IProgress<double>? progress = null)
         {
             try
             {
-                // Ensure directory exists
-                var directory = Path.GetDirectoryName(savePath);
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory!);
-                }
+                // Force .zip extension
+                string targetDirectory = Path.GetDirectoryName(savePath)!;
+                string baseFileName = Path.GetFileNameWithoutExtension(savePath);
+                string finalFilePath = Path.Combine(targetDirectory, baseFileName + ".zip");
 
-                var response = await _httpClient.GetAsync(downloadUrl);
+                // Ensure directory exists
+                Directory.CreateDirectory(targetDirectory);
+
+                using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
 
-                var finalFileName = Path.GetFileName(savePath);
+                var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+                var canReportProgress = totalBytes != -1 && progress != null;
 
-                // Try to get the file extension from Content-Disposition
-                if (response.Content.Headers.ContentDisposition != null)
+                await using var stream = await response.Content.ReadAsStreamAsync();
+                await using var fs = new FileStream(finalFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+                var buffer = new byte[8192];
+                long totalRead = 0;
+                int bytesRead;
+
+                while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
                 {
-                    var cdFileName = response.Content.Headers.ContentDisposition.FileName?.Trim('"');
-                    if (!string.IsNullOrEmpty(cdFileName))
+                    await fs.WriteAsync(buffer.AsMemory(0, bytesRead));
+                    totalRead += bytesRead;
+
+                    if (canReportProgress)
                     {
-                        var ext = Path.GetExtension(cdFileName);
-                        if (!string.IsNullOrEmpty(ext))
-                        {
-                            finalFileName = Path.ChangeExtension(finalFileName, ext);
-                            savePath = Path.Combine(Path.GetDirectoryName(savePath)!, finalFileName);
-                        }
+                        double percent = (double)totalRead / totalBytes * 100;
+                        progress!.Report(percent);
                     }
                 }
-                else if (response.Content.Headers.ContentType?.MediaType is string mediaType)
-                {
-                    // Fallback using MIME type
-                    if (mediaType == "application/zip")
-                        savePath += ".zip";
-                    else if (mediaType == "application/x-7z-compressed")
-                        savePath += ".7z";
-                    else if (mediaType == "application/x-rar-compressed")
-                        savePath += ".rar";
-                    else
-                        savePath += ".zip"; // Safer default for archives
-                }
-
-                Directory.CreateDirectory(Path.GetDirectoryName(savePath)!); // Just in case
-
-                await using var fs = new FileStream(savePath, FileMode.Create);
-                await response.Content.CopyToAsync(fs);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Download failed: {ex.Message}");
+                Console.WriteLine($"[ERROR] Failed to download file: {ex.Message}");
                 return false;
             }
         }
+
 
         public async Task<List<Mod>> GetTrackedModsAsync(string game = "cyberpunk2077")
         {
@@ -307,60 +350,5 @@ namespace CyberpunkModManager.Services
             }
         }
 
-
-
-
-
-        public async Task<string?> GetDownloadLinkAsync(string game, int modId, int fileId)
-        {
-            var url = $"{BaseUrl}/games/{game}/mods/{modId}/files/{fileId}/download_link.json";
-
-            try
-            {
-                var response = await GetWithRetryAsync(url);
-                if (response == null) return null;
-                response.EnsureSuccessStatusCode();
-
-                var json = await response.Content.ReadAsStringAsync();
-                var links = JsonDocument.Parse(json).RootElement;
-
-                if (links.ValueKind == JsonValueKind.Array && links.GetArrayLength() > 0)
-                {
-                    return links[0].GetProperty("URI").GetString();
-                }
-
-                Console.WriteLine($"No download links returned for file {fileId} of mod {modId}.");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting download link for Mod ID {modId}, File ID {fileId}: {ex.Message}");
-                return null;
-            }
-        }
-
-        private string GetCategoryName(int categoryId)
-        {
-            return categoryId switch
-            {
-                2 => "Miscellaneous",
-                3 => "Armour and Clothing",
-                4 => "Audio",
-                5 => "Characters",
-                6 => "Crafting",
-                7 => "Gameplay",
-                8 => "User Interface",
-                9 => "Utilities",
-                10 => "Visuals and Graphics",
-                11 => "Weapons",
-                12 => "Modders Resources",
-                13 => "Appearance",
-                14 => "Vehicles",
-                15 => "Animations",
-                16 => "Locations",
-                17 => "Scripts",
-                _ => "Unknown"
-            };
-        }
     }
 }

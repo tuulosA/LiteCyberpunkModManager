@@ -9,6 +9,7 @@ using CyberpunkModManager.Views;
 using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
+using CyberpunkModManager.Services;
 
 namespace CyberpunkModManager.Views
 {
@@ -30,6 +31,12 @@ namespace CyberpunkModManager.Views
         private async void FetchMods_Click(object sender, RoutedEventArgs e)
         {
             await _viewModel.LoadTrackedModsAsync();
+        }
+
+
+        private static string SanitizeModName(string name)
+        {
+            return string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
         }
 
 
@@ -55,18 +62,12 @@ namespace CyberpunkModManager.Views
             }
 
             Console.WriteLine($"[DEBUG] Fetched {files.Count} files.");
-            foreach (var file in files)
-            {
-                Console.WriteLine($"[DEBUG] File ID: {file.FileId}, Name: {file.FileName}, Size: {file.FileSizeBytes}, Uploaded: {file.UploadedTimestamp}");
-            }
-
             if (files.Count == 0)
             {
                 MessageBox.Show("No files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            // ✅ Load full installed metadata (not just names)
             List<InstalledModInfo> alreadyDownloaded = new();
             string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
 
@@ -85,66 +86,16 @@ namespace CyberpunkModManager.Views
                 }
             }
 
-            // ✅ Open the download dialog with full version-aware tracking
-            var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId);
-            var result = dialog.ShowDialog();
+            var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId, selected.Name);
+            bool? result = dialog.ShowDialog();
 
-            if (result == true && dialog.SelectedFileIds.Count > 0)
+            if (result == true)
             {
-                bool anySuccess = false;
-
-                foreach (var fileId in dialog.SelectedFileIds)
-                {
-                    var file = files.FirstOrDefault(f => f.FileId == fileId);
-                    if (file == null)
-                    {
-                        Console.WriteLine($"[DEBUG] File ID {fileId} not found in list.");
-                        continue;
-                    }
-
-                    Console.WriteLine($"[DEBUG] Requesting download link for file ID {fileId}");
-                    var downloadUrl = await _api.GetDownloadLinkAsync("cyberpunk2077", modId, fileId);
-
-                    if (downloadUrl == null)
-                    {
-                        Console.WriteLine($"[DEBUG] No download URL for file ID {fileId}");
-                        MessageBox.Show($"No download link for file: {file.FileName}", "Download Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        continue;
-                    }
-
-                    string sanitizedModName = string.Join("_", selected.Name.Split(Path.GetInvalidFileNameChars()));
-                    string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModName);
-                    Directory.CreateDirectory(modFolderPath);
-
-                    var safeFileName = Path.GetFileName(file.FileName);
-                    var savePath = Path.Combine(modFolderPath, safeFileName);
-                    Console.WriteLine($"[DEBUG] Saving to: {savePath}");
-
-                    var success = await _api.DownloadFileAsync(downloadUrl, savePath);
-                    Console.WriteLine($"[DEBUG] Download success: {success}");
-
-                    if (success)
-                    {
-                        SaveDownloadMetadata(modId, selected.Name, file);
-                        anySuccess = true;
-
-                        MessageBox.Show($"Downloaded '{file.FileName}' to Mods directory.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show($"Failed to download '{file.FileName}'.", "Download Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-
-                if (anySuccess)
-                {
-                    selected.Status = "Downloaded";
-                    _viewModel.RefreshModList();
-                }
+                selected.Status = "Downloaded";
+                _viewModel.RefreshModList();
+                MessageBox.Show("Download completed successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-
-
 
 
 
@@ -156,43 +107,56 @@ namespace CyberpunkModManager.Views
                 return;
             }
 
-            string sanitizedModName = string.Join("_", selected.Name.Split(Path.GetInvalidFileNameChars()));
-            string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModName);
-
-            if (!Directory.Exists(modFolderPath))
+            string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
+            if (!File.Exists(metadataPath))
             {
                 MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var installedFiles = Directory.GetFiles(modFolderPath).ToList();
-            if (installedFiles.Count == 0)
+            List<InstalledModInfo> metadataList;
+            try
+            {
+                string json = File.ReadAllText(metadataPath);
+                metadataList = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARN] Failed to load installed_mods.json: {ex.Message}");
+                return;
+            }
+
+            var modEntries = metadataList.Where(m => m.ModId == selected.ModId).ToList();
+            if (modEntries.Count == 0)
             {
                 MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var dialog = new UninstallFileWindow(installedFiles);
+            List<string> allFiles = new();
+            foreach (var entry in modEntries)
+            {
+                string folderName = PathUtils.SanitizeModName(entry.FileName);
+                string folderPath = Path.Combine(Settings.DefaultModsDir, folderName);
+
+                if (Directory.Exists(folderPath))
+                {
+                    allFiles.AddRange(Directory.GetFiles(folderPath));
+                }
+            }
+
+            if (allFiles.Count == 0)
+            {
+                MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dialog = new UninstallFileWindow(allFiles);
             var result = dialog.ShowDialog();
 
             if (result == true && dialog.SelectedFiles.Count > 0)
             {
-                string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
-                List<InstalledModInfo> metadataList = new();
                 List<string> uninstalledFileNames = new();
-
-                if (File.Exists(metadataPath))
-                {
-                    try
-                    {
-                        string json = File.ReadAllText(metadataPath);
-                        metadataList = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[WARN] Failed to load installed_mods.json: {ex.Message}");
-                    }
-                }
 
                 foreach (var filePath in dialog.SelectedFiles)
                 {
@@ -211,7 +175,6 @@ namespace CyberpunkModManager.Views
                         Console.WriteLine($"Removed metadata entry for file: {fileName} (ID: {matchingEntry.FileId})");
                     }
 
-                    // Delete the file from disk
                     try
                     {
                         File.Delete(filePath);
@@ -223,7 +186,6 @@ namespace CyberpunkModManager.Views
                     }
                 }
 
-                // Update mod status if necessary
                 bool hasRemaining = metadataList.Any(e => e.ModId == selected.ModId);
                 if (!hasRemaining)
                 {
@@ -251,45 +213,9 @@ namespace CyberpunkModManager.Views
 
 
 
-        private void SaveDownloadMetadata(int modId, string modName, ModFile file)
-        {
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
-            var entry = new InstalledModInfo
-            {
-                ModId = modId,
-                ModName = modName,
-                FileId = file.FileId,
-                FileName = file.FileName,
-                UploadedTimestamp = file.UploadedTimestamp
-            };
 
-            List<InstalledModInfo> list = new();
-            if (File.Exists(metadataPath))
-            {
-                try
-                {
-                    string json = File.ReadAllText(metadataPath);
-                    list = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[WARN] Could not read existing metadata: {ex.Message}");
-                }
-            }
 
-            list.RemoveAll(m => m.ModId == entry.ModId && m.FileName.Equals(entry.FileName, StringComparison.OrdinalIgnoreCase));
-            list.Add(entry);
 
-            try
-            {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                File.WriteAllText(metadataPath, JsonSerializer.Serialize(list, options));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] Failed to write metadata: {ex.Message}");
-            }
-        }
 
     }
 }
