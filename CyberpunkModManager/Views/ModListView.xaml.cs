@@ -32,6 +32,8 @@ namespace CyberpunkModManager.Views
             await _viewModel.LoadTrackedModsAsync();
         }
 
+
+
         private async void DownloadFiles_Click(object sender, RoutedEventArgs e)
         {
             if (ModsListView.SelectedItem is not ModDisplay selected)
@@ -64,7 +66,27 @@ namespace CyberpunkModManager.Views
                 return;
             }
 
-            var dialog = new DownloadFileWindow(files);
+            // ✅ Load full installed metadata (not just names)
+            List<InstalledModInfo> alreadyDownloaded = new();
+            string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
+
+            if (File.Exists(metadataPath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(metadataPath);
+                    alreadyDownloaded = JsonSerializer.Deserialize<List<InstalledModInfo>>(json)?
+                        .Where(m => m.ModId == selected.ModId)
+                        .ToList() ?? new();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WARN] Failed to load existing mod metadata: {ex.Message}");
+                }
+            }
+
+            // ✅ Open the download dialog with full version-aware tracking
+            var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId);
             var result = dialog.ShowDialog();
 
             if (result == true && dialog.SelectedFileIds.Count > 0)
@@ -116,11 +138,13 @@ namespace CyberpunkModManager.Views
 
                 if (anySuccess)
                 {
-                    selected.Status = "Downloaded";           // ✅ Update the status
-                    _viewModel.RefreshModList();              // ✅ Refresh the ListView display
+                    selected.Status = "Downloaded";
+                    _viewModel.RefreshModList();
                 }
             }
         }
+
+
 
 
 
@@ -267,14 +291,5 @@ namespace CyberpunkModManager.Views
             }
         }
 
-
-        private class InstalledModInfo
-        {
-            public int ModId { get; set; }
-            public string ModName { get; set; } = "";
-            public int FileId { get; set; }
-            public string FileName { get; set; } = "";
-            public DateTime UploadedTimestamp { get; set; }
-        }
     }
 }
