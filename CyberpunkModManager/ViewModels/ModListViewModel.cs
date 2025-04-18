@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using CyberpunkModManager.Helpers;
 
 namespace CyberpunkModManager.ViewModels
 {
@@ -26,6 +27,8 @@ namespace CyberpunkModManager.ViewModels
             set { _statusMessage = value; OnPropertyChanged(); }
         }
 
+
+
         public ModListViewModel(NexusApiService apiService)
         {
             _apiService = apiService;
@@ -35,17 +38,31 @@ namespace CyberpunkModManager.ViewModels
 
         public async Task LoadTrackedModsAsync()
         {
-            StatusMessage = "Fetching tracked mods...";
+            StatusMessage = "Loading mods...";
             Mods.Clear();
 
-            var mods = await _apiService.GetTrackedModsAsync();
-            var installed = LoadInstalledMetadata();
+            List<Mod>? mods = ModCacheService.LoadCachedMods();
 
-            if (mods.Count == 0)
+            if (mods == null || mods.Count == 0)
             {
-                StatusMessage = "No mods found or error loading mods.";
-                return;
+                StatusMessage = "Fetching mods from Nexus API...";
+                mods = await _apiService.GetTrackedModsAsync();
+
+                if (mods.Count == 0)
+                {
+                    StatusMessage = "No mods found or error loading mods.";
+                    return;
+                }
+
+                ModCacheService.SaveCachedMods(mods);
+                StatusMessage = "Mods fetched and cached.";
             }
+            else
+            {
+                StatusMessage = "Mods loaded from cache.";
+            }
+
+            var installed = LoadInstalledMetadata();
 
             var tasks = mods.OrderBy(m => m.Category).ThenBy(m => m.Name)
                 .Select(async mod =>
@@ -69,12 +86,10 @@ namespace CyberpunkModManager.ViewModels
 
             var modDisplays = await Task.WhenAll(tasks);
 
-            // Update on UI thread
             foreach (var modDisplay in modDisplays)
             {
                 Mods.Add(modDisplay);
             }
-
 
             StatusMessage = "Mods loaded.";
         }

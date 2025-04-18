@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.IO;
 
 namespace CyberpunkModManager.Models
 {
@@ -8,6 +9,7 @@ namespace CyberpunkModManager.Models
         private string _outputDir = DefaultModsDir;
         private string _gameInstallationDir = DefaultGameDir;
         private string _nexusApiKey = "";
+        public static string ModCachePath => Path.Combine(DefaultModsDir, "mod_cache.json");
 
         public string OutputDir
         {
