@@ -34,12 +34,6 @@ namespace CyberpunkModManager.Views
         }
 
 
-        private static string SanitizeModName(string name)
-        {
-            return string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
-        }
-
-
 
         private async void DownloadFiles_Click(object sender, RoutedEventArgs e)
         {
@@ -98,7 +92,6 @@ namespace CyberpunkModManager.Views
         }
 
 
-
         private void UninstallFiles_Click(object sender, RoutedEventArgs e)
         {
             if (ModsListView.SelectedItem is not ModDisplay selected)
@@ -133,15 +126,19 @@ namespace CyberpunkModManager.Views
                 return;
             }
 
-            List<string> allFiles = new();
+            // Use HashSet to prevent duplicate file entries
+            HashSet<string> allFiles = new();
             foreach (var entry in modEntries)
             {
-                string folderName = PathUtils.SanitizeModName(entry.FileName);
+                string folderName = PathUtils.SanitizeModName(entry.ModName);
                 string folderPath = Path.Combine(Settings.DefaultModsDir, folderName);
 
                 if (Directory.Exists(folderPath))
                 {
-                    allFiles.AddRange(Directory.GetFiles(folderPath));
+                    foreach (var file in Directory.GetFiles(folderPath))
+                    {
+                        allFiles.Add(file);
+                    }
                 }
             }
 
@@ -151,7 +148,7 @@ namespace CyberpunkModManager.Views
                 return;
             }
 
-            var dialog = new UninstallFileWindow(allFiles);
+            var dialog = new UninstallFileWindow(allFiles.ToList());
             var result = dialog.ShowDialog();
 
             if (result == true && dialog.SelectedFiles.Count > 0)
@@ -210,8 +207,6 @@ namespace CyberpunkModManager.Views
                 _viewModel.RefreshModList();
             }
         }
-
-
 
 
 

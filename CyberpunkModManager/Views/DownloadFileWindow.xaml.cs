@@ -74,8 +74,8 @@ namespace CyberpunkModManager.Views
                 var downloadUrl = await api.GetDownloadLinkAsync("cyberpunk2077", _modId, fileId);
                 if (downloadUrl == null) continue;
 
-                string sanitizedModName = PathUtils.SanitizeModName(file.FileName);
-                string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModName);
+                string sanitizedModFolder = PathUtils.SanitizeModName(_modName); // ✅ use actual mod name for folder
+                string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModFolder);
                 Directory.CreateDirectory(modFolderPath);
 
                 string baseName = Path.GetFileNameWithoutExtension(file.FileName);
