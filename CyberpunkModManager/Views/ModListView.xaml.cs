@@ -80,19 +80,18 @@ namespace CyberpunkModManager.Views
                 }
             }
 
-            var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId, selected.Name);
+            var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId, selected.Name, _viewModel);
             bool? result = dialog.ShowDialog();
 
             if (result == true)
             {
-                selected.Status = "Downloaded";
-                _viewModel.RefreshModList();
+                await _viewModel.UpdateModStatusAsync(modId); // ✅ Force async status check
                 MessageBox.Show("Download completed successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
 
-        private void UninstallFiles_Click(object sender, RoutedEventArgs e)
+        private async void UninstallFiles_Click(object sender, RoutedEventArgs e)
         {
             if (ModsListView.SelectedItem is not ModDisplay selected)
             {
@@ -204,11 +203,10 @@ namespace CyberpunkModManager.Views
                     : "No matching metadata entries were found to remove.";
 
                 MessageBox.Show(summary, "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-                _viewModel.RefreshModList();
+                await _viewModel.UpdateModStatusAsync(selected.ModId); // ✅ Keep status fresh
+
             }
         }
-
-
 
 
 

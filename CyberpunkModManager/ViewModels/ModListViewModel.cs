@@ -140,15 +140,13 @@ namespace CyberpunkModManager.ViewModels
             return "Downloaded";
         }
 
-        public void UpdateModStatus(int modId)
+        public async Task UpdateModStatusAsync(int modId)
         {
-            var installed = LoadInstalledMetadata();
+            var installed = LoadInstalledMetadata(); // Reloads from disk every time
+            var remoteFiles = await _apiService.GetModFilesAsync("cyberpunk2077", modId);
 
             var modDisplay = Mods.FirstOrDefault(m => m.ModId == modId);
-            if (modDisplay == null)
-                return;
-
-            var remoteFiles = _apiService.GetModFilesAsync("cyberpunk2077", modId).Result;
+            if (modDisplay == null) return;
 
             if (installed.Any(i => i.ModId == modId))
             {

@@ -8,6 +8,7 @@ using System.IO;
 using CyberpunkModManager.Services;
 using System.Text.Json;
 using System.Net.Http;
+using CyberpunkModManager.ViewModels;
 
 namespace CyberpunkModManager.Views
 {
@@ -21,16 +22,20 @@ namespace CyberpunkModManager.Views
         private readonly HashSet<string> _selectedFileNames = new();
         private readonly int _modId;
         private readonly string _modName; // ✅ Store actual mod name
+        private readonly ModListViewModel _viewModel; // 💡 Reference to update mod status
 
-        public DownloadFileWindow(List<ModFile> files, List<InstalledModInfo> downloadedFiles, int modId, string modName)
+
+        public DownloadFileWindow(List<ModFile> files, List<InstalledModInfo> downloadedFiles, int modId, string modName, ModListViewModel viewModel)
         {
             InitializeComponent();
             _files = files;
             _downloadedMetadata = downloadedFiles;
             _modId = modId;
-            _modName = modName; // ✅ Save mod name
+            _modName = modName;
+            _viewModel = viewModel; // 💡 Save reference to update status after download
             PopulateFileList();
         }
+
 
         public async Task SetProgressAsync(double percentage)
         {
@@ -96,6 +101,11 @@ namespace CyberpunkModManager.Views
             }
 
             DownloadProgressBar.Visibility = Visibility.Collapsed;
+
+            if (anySuccess)
+            {
+                await _viewModel.UpdateModStatusAsync(_modId); // ✅ Refresh actual status
+            }
 
             DialogResult = anySuccess;
             Close();
