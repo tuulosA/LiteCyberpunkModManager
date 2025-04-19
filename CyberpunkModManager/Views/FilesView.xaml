@@ -3,17 +3,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:CyberpunkModManager.ViewModels">
     <Grid>
-        <DataGrid ItemsSource="{Binding DownloadedFiles}"
+        <DataGrid Name="DownloadedFilesGrid"
+                  ItemsSource="{Binding DownloadedFiles}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserSortColumns="True"
                   Margin="10">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Mod Name" Binding="{Binding ModName}" Width="*"/>
-                <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="2*"/>
-                <DataGridTextColumn Header="Size" Binding="{Binding FileSizeDisplay}" Width="*" />
+                <DataGridTextColumn Header="Mod Name" Binding="{Binding ModName}" Width="*" />
+                <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="2*" />
+                <DataGridTemplateColumn Header="Size" SortMemberPath="FileSizeMB" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding FileSizeDisplay}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Uploaded by Author" Binding="{Binding UploadedTimestamp}" Width="*" />
                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
+
+                <!-- ACTION BUTTONS -->
+                <DataGridTemplateColumn Header="Actions" Width="160">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Content="Install" Width="60" Margin="5,0" Click="Install_Click"/>
+                                <Button Content="Uninstall" Width="70" Margin="5,0" Click="Uninstall_Click"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

@@ -23,13 +23,28 @@ namespace CyberpunkModManager.ViewModels
 
         private void LoadDownloadedFiles()
         {
-            string path = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
-            if (!File.Exists(path)) return;
+            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
+            string installTrackingPath = Path.Combine(Settings.DefaultModsDir, "installed_game_files.json");
+
+            if (!File.Exists(metadataPath)) return;
 
             try
             {
-                string json = File.ReadAllText(path);
+                string json = File.ReadAllText(metadataPath);
                 var list = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+
+                HashSet<string> installedGameFiles = new();
+
+                if (File.Exists(installTrackingPath))
+                {
+                    string gameJson = File.ReadAllText(installTrackingPath);
+                    var installedList = JsonSerializer.Deserialize<List<InstalledModInfo>>(gameJson) ?? new();
+
+                    foreach (var entry in installedList)
+                    {
+                        installedGameFiles.Add(entry.FileName.ToLower());
+                    }
+                }
 
                 foreach (var entry in list)
                 {
@@ -43,13 +58,17 @@ namespace CyberpunkModManager.ViewModels
                         sizeMB = sizeBytes / 1024.0 / 1024.0;
                     }
 
+                    // ✅ Determine install status based on installed_game_files.json
+                    string cleanName = Path.GetFileNameWithoutExtension(entry.FileName).ToLower();
+                    bool isInstalled = installedGameFiles.Contains(cleanName + ".archive");
+
                     DownloadedFiles.Add(new InstalledModDisplay
                     {
                         ModName = entry.ModName,
                         FileName = entry.FileName,
+                        FileSizeMB = sizeMB, // ✅ use actual value
                         UploadedTimestamp = entry.UploadedTimestamp.ToString("yyyy-MM-dd HH:mm:ss"),
-                        FileSizeDisplay = sizeMB > 1 ? $"{sizeMB:F2} MB" : $"{sizeMB * 1024:F2} KB",
-                        Status = "Installed"
+                        Status = isInstalled ? "Installed" : "Not Installed"
                     });
                 }
             }
@@ -64,8 +83,13 @@ namespace CyberpunkModManager.ViewModels
     {
         public string ModName { get; set; } = "";
         public string FileName { get; set; } = "";
-        public string FileSizeDisplay { get; set; } = "";
+        public double FileSizeMB { get; set; } // ✅ For proper sorting
+        public string FileSizeDisplay => FileSizeMB > 1
+            ? $"{FileSizeMB:F2} MB"
+            : $"{FileSizeMB * 1024:F2} KB"; // Kept for formatted display
+
         public string UploadedTimestamp { get; set; } = "";
-        public string Status { get; set; } = "Installed";
+        public string Status { get; set; } = "Not Installed";
     }
+
 }

@@ -123,7 +123,7 @@ namespace CyberpunkModManager.Views
 
         private void SaveDownloadMetadata(int modId, string modName, ModFile file)
         {
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
+            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
             var entry = new InstalledModInfo
             {
                 ModId = modId,

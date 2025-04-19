@@ -72,7 +72,7 @@ namespace CyberpunkModManager.Views
             }
 
             List<InstalledModInfo> alreadyDownloaded = new();
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
+            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
 
             if (File.Exists(metadataPath))
             {
@@ -108,7 +108,7 @@ namespace CyberpunkModManager.Views
                 return;
             }
 
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
+            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
             if (!File.Exists(metadataPath))
             {
                 MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -123,7 +123,7 @@ namespace CyberpunkModManager.Views
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[WARN] Failed to load installed_mods.json: {ex.Message}");
+                Console.WriteLine($"[WARN] Failed to load downloaded_mods.json: {ex.Message}");
                 return;
             }
 
@@ -203,7 +203,7 @@ namespace CyberpunkModManager.Views
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[ERROR] Failed to update installed_mods.json: {ex.Message}");
+                    Console.WriteLine($"[ERROR] Failed to update downloaded_mods.json: {ex.Message}");
                 }
 
                 string summary = deletedFileNames.Count > 0

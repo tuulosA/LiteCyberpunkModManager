@@ -156,7 +156,7 @@ namespace CyberpunkModManager.ViewModels
 
         private List<InstalledModInfo> LoadInstalledMetadata()
         {
-            var metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
+            var metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
             if (!File.Exists(metadataPath)) return new();
 
             try
