@@ -5,6 +5,7 @@ using CyberpunkModManager.Services;
 using System.IO;
 using System.Linq;
 using CyberpunkModManager.Models;
+using System.Diagnostics;
 
 namespace CyberpunkModManager.Views
 {
@@ -24,49 +25,81 @@ namespace CyberpunkModManager.Views
             _viewModel.Reload();
         }
 
-        private void Install_Click(object sender, RoutedEventArgs e)
+        private void InstallSelected_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is InstalledModDisplay mod)
+            var selectedMods = DownloadedFilesGrid.SelectedItems.Cast<InstalledModDisplay>().ToList();
+            if (selectedMods.Count == 0)
+            {
+                MessageBox.Show("Select at least one mod to install.");
+                return;
+            }
+
+            foreach (var mod in selectedMods)
             {
                 string folderName = PathUtils.SanitizeModName(mod.ModName);
                 string zipPath = Path.Combine(Settings.DefaultModsDir, folderName, Path.GetFileNameWithoutExtension(mod.FileName) + ".zip");
 
                 if (!File.Exists(zipPath))
                 {
-                    MessageBox.Show("Mod zip file not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    MessageBox.Show($"Zip not found for {mod.FileName}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    continue;
                 }
 
-                bool success = ModInstallerService.InstallModFile(zipPath, mod.ModName, mod.FileName, out var installedPaths);
-                if (success)
-                {
-                    MessageBox.Show("Mod installed successfully!", "Installed", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show("Installation failed.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-
-                RefreshFileList();
+                ModInstallerService.InstallModFile(zipPath, mod.ModName, mod.FileName, out _);
             }
+
+            MessageBox.Show("Selected mods installed.", "Install Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            RefreshFileList();
         }
 
-        private void Uninstall_Click(object sender, RoutedEventArgs e)
+        private void UninstallSelected_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is InstalledModDisplay mod)
+            var selectedMods = DownloadedFilesGrid.SelectedItems.Cast<InstalledModDisplay>().ToList();
+            if (selectedMods.Count == 0)
             {
-                bool success = ModInstallerService.UninstallMod(mod.ModName);
-                if (success)
+                MessageBox.Show("Select at least one mod to uninstall.");
+                return;
+            }
+
+            foreach (var mod in selectedMods)
+            {
+                ModInstallerService.UninstallMod(mod.ModName);
+            }
+
+            MessageBox.Show("Selected mods uninstalled.", "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            RefreshFileList();
+        }
+
+
+        private void ModName_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2 && sender is TextBlock tb)
+            {
+                var modDisplay = tb.DataContext as InstalledModDisplay;
+                if (modDisplay == null) return;
+
+                string folderName = modDisplay.ModName;
+                string fullPath = Path.Combine(Settings.DefaultModsDir, folderName);
+
+                if (Directory.Exists(fullPath))
                 {
-                    MessageBox.Show("Mod uninstalled from game files.", "Uninstalled", MessageBoxButton.OK, MessageBoxImage.Information);
+                    try
+                    {
+                        Process.Start("explorer.exe", fullPath);
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Failed to open the mod folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("Uninstallation failed or mod wasn't installed.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("The mod folder was not found.", "Folder Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
-
-                RefreshFileList();
             }
         }
+
+
+
     }
 }

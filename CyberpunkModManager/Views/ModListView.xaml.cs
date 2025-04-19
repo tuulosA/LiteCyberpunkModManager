@@ -9,7 +9,6 @@ using CyberpunkModManager.Views;
 using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
-using CyberpunkModManager.Services;
 
 namespace CyberpunkModManager.Views
 {
