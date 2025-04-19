@@ -4,7 +4,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
+using System.Windows;
 using CyberpunkModManager.Models;
+using SharpCompress.Archives;
+using SharpCompress.Common;
 
 namespace CyberpunkModManager.Services
 {
@@ -21,12 +24,40 @@ namespace CyberpunkModManager.Services
             installedPaths = new();
             string tempExtractDir = Path.Combine(Path.GetTempPath(), $"ModInstall_{Guid.NewGuid()}");
 
+            // ✅ Accept only .zip, .rar, or .7z
+            string ext = Path.GetExtension(zipPath).ToLowerInvariant();
+            if (ext != ".zip" && ext != ".rar" && ext != ".7z")
+            {
+                MessageBox.Show("Only .zip, .rar or .7z files are supported.", "Unsupported Format", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
             try
             {
-                ZipFile.ExtractToDirectory(zipPath, tempExtractDir);
+                Directory.CreateDirectory(tempExtractDir); // 🔧 Ensure extraction directory exists
 
-                var archiveFiles = Directory.GetFiles(tempExtractDir, "*.archive", SearchOption.AllDirectories);
-                bool onlyArchives = archiveFiles.Length > 0 && Directory.GetFiles(tempExtractDir, "*", SearchOption.AllDirectories).All(f => f.EndsWith(".archive"));
+                using var archive = ArchiveFactory.Open(zipPath);
+                foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
+                {
+                    entry.WriteToDirectory(tempExtractDir, new ExtractionOptions
+                    {
+                        ExtractFullPath = true,
+                        Overwrite = true
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to extract the archive. It may be corrupted or unsupported.\n\n" + ex.Message,
+                                "Extraction Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+
+            try
+            {
+                var allFiles = Directory.GetFiles(tempExtractDir, "*", SearchOption.AllDirectories);
+                var archiveFiles = allFiles.Where(f => f.EndsWith(".archive", StringComparison.OrdinalIgnoreCase)).ToList();
+                bool onlyArchives = archiveFiles.Count > 0 && allFiles.All(f => f.EndsWith(".archive", StringComparison.OrdinalIgnoreCase));
 
                 if (onlyArchives)
                 {
@@ -42,11 +73,18 @@ namespace CyberpunkModManager.Services
                 }
                 else
                 {
-                    foreach (var file in Directory.GetFiles(tempExtractDir, "*", SearchOption.AllDirectories))
-                    {
-                        string relative = Path.GetRelativePath(tempExtractDir, file);
-                        string targetPath = Path.Combine(GameDir, relative);
+                    string commonPrefix = GetCommonTopLevelFolder(allFiles, tempExtractDir);
 
+                    foreach (var file in allFiles)
+                    {
+                        string relativePath = Path.GetRelativePath(tempExtractDir, file);
+
+                        if (!string.IsNullOrEmpty(commonPrefix) && relativePath.StartsWith(commonPrefix))
+                        {
+                            relativePath = relativePath.Substring(commonPrefix.Length);
+                        }
+
+                        string targetPath = Path.Combine(GameDir, relativePath);
                         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
                         File.Copy(file, targetPath, overwrite: true);
                         installedPaths.Add(targetPath);
@@ -59,6 +97,7 @@ namespace CyberpunkModManager.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] Install failed: {ex.Message}");
+                MessageBox.Show("Mod installation failed after extraction. Files might be invalid.", "Install Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
             finally
@@ -66,6 +105,28 @@ namespace CyberpunkModManager.Services
                 try { if (Directory.Exists(tempExtractDir)) Directory.Delete(tempExtractDir, true); } catch { }
             }
         }
+
+
+
+
+        private static string GetCommonTopLevelFolder(IEnumerable<string> filePaths, string root)
+        {
+            var relativePaths = filePaths
+                .Select(f => Path.GetRelativePath(root, f))
+                .Select(f => f.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+                .Where(parts => parts.Length > 1)
+                .ToList();
+
+            if (!relativePaths.Any()) return "";
+
+            string prefix = relativePaths[0][0];
+            bool allMatch = relativePaths.All(parts => parts[0] == prefix);
+
+            return allMatch ? prefix + Path.DirectorySeparatorChar : "";
+        }
+
+
+
 
         public static bool UninstallMod(string modName)
         {

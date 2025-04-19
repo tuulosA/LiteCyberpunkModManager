@@ -38,11 +38,11 @@ namespace CyberpunkModManager.ViewModels
                 if (File.Exists(installTrackingPath))
                 {
                     string gameJson = File.ReadAllText(installTrackingPath);
-                    var installedList = JsonSerializer.Deserialize<List<InstalledModInfo>>(gameJson) ?? new();
+                    var installedList = JsonSerializer.Deserialize<List<InstalledGameFile>>(gameJson) ?? new();
 
                     foreach (var entry in installedList)
                     {
-                        installedGameFiles.Add(entry.FileName.ToLower());
+                        installedGameFiles.Add(Path.GetFileNameWithoutExtension(entry.FileName).ToLower() + ".archive");
                     }
                 }
 

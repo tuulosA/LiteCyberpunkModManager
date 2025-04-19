@@ -86,7 +86,7 @@ namespace CyberpunkModManager.Views
                     try
                     {
                         Process.Start("explorer.exe", fullPath);
-                    }
+                    } 
                     catch
                     {
                         MessageBox.Show("Failed to open the mod folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
