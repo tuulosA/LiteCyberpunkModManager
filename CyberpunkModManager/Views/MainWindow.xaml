@@ -12,6 +12,10 @@
             <TabItem Header="Settings">
                 <ContentControl x:Name="SettingsTabContent" />
             </TabItem>
+
+            <TabItem Header="Files">
+                <ContentControl x:Name="FilesTabContent" />
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

@@ -34,14 +34,14 @@ namespace CyberpunkModManager.Views
         {
             Loaded -= ModListView_Loaded; // Run only once
 
-            await _viewModel.LoadTrackedModsAsync();
+            await _viewModel.LoadTrackedModsFromCacheFirstAsync(); // Startup
         }
 
         private async void FetchMods_Click(object sender, RoutedEventArgs e)
         {
-            await _viewModel.LoadTrackedModsAsync();
-        }
+            await _viewModel.LoadTrackedModsFromApiFirstAsync(); // User-triggered fetch
 
+        }
 
 
         private async void DownloadFiles_Click(object sender, RoutedEventArgs e)

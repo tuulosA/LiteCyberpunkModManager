@@ -9,6 +9,7 @@ namespace CyberpunkModManager.Views
         private readonly Settings _settings;
         private readonly SettingsView _settingsView;
         private readonly ModListView _modListView;
+        private readonly FilesView _filesView; // ✅ New FilesView field
 
         public MainWindow()
         {
@@ -26,10 +27,12 @@ namespace CyberpunkModManager.Views
             // Create views early (this will trigger loading + constructor logic)
             _settingsView = new SettingsView();
             _modListView = new ModListView();
+            _filesView = new FilesView(); // ✅ Initialize FilesView
 
             // Set them into the content controls so they're ready immediately
             SettingsTabContent.Content = _settingsView;
             ModsTabContent.Content = _modListView;
+            FilesTabContent.Content = _filesView; // ✅ Assign FilesView
         }
     }
 }

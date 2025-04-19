@@ -36,47 +36,9 @@ namespace CyberpunkModManager.ViewModels
             ModsGrouped.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
         }
 
-        public async Task LoadTrackedModsAsync()
+
+        private async Task PopulateModsAsync(List<Mod> mods)
         {
-            StatusMessage = "Fetching mods from Nexus API...";
-
-            // ✅ Reset rate-limit popup for this fetch attempt
-            typeof(NexusApiService)
-                .GetField("_localRateLimitShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                ?.SetValue(null, false);
-
-            Mods.Clear();
-
-            List<Mod>? mods = null;
-
-            try
-            {
-                mods = await _apiService.GetTrackedModsAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[WARN] Error fetching from API: {ex.Message}");
-            }
-
-            if (mods == null || mods.Count == 0)
-            {
-                StatusMessage = "Loading cached mods...";
-                mods = ModCacheService.LoadCachedMods();
-
-                if (mods == null || mods.Count == 0)
-                {
-                    StatusMessage = "No mods found in API or cache.";
-                    return;
-                }
-
-                StatusMessage = "Loaded mods from cache.";
-            }
-            else
-            {
-                ModCacheService.SaveCachedMods(mods);
-                StatusMessage = "Mods fetched and cached.";
-            }
-
             var installed = LoadInstalledMetadata();
 
             var tasks = mods.OrderBy(m => m.Category).ThenBy(m => m.Name)
@@ -108,6 +70,87 @@ namespace CyberpunkModManager.ViewModels
 
             StatusMessage = "Mods loaded.";
         }
+
+
+
+        public async Task LoadTrackedModsFromCacheFirstAsync()
+        {
+            StatusMessage = "Loading mods from cache...";
+            Mods.Clear();
+
+            List<Mod>? mods = ModCacheService.LoadCachedMods();
+
+            if (mods == null || mods.Count == 0)
+            {
+                StatusMessage = "No cache found, fetching from Nexus API...";
+                mods = await TryFetchFromApiAsync();
+            }
+            else
+            {
+                StatusMessage = "Loaded mods from cache.";
+            }
+
+            if (mods == null || mods.Count == 0)
+            {
+                StatusMessage = "No mods found in cache or API.";
+                return;
+            }
+
+            await PopulateModsAsync(mods);
+        }
+
+        public async Task LoadTrackedModsFromApiFirstAsync()
+        {
+            StatusMessage = "Fetching mods from Nexus API...";
+            Mods.Clear();
+
+            var mods = await TryFetchFromApiAsync();
+
+            if (mods == null || mods.Count == 0)
+            {
+                StatusMessage = "API fetch failed, loading from cache...";
+                mods = ModCacheService.LoadCachedMods();
+
+                if (mods == null || mods.Count == 0)
+                {
+                    StatusMessage = "No mods found in API or cache.";
+                    return;
+                }
+
+                StatusMessage = "Loaded mods from cache.";
+            }
+            else
+            {
+                StatusMessage = "Mods fetched and cached.";
+            }
+
+            await PopulateModsAsync(mods);
+        }
+
+
+        private async Task<List<Mod>?> TryFetchFromApiAsync()
+        {
+            // Reset rate-limit warning flag before retry
+            typeof(NexusApiService)
+                .GetField("_localRateLimitShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                ?.SetValue(null, false);
+
+            try
+            {
+                var mods = await _apiService.GetTrackedModsAsync();
+                if (mods != null && mods.Count > 0)
+                {
+                    ModCacheService.SaveCachedMods(mods);
+                }
+                return mods;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARN] Error fetching from API: {ex.Message}");
+                return null;
+            }
+        }
+
 
 
 
