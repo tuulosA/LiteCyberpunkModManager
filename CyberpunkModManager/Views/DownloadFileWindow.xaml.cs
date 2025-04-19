@@ -211,27 +211,45 @@ namespace CyberpunkModManager.Views
 
         private void Checkbox_Checked(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox checkbox && _checkboxFileNames.TryGetValue(checkbox, out var fullName))
+            if (sender is not CheckBox newlyChecked || !_checkboxFileNames.TryGetValue(newlyChecked, out var fullName)) return;
+
+            string baseName = Path.GetFileNameWithoutExtension(fullName);
+
+            // Check if the baseName is already selected
+            if (_selectedFileNames.Contains(baseName))
             {
-                if (_selectedFileNames.Contains(fullName))
+                // Find and uncheck the previously selected checkbox with the same base name
+                var previousCheckbox = _checkboxFileNames
+                    .Where(kv => Path.GetFileNameWithoutExtension(kv.Value) == baseName && kv.Key.IsChecked == true && kv.Key != newlyChecked)
+                    .Select(kv => kv.Key)
+                    .FirstOrDefault();
+
+                if (previousCheckbox != null)
                 {
-                    MessageBox.Show($"You’ve already selected another file with the name '{fullName}'.", "Duplicate File Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    checkbox.IsChecked = false;
-                }
-                else
-                {
-                    _selectedFileNames.Add(fullName);
+                    previousCheckbox.Checked -= Checkbox_Checked;
+                    previousCheckbox.IsChecked = false;
+                    previousCheckbox.Checked += Checkbox_Checked;
+
+                    _selectedFileNames.Remove(baseName);
                 }
             }
+
+            // Add the new baseName to the selected list
+            _selectedFileNames.Add(baseName);
         }
+
+
 
         private void Checkbox_Unchecked(object sender, RoutedEventArgs e)
         {
             if (sender is CheckBox checkbox && _checkboxFileNames.TryGetValue(checkbox, out var fullName))
             {
-                _selectedFileNames.Remove(fullName);
+                string baseName = Path.GetFileNameWithoutExtension(fullName);
+                _selectedFileNames.Remove(baseName);
             }
         }
+
+
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
