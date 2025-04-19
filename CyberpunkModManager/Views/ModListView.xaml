@@ -11,27 +11,25 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Button Content="Uninstall Files"
-        Width="150"
-        Height="30"
-        Click="UninstallFiles_Click"
-        HorizontalAlignment="Left"
-        Margin="320,0,0,10"/>
+        <!-- Button bar -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="Fetch Tracked Mods"
+                    Width="150"
+                    Height="30"
+                    Click="FetchMods_Click"
+                    Margin="0,0,10,0"/>
+            <Button Content="Download Files"
+                    Width="150"
+                    Height="30"
+                    Click="DownloadFiles_Click"
+                    Margin="0,0,10,0"/>
+            <Button Content="Manage Files"
+                    Width="150"
+                    Height="30"
+                    Click="ManageFiles_Click"/>
+        </StackPanel>
 
-        <Button Content="Fetch Tracked Mods"
-                Width="150"
-                Height="30"
-                Click="FetchMods_Click"
-                HorizontalAlignment="Left"
-                Margin="0,0,0,10"/>
-
-        <Button Content="Download Files"
-                Width="150"
-                Height="30"
-                Click="DownloadFiles_Click"
-                HorizontalAlignment="Left"
-                Margin="160,0,0,10"/>
-
+        <!-- Mod list -->
         <ListView Grid.Row="1"
                   Name="ModsListView"
                   ItemsSource="{Binding ModsGrouped}"
@@ -64,11 +62,9 @@
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Latest Downloaded">
                                                     <Setter Property="Foreground" Value="#1E3A8A"/>
-                                                    <!-- Deep blue -->
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Downloaded">
                                                     <Setter Property="Foreground" Value="#1E3A8A"/>
-                                                    <!-- Deep blue -->
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Not Downloaded">
                                                     <Setter Property="Foreground" Value="Gray"/>
@@ -84,6 +80,7 @@
             </ListView.View>
         </ListView>
 
+        <!-- Status -->
         <TextBlock Grid.Row="2"
                    Text="{Binding StatusMessage}"
                    Margin="0,5,0,0"

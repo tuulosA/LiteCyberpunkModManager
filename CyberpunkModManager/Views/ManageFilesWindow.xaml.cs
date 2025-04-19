@@ -6,11 +6,11 @@ using System.Windows.Controls;
 
 namespace CyberpunkModManager.Views
 {
-    public partial class UninstallFileWindow : Window
+    public partial class ManageFilesWindow : Window
     {
         public List<string> SelectedFiles { get; private set; } = new();
 
-        public UninstallFileWindow(List<string> installedFilePaths)
+        public ManageFilesWindow(List<string> installedFilePaths)
         {
             InitializeComponent();
             foreach (var path in installedFilePaths)
@@ -25,7 +25,7 @@ namespace CyberpunkModManager.Views
             }
         }
 
-        private void UninstallSelected_Click(object sender, RoutedEventArgs e)
+        private void DeleteSelected_Click(object sender, RoutedEventArgs e)
         {
             foreach (var child in FilesPanel.Children)
             {
@@ -37,7 +37,7 @@ namespace CyberpunkModManager.Views
 
             if (SelectedFiles.Count == 0)
             {
-                MessageBox.Show("Select at least one file to uninstall.");
+                MessageBox.Show("Select at least one file to delete.");
                 return;
             }
 

@@ -100,18 +100,18 @@ namespace CyberpunkModManager.Views
         }
 
 
-        private async void UninstallFiles_Click(object sender, RoutedEventArgs e)
+        private async void ManageFiles_Click(object sender, RoutedEventArgs e)
         {
             if (ModsListView.SelectedItem is not ModDisplay selected)
             {
-                MessageBox.Show("Please select a mod to uninstall files from.", "No Mod Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please select a mod to manage files for.", "No Mod Selected", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             string metadataPath = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");
             if (!File.Exists(metadataPath))
             {
-                MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -130,11 +130,10 @@ namespace CyberpunkModManager.Views
             var modEntries = metadataList.Where(m => m.ModId == selected.ModId).ToList();
             if (modEntries.Count == 0)
             {
-                MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            // Use HashSet to prevent duplicate file entries
             HashSet<string> allFiles = new();
             foreach (var entry in modEntries)
             {
@@ -152,16 +151,16 @@ namespace CyberpunkModManager.Views
 
             if (allFiles.Count == 0)
             {
-                MessageBox.Show("No installed files found for this mod.", "Nothing to Uninstall", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var dialog = new UninstallFileWindow(allFiles.ToList());
+            var dialog = new ManageFilesWindow(allFiles.ToList());
             var result = dialog.ShowDialog();
 
             if (result == true && dialog.SelectedFiles.Count > 0)
             {
-                List<string> uninstalledFileNames = new();
+                List<string> deletedFileNames = new();
 
                 foreach (var filePath in dialog.SelectedFiles)
                 {
@@ -176,7 +175,7 @@ namespace CyberpunkModManager.Views
                     if (matchingEntry != null)
                     {
                         metadataList.Remove(matchingEntry);
-                        uninstalledFileNames.Add(fileName);
+                        deletedFileNames.Add(fileName);
                         Console.WriteLine($"Removed metadata entry for file: {fileName} (ID: {matchingEntry.FileId})");
                     }
 
@@ -207,15 +206,23 @@ namespace CyberpunkModManager.Views
                     Console.WriteLine($"[ERROR] Failed to update installed_mods.json: {ex.Message}");
                 }
 
-                string summary = uninstalledFileNames.Count > 0
-                    ? "Uninstalled files:\n- " + string.Join("\n- ", uninstalledFileNames)
+                string summary = deletedFileNames.Count > 0
+                    ? "Deleted files:\n- " + string.Join("\n- ", deletedFileNames)
                     : "No matching metadata entries were found to remove.";
 
-                MessageBox.Show(summary, "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-                await _viewModel.UpdateModStatusAsync(selected.ModId); // ✅ Keep status fresh
+                MessageBox.Show(summary, "Files Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
+                await _viewModel.UpdateModStatusAsync(selected.ModId);
 
+                // Optional: refresh Files tab UI
+                if (Application.Current.MainWindow is MainWindow mainWindow &&
+                    mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
+                    filesTab.Content is FilesView filesView)
+                {
+                    filesView.RefreshFileList();
+                }
             }
         }
+
 
 
 

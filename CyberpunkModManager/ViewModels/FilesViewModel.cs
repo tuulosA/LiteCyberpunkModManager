@@ -15,6 +15,12 @@ namespace CyberpunkModManager.ViewModels
             LoadDownloadedFiles();
         }
 
+        public void Reload()
+        {
+            DownloadedFiles.Clear();
+            LoadDownloadedFiles();
+        }
+
         private void LoadDownloadedFiles()
         {
             string path = Path.Combine(Settings.DefaultModsDir, "installed_mods.json");

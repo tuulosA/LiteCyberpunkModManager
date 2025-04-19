@@ -107,6 +107,16 @@ namespace CyberpunkModManager.Views
                 await _viewModel.UpdateModStatusAsync(_modId); // ✅ Refresh actual status
             }
 
+            // Look for FilesView and tell it to refresh
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                if (mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
+                    filesTab.Content is FilesView filesView)
+                {
+                    filesView.RefreshFileList();
+                }
+            }
+
             DialogResult = anySuccess;
             Close();
         }
