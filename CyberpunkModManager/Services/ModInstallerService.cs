@@ -92,12 +92,40 @@ namespace CyberpunkModManager.Services
 
                     foreach (var file in allFiles)
                     {
-                        string relativePath = Path.GetRelativePath(tempExtractDir, file);
 
-                        if (!string.IsNullOrEmpty(commonPrefix) && relativePath.StartsWith(commonPrefix))
+
+
+                        string relativePath;
+
+                        // Normalize prefix
+                        string normalizedPrefix = commonPrefix.Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                        // Check if it's a single root folder
+                        bool allUnderOneTopLevel = allFiles
+                            .Select(f => Path.GetRelativePath(tempExtractDir, f))
+                            .All(rel => rel.StartsWith(normalizedPrefix + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+
+                        // Protected folders we never want to strip
+                        string[] protectedRoots = { "r6", "archive", "red4ext", "bin", "engine" };
+
+                        // Check if first folder is a protected root
+                        bool containsProtectedRoot = allFiles
+                            .Select(f => Path.GetRelativePath(tempExtractDir, f).Split(Path.DirectorySeparatorChar)[0].ToLowerInvariant())
+                            .Any(folder => protectedRoots.Contains(folder));
+
+                        // Strip only if all files are under a single non-protected top folder
+                        if (!string.IsNullOrEmpty(commonPrefix) && allUnderOneTopLevel && !containsProtectedRoot)
                         {
-                            relativePath = relativePath.Substring(commonPrefix.Length);
+                            relativePath = Path.GetRelativePath(Path.Combine(tempExtractDir, commonPrefix), file);
                         }
+                        else
+                        {
+                            relativePath = Path.GetRelativePath(tempExtractDir, file);
+                        }
+
+
+
+
 
                         string targetPath = Path.Combine(GameDir, relativePath);
                         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
