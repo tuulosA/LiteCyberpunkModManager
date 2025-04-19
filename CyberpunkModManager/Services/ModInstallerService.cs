@@ -128,27 +128,33 @@ namespace CyberpunkModManager.Services
 
 
 
-        public static bool UninstallMod(string modName)
+        public static bool UninstallMod(string modName, string fileName)
         {
             if (!File.Exists(InstalledJsonPath)) return false;
 
             try
             {
                 var list = JsonSerializer.Deserialize<List<InstalledGameFile>>(File.ReadAllText(InstalledJsonPath)) ?? new();
-                var modEntry = list.FirstOrDefault(m => m.ModName.Equals(modName, StringComparison.OrdinalIgnoreCase));
+                var matchingEntries = list.Where(m =>
+                    m.ModName.Equals(modName, StringComparison.OrdinalIgnoreCase) &&
+                    m.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase)).ToList();
 
-                if (modEntry == null) return false;
+                if (matchingEntries.Count == 0) return false;
 
-                foreach (var path in modEntry.InstalledPaths)
+                foreach (var modEntry in matchingEntries)
                 {
-                    if (File.Exists(path))
+                    foreach (var path in modEntry.InstalledPaths)
                     {
-                        try { File.Delete(path); }
-                        catch (Exception ex) { Console.WriteLine($"[WARN] Could not delete: {path} - {ex.Message}"); }
+                        if (File.Exists(path))
+                        {
+                            try { File.Delete(path); }
+                            catch (Exception ex) { Console.WriteLine($"[WARN] Could not delete: {path} - {ex.Message}"); }
+                        }
                     }
+
+                    list.Remove(modEntry);
                 }
 
-                list.Remove(modEntry);
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 File.WriteAllText(InstalledJsonPath, JsonSerializer.Serialize(list, options));
 
@@ -160,6 +166,8 @@ namespace CyberpunkModManager.Services
                 return false;
             }
         }
+
+
 
         private static void SaveInstallRecord(string modName, string fileName, List<string> paths)
         {
@@ -174,7 +182,11 @@ namespace CyberpunkModManager.Services
                 catch { }
             }
 
-            list.RemoveAll(m => m.ModName == modName);
+            // ❌ Only remove the entry for this specific file, not the whole mod
+            list.RemoveAll(m =>
+                m.ModName.Equals(modName, StringComparison.OrdinalIgnoreCase) &&
+                m.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+
             list.Add(new InstalledGameFile
             {
                 ModName = modName,
@@ -185,6 +197,10 @@ namespace CyberpunkModManager.Services
             var options = new JsonSerializerOptions { WriteIndented = true };
             File.WriteAllText(InstalledJsonPath, JsonSerializer.Serialize(list, options));
         }
+
+
+
+
     }
 
     public class InstalledGameFile

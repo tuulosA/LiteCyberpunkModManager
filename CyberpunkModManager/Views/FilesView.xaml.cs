@@ -25,7 +25,7 @@ namespace CyberpunkModManager.Views
             _viewModel.Reload();
         }
 
-        private void InstallSelected_Click(object sender, RoutedEventArgs e)
+        private async void InstallSelected_Click(object sender, RoutedEventArgs e)
         {
             var selectedMods = DownloadedFilesGrid.SelectedItems.Cast<InstalledModDisplay>().ToList();
             if (selectedMods.Count == 0)
@@ -34,27 +34,38 @@ namespace CyberpunkModManager.Views
                 return;
             }
 
-            foreach (var mod in selectedMods)
+            var progressWindow = new ProgressWindow(selectedMods.Count);
+            progressWindow.Owner = Window.GetWindow(this);
+            progressWindow.Show();
+
+            await Task.Run(() =>
             {
-                string folderName = PathUtils.SanitizeModName(mod.ModName);
-                string zipPath = Path.Combine(Settings.DefaultModsDir, folderName, Path.GetFileNameWithoutExtension(mod.FileName) + ".zip");
+                int current = 0;
 
-                if (!File.Exists(zipPath))
+                foreach (var mod in selectedMods)
                 {
-                    MessageBox.Show($"Zip not found for {mod.FileName}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    continue;
-                }
+                    string folderName = PathUtils.SanitizeModName(mod.ModName);
+                    string zipPath = Path.Combine(Settings.DefaultModsDir, folderName, Path.GetFileNameWithoutExtension(mod.FileName) + ".zip");
 
-                if (ModInstallerService.InstallModFile(zipPath, mod.ModName, mod.FileName, out _))
-                {
-                    // ✅ Immediately update status for that mod
-                    mod.Status = "Installed";
-                }
-            }
+                    if (!File.Exists(zipPath)) continue;
 
-            DownloadedFilesGrid.Items.Refresh(); // ✅ Refresh the UI
+                    bool success = ModInstallerService.InstallModFile(zipPath, mod.ModName, mod.FileName, out _);
+
+                    current++;
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (success) mod.Status = "Installed";
+                        progressWindow.UpdateProgress(current, mod.ModName);
+                    });
+                }
+            });
+
+            progressWindow.Close();
+            DownloadedFilesGrid.Items.Refresh();
             MessageBox.Show("Selected mods installed.", "Install Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
 
 
         private void UninstallSelected_Click(object sender, RoutedEventArgs e)
@@ -68,11 +79,11 @@ namespace CyberpunkModManager.Views
 
             foreach (var mod in selectedMods)
             {
-                if (ModInstallerService.UninstallMod(mod.ModName))
+                if (ModInstallerService.UninstallMod(mod.ModName, mod.FileName))
                 {
-                    // ✅ Update status after uninstall
                     mod.Status = "Not Installed";
                 }
+
             }
 
             DownloadedFilesGrid.Items.Refresh(); // ✅ Refresh the UI
