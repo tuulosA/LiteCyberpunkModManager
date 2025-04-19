@@ -52,12 +52,15 @@ namespace CyberpunkModManager.ViewModels
                         status = GetUpdateStatus(mod.ModId, remoteFiles, installed);
                     }
 
+                    int fileCount = installed.Count(i => i.ModId == mod.ModId);
+
                     return new ModDisplay
                     {
                         Name = mod.Name,
                         ModId = mod.ModId,
                         Category = mod.Category,
-                        Status = status
+                        Status = status,
+                        DownloadedFileCount = fileCount
                     };
                 });
 
@@ -70,6 +73,7 @@ namespace CyberpunkModManager.ViewModels
 
             StatusMessage = "Mods loaded.";
         }
+
 
 
 
@@ -208,7 +212,10 @@ namespace CyberpunkModManager.ViewModels
             var modDisplay = Mods.FirstOrDefault(m => m.ModId == modId);
             if (modDisplay == null) return;
 
-            if (installed.Any(i => i.ModId == modId))
+            int fileCount = installed.Count(i => i.ModId == modId);
+            modDisplay.DownloadedFileCount = fileCount;
+
+            if (fileCount > 0)
             {
                 modDisplay.Status = GetUpdateStatus(modId, remoteFiles, installed);
             }
@@ -219,6 +226,7 @@ namespace CyberpunkModManager.ViewModels
 
             RefreshModList();
         }
+
 
 
         public void RefreshModList()
@@ -243,6 +251,13 @@ namespace CyberpunkModManager.ViewModels
     public class ModDisplay : INotifyPropertyChanged
     {
         private string _status = "Unknown";
+
+        private int _downloadedFileCount;
+        public int DownloadedFileCount
+        {
+            get => _downloadedFileCount;
+            set { _downloadedFileCount = value; OnPropertyChanged(); }
+        }
 
         public int ModId { get; set; }
         public string Name { get; set; } = "";
