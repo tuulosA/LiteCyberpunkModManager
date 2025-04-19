@@ -45,12 +45,17 @@ namespace CyberpunkModManager.Views
                     continue;
                 }
 
-                ModInstallerService.InstallModFile(zipPath, mod.ModName, mod.FileName, out _);
+                if (ModInstallerService.InstallModFile(zipPath, mod.ModName, mod.FileName, out _))
+                {
+                    // ✅ Immediately update status for that mod
+                    mod.Status = "Installed";
+                }
             }
 
+            DownloadedFilesGrid.Items.Refresh(); // ✅ Refresh the UI
             MessageBox.Show("Selected mods installed.", "Install Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-            RefreshFileList();
         }
+
 
         private void UninstallSelected_Click(object sender, RoutedEventArgs e)
         {
@@ -63,12 +68,17 @@ namespace CyberpunkModManager.Views
 
             foreach (var mod in selectedMods)
             {
-                ModInstallerService.UninstallMod(mod.ModName);
+                if (ModInstallerService.UninstallMod(mod.ModName))
+                {
+                    // ✅ Update status after uninstall
+                    mod.Status = "Not Installed";
+                }
             }
 
+            DownloadedFilesGrid.Items.Refresh(); // ✅ Refresh the UI
             MessageBox.Show("Selected mods uninstalled.", "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-            RefreshFileList();
         }
+
 
 
         private void ModName_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
