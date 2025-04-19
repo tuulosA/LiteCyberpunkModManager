@@ -45,14 +45,30 @@ namespace CyberpunkModManager.ViewModels
                 .Select(async mod =>
                 {
                     string status = "Not Downloaded";
-                    var remoteFiles = await _apiService.GetModFilesAsync("cyberpunk2077", mod.ModId);
+                    int fileCount = installed.Count(i => i.ModId == mod.ModId);
 
-                    if (installed.Any(i => i.ModId == mod.ModId))
+                    List<ModFile>? remoteFiles = null;
+
+                    try
                     {
-                        status = GetUpdateStatus(mod.ModId, remoteFiles, installed);
+                        remoteFiles = await _apiService.GetModFilesAsync("cyberpunk2077", mod.ModId);
+                    }
+                    catch
+                    {
+                        // Silent fail — assume API returned 429 or similar
                     }
 
-                    int fileCount = installed.Count(i => i.ModId == mod.ModId);
+                    if (fileCount > 0)
+                    {
+                        if (remoteFiles != null && remoteFiles.Count > 0)
+                        {
+                            status = GetUpdateStatus(mod.ModId, remoteFiles, installed);
+                        }
+                        else
+                        {
+                            status = "Downloaded"; // fallback when API fails but files are installed
+                        }
+                    }
 
                     return new ModDisplay
                     {
@@ -73,6 +89,7 @@ namespace CyberpunkModManager.ViewModels
 
             StatusMessage = "Mods loaded.";
         }
+
 
 
 
