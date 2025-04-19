@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using CyberpunkModManager.Models;
 using CyberpunkModManager.Services;
+using System.Windows.Media;
 
 namespace CyberpunkModManager.Views
 {
@@ -9,30 +10,41 @@ namespace CyberpunkModManager.Views
         private readonly Settings _settings;
         private readonly SettingsView _settingsView;
         private readonly ModListView _modListView;
-        private readonly FilesView _filesView; // ✅ New FilesView field
+        private readonly FilesView _filesView;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Load settings once
+            // Load settings
             _settings = SettingsService.LoadSettings();
 
-            // Pre-warn user if no API key is found
+            // Set dark background if using Dark theme
+            if (Application.Current.Resources["WindowBackgroundBrush"] is Brush brush)
+            {
+                Background = brush;
+            }
+            else
+            {
+                Background = SystemColors.WindowBrush;
+            }
+
+
+            // Warn if API key is missing
             if (string.IsNullOrWhiteSpace(_settings.NexusApiKey))
             {
                 MessageBox.Show("Please enter your Nexus Mods API key in the Settings tab.", "API Key Missing");
             }
 
-            // Create views early (this will trigger loading + constructor logic)
+            // Create views
             _settingsView = new SettingsView();
             _modListView = new ModListView();
-            _filesView = new FilesView(); // ✅ Initialize FilesView
+            _filesView = new FilesView();
 
-            // Set them into the content controls so they're ready immediately
+            // Assign views
             SettingsTabContent.Content = _settingsView;
             ModsTabContent.Content = _modListView;
-            FilesTabContent.Content = _filesView; // ✅ Assign FilesView
+            FilesTabContent.Content = _filesView;
         }
     }
 }

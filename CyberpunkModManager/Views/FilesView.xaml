@@ -15,7 +15,11 @@
                   IsReadOnly="True"
                   Margin="10"
                   SelectionMode="Extended"
-                  SelectionUnit="FullRow">
+                  SelectionUnit="FullRow"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="None"
+                  BorderThickness="0">
+
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Mod Name" Binding="{Binding ModName}" Width="*">
                     <DataGridTextColumn.ElementStyle>

@@ -4,11 +4,19 @@ using System.IO;
 
 namespace CyberpunkModManager.Models
 {
+    public enum AppTheme
+    {
+        Dark,
+        Light
+    }
+
     public class Settings : INotifyPropertyChanged
     {
         private string _outputDir = DefaultModsDir;
         private string _gameInstallationDir = DefaultGameDir;
         private string _nexusApiKey = "";
+        private AppTheme _appTheme = AppTheme.Dark;
+
         public static string ModCachePath => Path.Combine(DefaultModsDir, "mod_cache.json");
 
         public string OutputDir
@@ -50,12 +58,23 @@ namespace CyberpunkModManager.Models
             }
         }
 
-        // Default paths
+        public AppTheme AppTheme
+        {
+            get => _appTheme;
+            set
+            {
+                if (_appTheme != value)
+                {
+                    _appTheme = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public static string DefaultGameDir => @"C:\Program Files (x86)\Steam\steamapps\common\Cyberpunk 2077";
         public static string DefaultModsDir => System.IO.Path.Combine(DefaultGameDir, "Mods");
         public static string ArchiveFolder => System.IO.Path.Combine(DefaultGameDir, "archive", "pc", "mod");
 
-        // INotifyPropertyChanged
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -63,4 +82,5 @@ namespace CyberpunkModManager.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
 }

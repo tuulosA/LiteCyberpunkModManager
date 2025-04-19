@@ -9,12 +9,12 @@
                 <ContentControl x:Name="ModsTabContent" />
             </TabItem>
 
-            <TabItem Header="Settings">
-                <ContentControl x:Name="SettingsTabContent" />
-            </TabItem>
-
             <TabItem Header="Files">
                 <ContentControl x:Name="FilesTabContent" />
+            </TabItem>
+
+            <TabItem Header="Settings">
+                <ContentControl x:Name="SettingsTabContent" />
             </TabItem>
         </TabControl>
     </Grid>

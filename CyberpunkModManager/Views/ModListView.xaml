@@ -3,7 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:CyberpunkModManager.Views"
              mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <views:ModNameColumnWidthConverter x:Key="ModNameColumnWidthConverter" />
+    </UserControl.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -46,28 +52,41 @@
 
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Mod Name" Width="300" DisplayMemberBinding="{Binding Name}" />
+                    <!-- Mod Name Column -->
+                    <GridViewColumn Header="Mod Name">
+                        <GridViewColumn.Width>
+                            <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=ListView}"
+                                     Path="ActualWidth"
+                                     Converter="{StaticResource ModNameColumnWidthConverter}" />
+                        </GridViewColumn.Width>
+                        <GridViewColumn.DisplayMemberBinding>
+                            <Binding Path="Name" />
+                        </GridViewColumn.DisplayMemberBinding>
+                    </GridViewColumn>
+
+                    <!-- Status Column -->
                     <GridViewColumn Header="Status" Width="180">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Status}"
-                           Padding="4"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Left">
+                                           Padding="4"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Left">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Status}" Value="Update Available!">
-                                                    <Setter Property="Foreground" Value="Red"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Status}" Value="Latest Downloaded">
-                                                    <Setter Property="Foreground" Value="#1E3A8A"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource UpdateAvailableStatusBrush}" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Downloaded">
-                                                    <Setter Property="Foreground" Value="#1E3A8A"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource DownloadedStatusBrush}" />
                                                 </DataTrigger>
-                                                <DataTrigger Binding="{Binding Status}" Value="Not Downloaded">
-                                                    <Setter Property="Foreground" Value="Gray"/>
+                                                <DataTrigger Binding="{Binding Status}" Value="Latest Downloaded">
+                                                    <Setter Property="Foreground" Value="{DynamicResource LatestDownloadedStatusBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Not Installed">
+                                                    <Setter Property="Foreground" Value="{DynamicResource NotDownloadedStatusBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -77,13 +96,15 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <!-- ✅ New column -->
-                    <GridViewColumn Header="Files Downloaded" Width="140" DisplayMemberBinding="{Binding DownloadedFileCount}" />
+
+                    <!-- Files Downloaded Column -->
+                    <GridViewColumn Header="Files Downloaded" Width="140"
+                                    DisplayMemberBinding="{Binding DownloadedFileCount}" />
                 </GridView>
             </ListView.View>
         </ListView>
 
-        <!-- Status -->
+        <!-- Status Message -->
         <TextBlock Grid.Row="2"
                    Text="{Binding StatusMessage}"
                    Margin="0,5,0,0"

@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Core fallback brushes to avoid UnsetValue issues -->
+    <SolidColorBrush x:Key="TextBrush" Color="Black"/>
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="Gray"/>
+    <SolidColorBrush x:Key="ListItemSelectedBrush" Color="#D3D3D3"/>
+    <SolidColorBrush x:Key="ListItemHoverBrush" Color="#F0F0F0"/>
+
+    <!-- Status colors -->
+    <SolidColorBrush x:Key="DownloadedStatusBrush" Color="#004C99"/>
+    <SolidColorBrush x:Key="LatestDownloadedStatusBrush" Color="#004C99"/>
+    <SolidColorBrush x:Key="UpdateAvailableStatusBrush" Color="Red"/>
+    <!-- Yellow -->
+    <SolidColorBrush x:Key="NotDownloadedStatusBrush" Color="Gray"/>
+
+</ResourceDictionary>
