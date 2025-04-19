@@ -87,7 +87,7 @@ namespace CyberpunkModManager.ViewModels
                 Mods.Add(modDisplay);
             }
 
-            StatusMessage = "Mods loaded.";
+            StatusMessage = $"Mods loaded ({modDisplays.Length}).";
         }
 
 

@@ -19,15 +19,30 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
         <!-- Output Directory -->
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Output Directory:" VerticalAlignment="Center" Margin="0,5"/>
         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding OutputDir, Mode=TwoWay}" Width="400" Margin="0,5"/>
+        <Button Grid.Row="0" Grid.Column="2"
+        Width="30"
+        Height="30"
+        Margin="5,5,0,5"
+        FontFamily="Segoe MDL2 Assets"
+        Content="&#xE71E;"
+        Click="OpenOutputDir_Click"/>
 
         <!-- Game Installation Directory -->
         <TextBlock Grid.Row="1" Grid.Column="0" Text="Game Installation Directory:" VerticalAlignment="Center" Margin="0,5"/>
         <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding GameInstallationDir, Mode=TwoWay}" Width="400" Margin="0,5"/>
+        <Button Grid.Row="1" Grid.Column="2"
+        Width="30"
+        Height="30"
+        Margin="5,5,0,5"
+        FontFamily="Segoe MDL2 Assets"
+        Content="&#xE71E;"
+        Click="OpenGameDir_Click"/>
 
         <!-- Nexus API Key -->
         <TextBlock Grid.Row="2" Grid.Column="0" Text="Nexus Mods API Key:" VerticalAlignment="Center" Margin="0,5"/>
@@ -36,9 +51,8 @@
         <!-- App Theme Selection -->
         <TextBlock Grid.Row="3" Grid.Column="0" Text="Theme:" VerticalAlignment="Center" Margin="0,5"/>
         <ComboBox Grid.Row="3" Grid.Column="1" Width="200" Margin="0,5"
-          SelectedItem="{Binding AppTheme, Mode=TwoWay}"
-          ItemsSource="{x:Static local:AppThemeValues.All}">
-        </ComboBox>
+                  SelectedItem="{Binding AppTheme, Mode=TwoWay}"
+                  ItemsSource="{x:Static local:AppThemeValues.All}"/>
 
         <!-- Save Button -->
         <Button Grid.Row="4" Grid.Column="1" Content="Save Settings" Width="120" Margin="0,15,0,0" Click="SaveSettings_Click" HorizontalAlignment="Left"/>

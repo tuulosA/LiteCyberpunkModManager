@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -78,8 +79,43 @@ namespace CyberpunkModManager.Views
 
         }
 
+        private void OpenOutputDir_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (Directory.Exists(_settings.OutputDir))
+                {
+                    Process.Start("explorer.exe", _settings.OutputDir);
+                }
+                else
+                {
+                    MessageBox.Show("Output directory does not exist.", "Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to open output directory.\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
-
+        private void OpenGameDir_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (Directory.Exists(_settings.GameInstallationDir))
+                {
+                    Process.Start("explorer.exe", _settings.GameInstallationDir);
+                }
+                else
+                {
+                    MessageBox.Show("Game installation directory does not exist.", "Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to open game directory.\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
 
         private void ApiKeyBox_PasswordChanged(object sender, RoutedEventArgs e)
