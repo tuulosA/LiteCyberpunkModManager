@@ -49,7 +49,18 @@ namespace CyberpunkModManager.Views
 
                     if (!File.Exists(zipPath)) continue;
 
-                    bool success = ModInstallerService.InstallModFile(zipPath, mod.ModName, mod.FileName, out _);
+                    bool success = ModInstallerService.InstallModFile(
+                        zipPath,
+                        mod.ModName,
+                        mod.FileName,
+                        out _,
+                        (percent, file) =>
+                        {
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                progressWindow.SetSubProgress(percent, file);
+                            });
+                        });
 
                     current++;
 
@@ -65,6 +76,7 @@ namespace CyberpunkModManager.Views
             DownloadedFilesGrid.Items.Refresh();
             MessageBox.Show("Selected mods installed.", "Install Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
 
 
 

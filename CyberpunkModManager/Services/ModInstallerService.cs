@@ -19,7 +19,12 @@ namespace CyberpunkModManager.Services
         private static string InstalledJsonPath => Path.Combine(ModsDir, "installed_game_files.json");
 
 
-        public static bool InstallModFile(string zipPath, string modName, string zipFileName, out List<string> installedPaths)
+        public static bool InstallModFile(
+            string zipPath,
+            string modName,
+            string zipFileName,
+            out List<string> installedPaths,
+            Action<int, string>? onExtractProgress = null)
         {
             installedPaths = new();
             string tempExtractDir = Path.Combine(Path.GetTempPath(), $"ModInstall_{Guid.NewGuid()}");
@@ -37,13 +42,22 @@ namespace CyberpunkModManager.Services
                 Directory.CreateDirectory(tempExtractDir); // 🔧 Ensure extraction directory exists
 
                 using var archive = ArchiveFactory.Open(zipPath);
-                foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
+                var fileEntries = archive.Entries.Where(entry => !entry.IsDirectory).ToList();
+                int totalFiles = fileEntries.Count;
+                int currentFile = 0;
+
+                foreach (var entry in fileEntries)
                 {
                     entry.WriteToDirectory(tempExtractDir, new ExtractionOptions
                     {
                         ExtractFullPath = true,
                         Overwrite = true
                     });
+
+                    currentFile++;
+                    int progress = (int)((currentFile / (double)totalFiles) * 100);
+
+                    onExtractProgress?.Invoke(progress, entry.Key);
                 }
             }
             catch (Exception ex)
@@ -52,6 +66,7 @@ namespace CyberpunkModManager.Services
                                 "Extraction Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
+
 
             try
             {
