@@ -1,8 +1,9 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
 using CyberpunkModManager.Models;
+using System.Threading;
 
 namespace CyberpunkModManager.Services
 {
@@ -11,6 +12,8 @@ namespace CyberpunkModManager.Services
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "https://api.nexusmods.com/v1";
         private readonly string _apiKey;
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(2); // Limit to 2 concurrent API calls
+        [ThreadStatic] private static bool _localRateLimitShown;
 
         public NexusApiService(string apiKey)
         {
@@ -43,59 +46,35 @@ namespace CyberpunkModManager.Services
             };
         }
 
-        private async Task<HttpResponseMessage?> GetWithRetryAsync(string url, int maxRetries = 3)
+        private async Task<HttpResponseMessage?> GetAsync(string url)
         {
-            bool shownRateLimitMessage = false;
+            var response = await _httpClient.GetAsync(url);
 
-            for (int attempt = 0; attempt < maxRetries; attempt++)
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {
-                var response = await _httpClient.GetAsync(url);
+                Console.WriteLine("[ERROR] Rate limit reached for URL: " + url);
 
-                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                if (!_localRateLimitShown)
                 {
-                    if (!shownRateLimitMessage)
+                    _localRateLimitShown = true; // Only once per thread/task
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        shownRateLimitMessage = true;
-                        Console.WriteLine("[WARN] Rate limited (429). Waiting before retrying...");
-
-                        // Notify the user
-                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            MessageBox.Show(
-                                "Nexus Mods API rate limit reached. Retrying shortly...\n\nTry again later if this continues.",
-                                "Rate Limit Triggered",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning
-                            );
-                        });
-                    }
-
-                    // Wait according to Retry-After header or fallback
-                    if (response.Headers.TryGetValues("Retry-After", out var values))
-                    {
-                        if (int.TryParse(values.FirstOrDefault(), out int retryAfterSec))
-                        {
-                            await Task.Delay(TimeSpan.FromSeconds(retryAfterSec));
-                        }
-                        else
-                        {
-                            await Task.Delay(3000);
-                        }
-                    }
-                    else
-                    {
-                        await Task.Delay(3000);
-                    }
-
-                    continue;
+                        MessageBox.Show(
+                            "Nexus Mods API rate limit reached. Try again later.",
+                            "Rate Limit Triggered",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning
+                        );
+                    });
                 }
 
-                return response;
+                return null;
             }
 
-            Console.WriteLine($"[ERROR] Failed after {maxRetries} attempts for URL: {url}");
-            return null;
+            return response;
         }
+
+
 
 
         public async Task<string?> GetDownloadLinkAsync(string game, int modId, int fileId)
@@ -104,7 +83,7 @@ namespace CyberpunkModManager.Services
 
             try
             {
-                var response = await GetWithRetryAsync(url);
+                var response = await GetAsync(url);
                 if (response == null) return null;
                 response.EnsureSuccessStatusCode();
 
@@ -126,17 +105,14 @@ namespace CyberpunkModManager.Services
             }
         }
 
-
         public async Task<bool> DownloadFileAsync(string downloadUrl, string savePath, IProgress<double>? progress = null)
         {
             try
             {
-                // Force .zip extension
                 string targetDirectory = Path.GetDirectoryName(savePath)!;
                 string baseFileName = Path.GetFileNameWithoutExtension(savePath);
                 string finalFilePath = Path.Combine(targetDirectory, baseFileName + ".zip");
 
-                // Ensure directory exists
                 Directory.CreateDirectory(targetDirectory);
 
                 using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
@@ -173,7 +149,6 @@ namespace CyberpunkModManager.Services
             }
         }
 
-
         public async Task<List<Mod>> GetTrackedModsAsync(string game = "cyberpunk2077")
         {
             var url = $"{BaseUrl}/user/tracked_mods.json";
@@ -182,7 +157,7 @@ namespace CyberpunkModManager.Services
             try
             {
                 Console.WriteLine("Fetching tracked mods...");
-                var response = await GetWithRetryAsync(url);
+                var response = await GetAsync(url);
                 if (response == null) return mods;
                 response.EnsureSuccessStatusCode();
 
@@ -191,22 +166,30 @@ namespace CyberpunkModManager.Services
 
                 var tasks = root.EnumerateArray().Select(async entry =>
                 {
-                    if (entry.TryGetProperty("mod_id", out var modIdElement) && modIdElement.TryGetInt32(out int modId))
+                    await _semaphore.WaitAsync();
+                    try
                     {
-                        Console.WriteLine($"Fetching details for Mod ID: {modId}");
-                        var modDetails = await GetModDetailsAsync(game, modId);
-                        if (modDetails != null)
+                        if (entry.TryGetProperty("mod_id", out var modIdElement) && modIdElement.TryGetInt32(out int modId))
                         {
-                            lock (mods) mods.Add(modDetails);
+                            Console.WriteLine($"Fetching details for Mod ID: {modId}");
+                            var modDetails = await GetModDetailsAsync(game, modId);
+                            if (modDetails != null)
+                            {
+                                lock (mods) mods.Add(modDetails);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Mod details not found or failed to parse for Mod ID: {modId}");
+                            }
                         }
                         else
                         {
-                            Console.WriteLine($"Mod details not found or failed to parse for Mod ID: {modId}");
+                            Console.WriteLine("mod_id not found or invalid in tracked entry.");
                         }
                     }
-                    else
+                    finally
                     {
-                        Console.WriteLine("mod_id not found or invalid in tracked entry.");
+                        _semaphore.Release();
                     }
                 });
 
@@ -227,7 +210,7 @@ namespace CyberpunkModManager.Services
 
             try
             {
-                var response = await GetWithRetryAsync(url);
+                var response = await GetAsync(url);
                 if (response == null) return null;
                 response.EnsureSuccessStatusCode();
 
@@ -259,7 +242,7 @@ namespace CyberpunkModManager.Services
 
             try
             {
-                var response = await GetWithRetryAsync(url);
+                var response = await GetAsync(url);
                 if (response == null) return new List<ModFile>();
                 Console.WriteLine($"[DEBUG] Status Code: {response.StatusCode}");
 
@@ -269,7 +252,7 @@ namespace CyberpunkModManager.Services
                     return new List<ModFile>();
                 }
 
-                response.EnsureSuccessStatusCode(); // Only call if status is OK
+                response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"[DEBUG] Raw JSON Response: {json}");
@@ -349,6 +332,5 @@ namespace CyberpunkModManager.Services
                 return new List<ModFile>();
             }
         }
-
     }
 }

@@ -38,28 +38,43 @@ namespace CyberpunkModManager.ViewModels
 
         public async Task LoadTrackedModsAsync()
         {
-            StatusMessage = "Loading mods...";
+            StatusMessage = "Fetching mods from Nexus API...";
+
+            // ✅ Reset rate-limit popup for this fetch attempt
+            typeof(NexusApiService)
+                .GetField("_localRateLimitShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                ?.SetValue(null, false);
+
             Mods.Clear();
 
-            List<Mod>? mods = ModCacheService.LoadCachedMods();
+            List<Mod>? mods = null;
+
+            try
+            {
+                mods = await _apiService.GetTrackedModsAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARN] Error fetching from API: {ex.Message}");
+            }
 
             if (mods == null || mods.Count == 0)
             {
-                StatusMessage = "Fetching mods from Nexus API...";
-                mods = await _apiService.GetTrackedModsAsync();
+                StatusMessage = "Loading cached mods...";
+                mods = ModCacheService.LoadCachedMods();
 
-                if (mods.Count == 0)
+                if (mods == null || mods.Count == 0)
                 {
-                    StatusMessage = "No mods found or error loading mods.";
+                    StatusMessage = "No mods found in API or cache.";
                     return;
                 }
 
-                ModCacheService.SaveCachedMods(mods);
-                StatusMessage = "Mods fetched and cached.";
+                StatusMessage = "Loaded mods from cache.";
             }
             else
             {
-                StatusMessage = "Mods loaded from cache.";
+                ModCacheService.SaveCachedMods(mods);
+                StatusMessage = "Mods fetched and cached.";
             }
 
             var installed = LoadInstalledMetadata();
@@ -93,6 +108,8 @@ namespace CyberpunkModManager.ViewModels
 
             StatusMessage = "Mods loaded.";
         }
+
+
 
         private List<InstalledModInfo> LoadInstalledMetadata()
         {

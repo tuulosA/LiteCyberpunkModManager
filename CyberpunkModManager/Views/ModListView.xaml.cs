@@ -26,6 +26,15 @@ namespace CyberpunkModManager.Views
             _api = new NexusApiService(_settings.NexusApiKey);
             _viewModel = new ModListViewModel(_api);
             DataContext = _viewModel;
+
+            Loaded += ModListView_Loaded; // auto-trigger on load
+        }
+
+        private async void ModListView_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= ModListView_Loaded; // Run only once
+
+            await _viewModel.LoadTrackedModsAsync();
         }
 
         private async void FetchMods_Click(object sender, RoutedEventArgs e)
