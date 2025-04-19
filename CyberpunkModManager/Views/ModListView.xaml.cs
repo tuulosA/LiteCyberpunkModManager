@@ -9,6 +9,7 @@ using CyberpunkModManager.Views;
 using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CyberpunkModManager.Views
 {
@@ -27,6 +28,22 @@ namespace CyberpunkModManager.Views
             DataContext = _viewModel;
 
             Loaded += ModListView_Loaded; // auto-trigger on load
+        }
+
+        private void OpenTrackingCentre_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://www.nexusmods.com/mods/trackingcentre",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to open Tracking Centre.\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void ModListView_Loaded(object sender, RoutedEventArgs e)

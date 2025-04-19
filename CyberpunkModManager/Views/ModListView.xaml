@@ -17,23 +17,39 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Button bar -->
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-            <Button Content="Fetch Tracked Mods"
-                    Width="150"
+        <!-- Unified button bar with right-aligned Tracking Centre -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left-side buttons -->
+            <StackPanel Orientation="Horizontal" Grid.Column="0">
+                <Button Content="Fetch Tracked Mods"
+                        Width="150"
+                        Height="30"
+                        Click="FetchMods_Click"
+                        Margin="0,0,10,0"/>
+                <Button Content="Download Files"
+                        Width="150"
+                        Height="30"
+                        Click="DownloadFiles_Click"
+                        Margin="0,0,10,0"/>
+                <Button Content="Manage Files"
+                        Width="150"
+                        Height="30"
+                        Click="ManageFiles_Click"/>
+            </StackPanel>
+
+            <!-- Right-side button -->
+            <Button Content="Tracking Centre"
+                    Width="140"
                     Height="30"
-                    Click="FetchMods_Click"
-                    Margin="0,0,10,0"/>
-            <Button Content="Download Files"
-                    Width="150"
-                    Height="30"
-                    Click="DownloadFiles_Click"
-                    Margin="0,0,10,0"/>
-            <Button Content="Manage Files"
-                    Width="150"
-                    Height="30"
-                    Click="ManageFiles_Click"/>
-        </StackPanel>
+                    Grid.Column="1"
+                    Click="OpenTrackingCentre_Click"
+                    HorizontalAlignment="Right"/>
+        </Grid>
 
         <!-- Mod list -->
         <ListView Grid.Row="1"
@@ -98,19 +114,17 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-
                     <!-- Files Downloaded Column -->
                     <GridViewColumn Header="Files Downloaded" Width="140">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding DownloadedFileCount}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       TextAlignment="Center"/>
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           TextAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-
                 </GridView>
             </ListView.View>
         </ListView>
