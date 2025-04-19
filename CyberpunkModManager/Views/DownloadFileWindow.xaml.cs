@@ -9,6 +9,8 @@ using CyberpunkModManager.Services;
 using System.Text.Json;
 using System.Net.Http;
 using CyberpunkModManager.ViewModels;
+using System.Windows.Media;
+using CyberpunkModManager.Helpers; 
 
 namespace CyberpunkModManager.Views
 {
@@ -27,14 +29,18 @@ namespace CyberpunkModManager.Views
 
         public DownloadFileWindow(List<ModFile> files, List<InstalledModInfo> downloadedFiles, int modId, string modName, ModListViewModel viewModel)
         {
+            ThemeHelper.ApplyThemeTo(this); // ✅ Apply current theme
             InitializeComponent();
+
             _files = files;
             _downloadedMetadata = downloadedFiles;
             _modId = modId;
             _modName = modName;
-            _viewModel = viewModel; // 💡 Save reference to update status after download
+            _viewModel = viewModel;
+
             PopulateFileList();
         }
+
 
 
         public async Task SetProgressAsync(double percentage)
@@ -180,11 +186,16 @@ namespace CyberpunkModManager.Views
                     {
                         Text = text,
                         TextWrapping = TextWrapping.Wrap,
-                        Width = 550
+                        Width = 550,
+                        Foreground = (Brush)Application.Current.Resources["TextBrush"],
+                        Background = Brushes.Transparent // Optional: looks cleaner
                     },
                     Tag = file.FileId,
-                    Margin = new Thickness(5)
+                    Margin = new Thickness(5),
+                    Foreground = (Brush)Application.Current.Resources["TextBrush"],
+                    Background = (Brush)Application.Current.Resources["ControlBackgroundBrush"]
                 };
+
 
                 string fullName = file.FileName;
                 _checkboxFileNames[checkbox] = fullName;

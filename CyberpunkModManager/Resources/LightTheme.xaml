@@ -1,17 +1,75 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Core fallback brushes to avoid UnsetValue issues -->
-    <SolidColorBrush x:Key="TextBrush" Color="Black"/>
-    <SolidColorBrush x:Key="DisabledTextBrush" Color="Gray"/>
-    <SolidColorBrush x:Key="ListItemSelectedBrush" Color="#D3D3D3"/>
-    <SolidColorBrush x:Key="ListItemHoverBrush" Color="#F0F0F0"/>
+    <!-- Core -->
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#FBFBFB"/>
+    <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ControlBorderBrush" Color="#DDDDDD"/>
+    <SolidColorBrush x:Key="HighlightBrush" Color="#0078D4"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="#999999"/>
+    <SolidColorBrush x:Key="ListItemHoverBrush" Color="#F2F2F2"/>
+    <SolidColorBrush x:Key="ListItemSelectedBrush" Color="#E5F1FB"/>
 
-    <!-- Status colors -->
+    <!-- Status -->
     <SolidColorBrush x:Key="DownloadedStatusBrush" Color="#004C99"/>
     <SolidColorBrush x:Key="LatestDownloadedStatusBrush" Color="#004C99"/>
-    <SolidColorBrush x:Key="UpdateAvailableStatusBrush" Color="Red"/>
-    <!-- Yellow -->
-    <SolidColorBrush x:Key="NotDownloadedStatusBrush" Color="Gray"/>
+    <SolidColorBrush x:Key="UpdateAvailableStatusBrush" Color="#C23616"/>
+    <SolidColorBrush x:Key="NotDownloadedStatusBrush" Color="#666"/>
+
+    <!-- DataGrid -->
+    <Style TargetType="DataGrid">
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="RowBackground" Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="AlternatingRowBackground" Value="#F8F8F8"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!-- DataGridRow -->
+    <Style TargetType="DataGridRow">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{StaticResource ListItemSelectedBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource ListItemHoverBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- DataGridColumnHeader -->
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="#F0F0F0"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="6,4"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridColumnHeader">
+                    <Border
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Padding="{TemplateBinding Padding}">
+                        <ContentPresenter
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
 
 </ResourceDictionary>

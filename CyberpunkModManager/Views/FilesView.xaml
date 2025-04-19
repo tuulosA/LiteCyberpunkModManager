@@ -20,25 +20,63 @@
                   GridLinesVisibility="None"
                   BorderThickness="0">
 
+            <DataGrid.ColumnWidth>*</DataGrid.ColumnWidth>
+            <!-- Optional: Can be set on DataGrid -->
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Mod Name" Binding="{Binding ModName}" Width="*">
+                <DataGridTextColumn Header="Mod Name" Binding="{Binding ModName}" Width="3*">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            <Setter Property="Padding" Value="2,0"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
                             <EventSetter Event="MouseLeftButtonDown" Handler="ModName_DoubleClick" />
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="2*" />
-                <DataGridTemplateColumn Header="Size" SortMemberPath="FileSizeMB" Width="*">
+
+
+                <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="2*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            <Setter Property="Padding" Value="2,0"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="Size" SortMemberPath="FileSizeMB" Width="1*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding FileSizeDisplay}" />
+                            <TextBlock Text="{Binding FileSizeDisplay}"
+                       TextTrimming="CharacterEllipsis"
+                       Padding="2,0"
+                       VerticalAlignment="Center" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Uploaded by Author" Binding="{Binding UploadedTimestamp}" Width="*" />
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
+                <DataGridTextColumn Header="Uploaded by Auth" Binding="{Binding UploadedTimestamp}" Width="2*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            <Setter Property="Padding" Value="2,0"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="1.5*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            <Setter Property="Padding" Value="2,0"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
             </DataGrid.Columns>
+
+
         </DataGrid>
 
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="10">

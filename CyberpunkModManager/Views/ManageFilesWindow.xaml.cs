@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using CyberpunkModManager.Helpers;
 
 namespace CyberpunkModManager.Views
 {
@@ -12,18 +14,30 @@ namespace CyberpunkModManager.Views
 
         public ManageFilesWindow(List<string> installedFilePaths)
         {
+            ThemeHelper.ApplyThemeTo(this); // ✅ Apply current theme
             InitializeComponent();
+
             foreach (var path in installedFilePaths)
             {
                 var checkBox = new CheckBox
                 {
-                    Content = Path.GetFileName(path),
+                    Content = new TextBlock
+                    {
+                        Text = Path.GetFileName(path),
+                        Foreground = (Brush)Application.Current.Resources["TextBrush"],
+                        Background = Brushes.Transparent,
+                        TextWrapping = TextWrapping.Wrap
+                    },
                     Tag = path,
-                    Margin = new Thickness(5)
+                    Margin = new Thickness(5),
+                    Foreground = (Brush)Application.Current.Resources["TextBrush"],
+                    Background = (Brush)Application.Current.Resources["ControlBackgroundBrush"]
                 };
+
                 FilesPanel.Children.Add(checkBox);
             }
         }
+
 
         private void DeleteSelected_Click(object sender, RoutedEventArgs e)
         {

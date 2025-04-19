@@ -5,17 +5,49 @@
     <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#1E1E1E"/>
     <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#2D2D30"/>
     <SolidColorBrush x:Key="ControlBorderBrush" Color="#3C3C3C"/>
-    <SolidColorBrush x:Key="TextBrush" Color="#EEEEEE"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#F5F5F5"/>
     <SolidColorBrush x:Key="HighlightBrush" Color="#007ACC"/>
     <SolidColorBrush x:Key="ListItemSelectedBrush" Color="#44475A"/>
     <SolidColorBrush x:Key="ListItemHoverBrush" Color="#3A3F4B"/>
     <SolidColorBrush x:Key="DisabledTextBrush" Color="#777777"/>
     <SolidColorBrush x:Key="StatusTextBrush" Color="#89CFF0"/>
+    <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="#2B2B30"/>
+    <SolidColorBrush x:Key="HeaderTextBrush" Color="#F5F5F5"/>
 
     <SolidColorBrush x:Key="DownloadedStatusBrush" Color="#89CFF0"/>
     <SolidColorBrush x:Key="LatestDownloadedStatusBrush" Color="#89CFF0"/>
     <SolidColorBrush x:Key="UpdateAvailableStatusBrush" Color="#FFD700"/>
     <SolidColorBrush x:Key="NotDownloadedStatusBrush" Color="Gray"/>
+
+
+
+    <!-- Window -->
+    <Style TargetType="Window">
+        <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!-- General Text -->
+    <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!-- Input Boxes -->
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <Style TargetType="PasswordBox">
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
 
 
     <!-- ComboBox Toggle Button -->
@@ -60,35 +92,8 @@
                       VerticalScrollBarVisibility="Hidden" />
         </Border>
     </ControlTemplate>
-
-
-    <!-- Window -->
-    <Style TargetType="Window">
-        <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-    </Style>
-
-    <!-- General Text -->
-    <Style TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-    </Style>
-
-    <!-- Input Boxes -->
-    <Style TargetType="TextBox">
-        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="4" />
-    </Style>
-
-    <Style TargetType="PasswordBox">
-        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="4" />
-    </Style>
+    
+    
 
     <!-- ComboBox -->
     <Style TargetType="ComboBox">
@@ -279,29 +284,6 @@
         </Style.Triggers>
     </Style>
 
-    <!-- DataGrid -->
-    <Style TargetType="DataGrid">
-        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="GridLinesVisibility" Value="None"/>
-        <Setter Property="RowBackground" Value="Transparent"/>
-        <Setter Property="AlternatingRowBackground" Value="#252526"/>
-    </Style>
-
-    <Style TargetType="DataGridRow">
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="Background" Value="Transparent" />
-        <Style.Triggers>
-            <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="{StaticResource ListItemSelectedBrush}" />
-                <Setter Property="Foreground" Value="White"/>
-            </Trigger>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource ListItemHoverBrush}" />
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
     <!-- TabControl -->
     <Style TargetType="TabControl">
         <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}"/>
@@ -365,6 +347,50 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+
+    <!-- DataGrid -->
+    <Style TargetType="DataGrid">
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="GridLinesVisibility" Value="None"/>
+        <Setter Property="RowBackground" Value="Transparent"/>
+        <Setter Property="AlternatingRowBackground" Value="#252526"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+    </Style>
+
+    <!-- DataGridCell -->
+    <Style TargetType="DataGridCell">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0.5" />
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{StaticResource ListItemSelectedBrush}" />
+                <Setter Property="Foreground" Value="White" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource ListItemHoverBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <!-- DataGridRow -->
+    <Style TargetType="DataGridRow">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{StaticResource ListItemSelectedBrush}" />
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource ListItemHoverBrush}" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- DataGridColumnHeader -->
