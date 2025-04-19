@@ -71,7 +71,9 @@
                                 <TextBlock Text="{Binding Status}"
                                            Padding="4"
                                            FontWeight="SemiBold"
-                                           HorizontalAlignment="Left">
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           TextAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
@@ -98,8 +100,17 @@
 
 
                     <!-- Files Downloaded Column -->
-                    <GridViewColumn Header="Files Downloaded" Width="140"
-                                    DisplayMemberBinding="{Binding DownloadedFileCount}" />
+                    <GridViewColumn Header="Files Downloaded" Width="140">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DownloadedFileCount}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
                 </GridView>
             </ListView.View>
         </ListView>

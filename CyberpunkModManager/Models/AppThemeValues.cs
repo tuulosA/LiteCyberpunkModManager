@@ -5,6 +5,7 @@ namespace CyberpunkModManager.Models
 {
     public static class AppThemeValues
     {
-        public static Array All => Enum.GetValues(typeof(AppTheme));
+        public static AppTheme[] All => (AppTheme[])Enum.GetValues(typeof(AppTheme));
+
     }
 }
