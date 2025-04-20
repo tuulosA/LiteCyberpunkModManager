@@ -75,8 +75,6 @@ namespace CyberpunkModManager.Services
         }
 
 
-
-
         public async Task<string?> GetDownloadLinkAsync(string game, int modId, int fileId)
         {
             var url = $"{BaseUrl}/games/{game}/mods/{modId}/files/{fileId}/download_link.json";

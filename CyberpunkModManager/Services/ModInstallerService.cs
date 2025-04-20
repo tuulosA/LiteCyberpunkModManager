@@ -92,8 +92,6 @@ namespace CyberpunkModManager.Services
                     foreach (var file in allFiles)
                     {
 
-
-
                         string relativePath;
 
                         // normalize prefix
@@ -122,10 +120,6 @@ namespace CyberpunkModManager.Services
                             relativePath = Path.GetRelativePath(tempExtractDir, file);
                         }
 
-
-
-
-
                         string targetPath = Path.Combine(GameDir, relativePath);
                         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
                         File.Copy(file, targetPath, overwrite: true);
@@ -148,9 +142,6 @@ namespace CyberpunkModManager.Services
             }
         }
 
-
-
-
         private static string GetCommonTopLevelFolder(IEnumerable<string> filePaths, string root)
         {
             var relativePaths = filePaths
@@ -166,9 +157,6 @@ namespace CyberpunkModManager.Services
 
             return allMatch ? prefix + Path.DirectorySeparatorChar : "";
         }
-
-
-
 
         public static bool UninstallMod(string modName, string fileName)
         {
@@ -210,7 +198,6 @@ namespace CyberpunkModManager.Services
         }
 
 
-
         private static void SaveInstallRecord(string modName, string fileName, List<string> paths)
         {
             List<InstalledGameFile> list = new();
@@ -239,8 +226,6 @@ namespace CyberpunkModManager.Services
             var options = new JsonSerializerOptions { WriteIndented = true };
             File.WriteAllText(InstalledJsonPath, JsonSerializer.Serialize(list, options));
         }
-
-
 
 
     }

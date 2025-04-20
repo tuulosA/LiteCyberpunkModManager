@@ -27,6 +27,31 @@ namespace CyberpunkModManager.ViewModels
             set { _statusMessage = value; OnPropertyChanged(); }
         }
 
+        private string _searchText = "";
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                _searchText = value;
+                OnPropertyChanged();
+                ApplyFilters();
+            }
+        }
+
+        private string? _selectedCategory;
+        public string? SelectedCategory
+        {
+            get => _selectedCategory;
+            set
+            {
+                _selectedCategory = value;
+                OnPropertyChanged();
+                ApplyFilters();
+            }
+        }
+
+        public ObservableCollection<string> AvailableCategories { get; set; } = new();
 
 
         public ModListViewModel(NexusApiService apiService)
@@ -55,7 +80,7 @@ namespace CyberpunkModManager.ViewModels
                     }
                     catch
                     {
-
+                        // silently ignore fetch failure
                     }
 
                     if (fileCount > 0)
@@ -66,7 +91,7 @@ namespace CyberpunkModManager.ViewModels
                         }
                         else
                         {
-                            status = "Downloaded"; // fallback when API fails but files are installed
+                            status = "Downloaded";
                         }
                     }
 
@@ -82,16 +107,51 @@ namespace CyberpunkModManager.ViewModels
 
             var modDisplays = await Task.WhenAll(tasks);
 
+            Mods.Clear();
             foreach (var modDisplay in modDisplays)
             {
                 Mods.Add(modDisplay);
             }
 
+            // update available categories for filtering
+            var distinctCategories = modDisplays
+                .Select(m => m.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
+            AvailableCategories.Clear();
+            AvailableCategories.Add("All");
+
+            foreach (var category in distinctCategories)
+            {
+                AvailableCategories.Add(category);
+            }
+
+            SelectedCategory = "All";
+            ApplyFilters();
+
             StatusMessage = $"Mods loaded ({modDisplays.Length}).";
         }
 
 
+        private void ApplyFilters()
+        {
+            ModsGrouped.Filter = obj =>
+            {
+                if (obj is not ModDisplay mod) return false;
 
+                bool matchesSearch = string.IsNullOrWhiteSpace(SearchText) ||
+                                     mod.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+
+                bool matchesCategory = SelectedCategory == "All" || SelectedCategory == null ||
+                                       mod.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase);
+
+                return matchesSearch && matchesCategory;
+            };
+
+            ModsGrouped.Refresh();
+        }
 
 
         public async Task LoadTrackedModsFromCacheFirstAsync()
@@ -173,8 +233,6 @@ namespace CyberpunkModManager.ViewModels
         }
 
 
-
-
         private List<InstalledModInfo> LoadInstalledMetadata()
         {
             var metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
@@ -242,7 +300,6 @@ namespace CyberpunkModManager.ViewModels
 
             RefreshModList();
         }
-
 
 
         public void RefreshModList()

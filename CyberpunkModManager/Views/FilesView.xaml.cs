@@ -80,8 +80,6 @@ namespace CyberpunkModManager.Views
         }
 
 
-
-
         private void UninstallSelected_Click(object sender, RoutedEventArgs e)
         {
             var selectedMods = DownloadedFilesGrid.SelectedItems.Cast<InstalledModDisplay>().ToList();
@@ -103,7 +101,6 @@ namespace CyberpunkModManager.Views
             DownloadedFilesGrid.Items.Refresh();
             MessageBox.Show("Selected mods uninstalled.", "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-
 
 
         private void ModName_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -133,7 +130,6 @@ namespace CyberpunkModManager.Views
                 }
             }
         }
-
 
 
     }

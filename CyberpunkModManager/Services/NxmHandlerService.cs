@@ -75,7 +75,6 @@ namespace CyberpunkModManager.Services
         }
 
 
-
         private async Task<DateTime> GetFileUploadTimeAsync(int modId, int fileId)
         {
             string url = $"{ApiBase}/games/{Game}/mods/{modId}/files/{fileId}.json";
@@ -107,8 +106,6 @@ namespace CyberpunkModManager.Services
 
             return DateTime.UtcNow;
         }
-
-
 
 
         private async Task DownloadAndTrackAsync(int modId, int fileId, string key, string expires)
@@ -255,10 +252,6 @@ namespace CyberpunkModManager.Services
 
             MessageBox.Show($"Successfully downloaded: {fileName}", "NXM Download", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-
-
-
-
 
 
         private async Task<string> GetModNameAsync(int modId)

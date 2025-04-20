@@ -61,7 +61,6 @@ namespace CyberpunkModManager.Views
 
         }
 
-
         private async void DownloadFiles_Click(object sender, RoutedEventArgs e)
         {
             if (ModsListView.SelectedItem is not ModDisplay selected)
@@ -116,7 +115,6 @@ namespace CyberpunkModManager.Views
                 MessageBox.Show("Download completed successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-
 
         private async void ManageFiles_Click(object sender, RoutedEventArgs e)
         {
@@ -241,7 +239,6 @@ namespace CyberpunkModManager.Views
         }
 
 
-
         private void ModsListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (ModsListView.SelectedItem is ModDisplay selected)
@@ -264,8 +261,6 @@ namespace CyberpunkModManager.Views
                 }
             }
         }
-
-
 
 
     }

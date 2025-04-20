@@ -41,8 +41,6 @@ namespace CyberpunkModManager.Views
             PopulateFileList();
         }
 
-
-
         public async Task SetProgressAsync(double percentage)
         {
             DownloadProgressBar.Visibility = Visibility.Visible;
@@ -247,7 +245,6 @@ namespace CyberpunkModManager.Views
 
             _selectedFileNames.Add(baseName);
         }
-
 
 
         private void Checkbox_Unchecked(object sender, RoutedEventArgs e)
