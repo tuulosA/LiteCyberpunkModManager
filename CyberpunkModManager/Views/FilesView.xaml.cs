@@ -98,7 +98,7 @@ namespace CyberpunkModManager.Views
 
             }
 
-            DownloadedFilesGrid.Items.Refresh(); // ✅ Refresh the UI
+            DownloadedFilesGrid.Items.Refresh();
             MessageBox.Show("Selected mods uninstalled.", "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

@@ -55,7 +55,7 @@ namespace CyberpunkModManager.ViewModels
                     }
                     catch
                     {
-                        // Silent fail — assume API returned 429 or similar
+
                     }
 
                     if (fileCount > 0)
@@ -151,7 +151,7 @@ namespace CyberpunkModManager.ViewModels
 
         private async Task<List<Mod>?> TryFetchFromApiAsync()
         {
-            // Reset rate-limit warning flag before retry
+            // reset rate-limit warning flag before retry
             typeof(NexusApiService)
                 .GetField("_localRateLimitShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
                 ?.SetValue(null, false);
@@ -197,7 +197,7 @@ namespace CyberpunkModManager.ViewModels
             if (!installedForMod.Any() || latestFiles.Count == 0)
                 return "Not Downloaded";
 
-            // Check for matching filename updates
+            // check for matching filename updates
             foreach (var installed in installedForMod)
             {
                 var newerSameName = latestFiles.FirstOrDefault(remote =>
@@ -208,7 +208,7 @@ namespace CyberpunkModManager.ViewModels
                     return "Update Available!";
             }
 
-            // If any installed file is the latest by timestamp
+            // if any installed file is the latest by timestamp
             var newestRemote = latestFiles.OrderByDescending(f => f.UploadedTimestamp).FirstOrDefault();
             if (newestRemote != null && installedForMod.Any(i =>
                 i.FileName.Equals(newestRemote.FileName, StringComparison.OrdinalIgnoreCase) &&
@@ -217,13 +217,12 @@ namespace CyberpunkModManager.ViewModels
                 return "Latest Downloaded";
             }
 
-            // Default case
             return "Downloaded";
         }
 
         public async Task UpdateModStatusAsync(int modId)
         {
-            var installed = LoadInstalledMetadata(); // Reloads from disk every time
+            var installed = LoadInstalledMetadata(); // reloads from disk every time
             var remoteFiles = await _apiService.GetModFilesAsync("cyberpunk2077", modId);
 
             var modDisplay = Mods.FirstOrDefault(m => m.ModId == modId);

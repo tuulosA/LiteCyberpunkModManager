@@ -23,13 +23,13 @@ namespace CyberpunkModManager.Views
         private readonly Dictionary<CheckBox, string> _checkboxFileNames = new();
         private readonly HashSet<string> _selectedFileNames = new();
         private readonly int _modId;
-        private readonly string _modName; // ✅ Store actual mod name
-        private readonly ModListViewModel _viewModel; // 💡 Reference to update mod status
+        private readonly string _modName; 
+        private readonly ModListViewModel _viewModel; 
 
 
         public DownloadFileWindow(List<ModFile> files, List<InstalledModInfo> downloadedFiles, int modId, string modName, ModListViewModel viewModel)
         {
-            ThemeHelper.ApplyThemeTo(this); // ✅ Apply current theme
+            ThemeHelper.ApplyThemeTo(this); 
             InitializeComponent();
 
             _files = files;
@@ -85,7 +85,7 @@ namespace CyberpunkModManager.Views
                 var downloadUrl = await api.GetDownloadLinkAsync("cyberpunk2077", _modId, fileId);
                 if (downloadUrl == null) continue;
 
-                string sanitizedModFolder = PathUtils.SanitizeModName(_modName); // ✅ use actual mod name for folder
+                string sanitizedModFolder = PathUtils.SanitizeModName(_modName);
                 string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModFolder);
                 Directory.CreateDirectory(modFolderPath);
 
@@ -101,7 +101,7 @@ namespace CyberpunkModManager.Views
                 bool success = await api.DownloadFileAsync(downloadUrl, savePath, progress);
                 if (success)
                 {
-                    SaveDownloadMetadata(_modId, _modName, file); // ✅ Use correct mod name
+                    SaveDownloadMetadata(_modId, _modName, file);
                     anySuccess = true;
                 }
             }
@@ -110,10 +110,10 @@ namespace CyberpunkModManager.Views
 
             if (anySuccess)
             {
-                await _viewModel.UpdateModStatusAsync(_modId); // ✅ Refresh actual status
+                await _viewModel.UpdateModStatusAsync(_modId);
             }
 
-            // Look for FilesView and tell it to refresh
+            // look for FilesView and tell it to refresh
             if (Application.Current.MainWindow is MainWindow mainWindow)
             {
                 if (mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
@@ -133,7 +133,7 @@ namespace CyberpunkModManager.Views
             var entry = new InstalledModInfo
             {
                 ModId = modId,
-                ModName = modName, // ✅ Correct mod name stored
+                ModName = modName,
                 FileId = file.FileId,
                 FileName = file.FileName,
                 UploadedTimestamp = file.UploadedTimestamp
@@ -188,7 +188,7 @@ namespace CyberpunkModManager.Views
                         TextWrapping = TextWrapping.Wrap,
                         Width = 550,
                         Foreground = (Brush)Application.Current.Resources["TextBrush"],
-                        Background = Brushes.Transparent // Optional: looks cleaner
+                        Background = Brushes.Transparent
                     },
                     Tag = file.FileId,
                     Margin = new Thickness(5),
@@ -226,10 +226,10 @@ namespace CyberpunkModManager.Views
 
             string baseName = Path.GetFileNameWithoutExtension(fullName);
 
-            // Check if the baseName is already selected
+            // check if the baseName is already selected
             if (_selectedFileNames.Contains(baseName))
             {
-                // Find and uncheck the previously selected checkbox with the same base name
+                // find and uncheck the previously selected checkbox with the same base name
                 var previousCheckbox = _checkboxFileNames
                     .Where(kv => Path.GetFileNameWithoutExtension(kv.Value) == baseName && kv.Key.IsChecked == true && kv.Key != newlyChecked)
                     .Select(kv => kv.Key)
@@ -245,7 +245,6 @@ namespace CyberpunkModManager.Views
                 }
             }
 
-            // Add the new baseName to the selected list
             _selectedFileNames.Add(baseName);
         }
 

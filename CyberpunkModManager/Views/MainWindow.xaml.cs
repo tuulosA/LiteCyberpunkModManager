@@ -16,10 +16,8 @@ namespace CyberpunkModManager.Views
         {
             InitializeComponent();
 
-            // Load settings
             _settings = SettingsService.LoadSettings();
 
-            // Set dark background if using Dark theme
             if (Application.Current.Resources["WindowBackgroundBrush"] is Brush brush)
             {
                 Background = brush;
@@ -29,19 +27,15 @@ namespace CyberpunkModManager.Views
                 Background = SystemColors.WindowBrush;
             }
 
-
-            // Warn if API key is missing
             if (string.IsNullOrWhiteSpace(_settings.NexusApiKey))
             {
                 MessageBox.Show("Please enter your Nexus Mods API key in the Settings tab.", "API Key Missing");
             }
 
-            // Create views
             _settingsView = new SettingsView();
             _modListView = new ModListView();
             _filesView = new FilesView();
 
-            // Assign views
             SettingsTabContent.Content = _settingsView;
             ModsTabContent.Content = _modListView;
             FilesTabContent.Content = _filesView;

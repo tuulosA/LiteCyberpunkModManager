@@ -110,7 +110,6 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <!-- Define two columns: content and arrow -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="20" />
@@ -320,11 +319,8 @@
                     <Grid ClipToBounds="true" SnapsToDevicePixels="true">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <!-- Tab headers -->
                             <RowDefinition Height="1"/>
-                            <!-- Separator line -->
                             <RowDefinition Height="*"/>
-                            <!-- Content -->
                         </Grid.RowDefinitions>
 
                         <!-- Tab headers -->
@@ -334,7 +330,6 @@
                         IsItemsHost="true"
                         Panel.ZIndex="1"
                         Margin="0,0,0,0" />
-                        <!-- Remove -1 margin here -->
 
                         <!-- Separator line -->
                         <Border Grid.Row="1"
@@ -488,17 +483,14 @@
                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                     </Border>
                     <ControlTemplate.Triggers>
-                        <!-- Hover -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="{StaticResource ListItemHoverBrush}" />
                             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
                         </Trigger>
-                        <!-- Pressed -->
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="#505050"/>
                             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
                         </Trigger>
-                        <!-- Disabled -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}" />
                         </Trigger>

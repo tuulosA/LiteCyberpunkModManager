@@ -21,7 +21,6 @@
                   BorderThickness="0">
 
             <DataGrid.ColumnWidth>*</DataGrid.ColumnWidth>
-            <!-- Optional: Can be set on DataGrid -->
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Mod Name" Binding="{Binding ModName}" Width="3*">

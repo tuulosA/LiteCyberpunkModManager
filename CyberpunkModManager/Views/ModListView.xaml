@@ -17,14 +17,12 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Unified button bar with right-aligned Tracking Centre -->
         <Grid Grid.Row="0" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left-side buttons -->
             <StackPanel Orientation="Horizontal" Grid.Column="0">
                 <Button Content="Fetch Tracked Mods"
                         Width="150"
@@ -42,7 +40,6 @@
                         Click="ManageFiles_Click"/>
             </StackPanel>
 
-            <!-- Right-side button -->
             <Button Content="Tracking Centre"
                     Width="140"
                     Height="30"
@@ -51,11 +48,11 @@
                     HorizontalAlignment="Right"/>
         </Grid>
 
-        <!-- Mod list -->
         <ListView Grid.Row="1"
-                  Name="ModsListView"
-                  ItemsSource="{Binding ModsGrouped}"
-                  Margin="0,5,0,5">
+          Name="ModsListView"
+          ItemsSource="{Binding ModsGrouped}"
+          Margin="0,5,0,5"
+          MouseDoubleClick="ModsListView_MouseDoubleClick">
             <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
@@ -68,7 +65,6 @@
 
             <ListView.View>
                 <GridView>
-                    <!-- Mod Name Column -->
                     <GridViewColumn Header="Mod Name">
                         <GridViewColumn.Width>
                             <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=ListView}"
@@ -79,8 +75,6 @@
                             <Binding Path="Name" />
                         </GridViewColumn.DisplayMemberBinding>
                     </GridViewColumn>
-
-                    <!-- Status Column -->
                     <GridViewColumn Header="Status" Width="180">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
@@ -113,8 +107,6 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-
-                    <!-- Files Downloaded Column -->
                     <GridViewColumn Header="Files Downloaded" Width="140">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
@@ -128,8 +120,6 @@
                 </GridView>
             </ListView.View>
         </ListView>
-
-        <!-- Status Message -->
         <TextBlock Grid.Row="2"
                    Text="{Binding StatusMessage}"
                    Margin="0,5,0,0"

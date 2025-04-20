@@ -21,7 +21,6 @@ namespace CyberpunkModManager
             }
             else
             {
-                // Explicitly load light theme resource dictionary
                 themeDict.Source = new Uri("/CyberpunkModManager;component/Resources/LightTheme.xaml", UriKind.Relative);
             }
 

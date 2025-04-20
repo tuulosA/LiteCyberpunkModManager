@@ -21,7 +21,6 @@ namespace CyberpunkModManager.Helpers
                 };
                 window.Resources.MergedDictionaries.Add(darkTheme);
 
-                // Optional: set dark background directly if needed
                 if (window.TryFindResource("WindowBackgroundBrush") is System.Windows.Media.Brush bg)
                 {
                     window.Background = bg;
@@ -29,8 +28,6 @@ namespace CyberpunkModManager.Helpers
             }
             else
             {
-                // Light theme = just default system — no resource dictionary
-                // Optionally set background to default system
                 window.Background = SystemColors.WindowBrush;
             }
         }

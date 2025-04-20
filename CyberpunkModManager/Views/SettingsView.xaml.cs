@@ -44,7 +44,7 @@ namespace CyberpunkModManager.Views
         {
             var appResources = Application.Current.Resources.MergedDictionaries;
 
-            // Remove existing themes
+            // remove existing themes
             var existingThemes = appResources.Where(dict =>
                 dict.Source != null &&
                 (dict.Source.OriginalString.Contains("DarkTheme.xaml") || dict.Source.OriginalString.Contains("LightTheme.xaml"))
@@ -53,7 +53,7 @@ namespace CyberpunkModManager.Views
             foreach (var dict in existingThemes)
                 appResources.Remove(dict);
 
-            // Apply new theme
+            // apply new theme
             var themeDict = new ResourceDictionary();
             if (theme == AppTheme.Dark)
             {
@@ -68,12 +68,12 @@ namespace CyberpunkModManager.Views
 
             appResources.Add(themeDict);
 
-            // Update the main window background live
+            // update the main window background live
             if (Application.Current.MainWindow is Window mainWindow)
             {
                 var brush = Application.Current.Resources["WindowBackgroundBrush"] as Brush;
 
-                // Fallback to default if not found (like in light theme)
+                // fallback to default if not found
                 mainWindow.Background = brush ?? SystemColors.WindowBrush;
             }
 

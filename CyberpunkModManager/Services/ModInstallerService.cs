@@ -29,7 +29,6 @@ namespace CyberpunkModManager.Services
             installedPaths = new();
             string tempExtractDir = Path.Combine(Path.GetTempPath(), $"ModInstall_{Guid.NewGuid()}");
 
-            // ✅ Accept only .zip, .rar, or .7z
             string ext = Path.GetExtension(zipPath).ToLowerInvariant();
             if (ext != ".zip" && ext != ".rar" && ext != ".7z")
             {
@@ -39,7 +38,7 @@ namespace CyberpunkModManager.Services
 
             try
             {
-                Directory.CreateDirectory(tempExtractDir); // 🔧 Ensure extraction directory exists
+                Directory.CreateDirectory(tempExtractDir);
 
                 using var archive = ArchiveFactory.Open(zipPath);
                 var fileEntries = archive.Entries.Where(entry => !entry.IsDirectory).ToList();
@@ -57,7 +56,7 @@ namespace CyberpunkModManager.Services
                     currentFile++;
                     int progress = (int)((currentFile / (double)totalFiles) * 100);
 
-                    onExtractProgress?.Invoke(progress, entry.Key);
+                    onExtractProgress?.Invoke(progress, entry.Key!);
                 }
             }
             catch (Exception ex)
@@ -97,23 +96,23 @@ namespace CyberpunkModManager.Services
 
                         string relativePath;
 
-                        // Normalize prefix
+                        // normalize prefix
                         string normalizedPrefix = commonPrefix.Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-                        // Check if it's a single root folder
+                        // check if a single root folder
                         bool allUnderOneTopLevel = allFiles
                             .Select(f => Path.GetRelativePath(tempExtractDir, f))
                             .All(rel => rel.StartsWith(normalizedPrefix + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
 
-                        // Protected folders we never want to strip
+                        // protected folders we never want to strip
                         string[] protectedRoots = { "r6", "archive", "red4ext", "bin", "engine" };
 
-                        // Check if first folder is a protected root
+                        // check if first folder is a protected root
                         bool containsProtectedRoot = allFiles
                             .Select(f => Path.GetRelativePath(tempExtractDir, f).Split(Path.DirectorySeparatorChar)[0].ToLowerInvariant())
                             .Any(folder => protectedRoots.Contains(folder));
 
-                        // Strip only if all files are under a single non-protected top folder
+                        // strip only if all files are under a single non-protected top folder
                         if (!string.IsNullOrEmpty(commonPrefix) && allUnderOneTopLevel && !containsProtectedRoot)
                         {
                             relativePath = Path.GetRelativePath(Path.Combine(tempExtractDir, commonPrefix), file);
@@ -225,7 +224,7 @@ namespace CyberpunkModManager.Services
                 catch { }
             }
 
-            // ❌ Only remove the entry for this specific file, not the whole mod
+            // only remove the entry for specific file, not the whole mod
             list.RemoveAll(m =>
                 m.ModName.Equals(modName, StringComparison.OrdinalIgnoreCase) &&
                 m.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase));

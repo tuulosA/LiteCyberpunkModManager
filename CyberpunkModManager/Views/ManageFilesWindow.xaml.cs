@@ -14,7 +14,7 @@ namespace CyberpunkModManager.Views
 
         public ManageFilesWindow(List<string> installedFilePaths)
         {
-            ThemeHelper.ApplyThemeTo(this); // ✅ Apply current theme
+            ThemeHelper.ApplyThemeTo(this);
             InitializeComponent();
 
             foreach (var path in installedFilePaths)

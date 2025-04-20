@@ -12,7 +12,7 @@ namespace CyberpunkModManager.Services
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "https://api.nexusmods.com/v1";
         private readonly string _apiKey;
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(2); // Limit to 2 concurrent API calls
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(2);
         [ThreadStatic] private static bool _localRateLimitShown;
 
         public NexusApiService(string apiKey)
@@ -56,7 +56,7 @@ namespace CyberpunkModManager.Services
 
                 if (!_localRateLimitShown)
                 {
-                    _localRateLimitShown = true; // Only once per thread/task
+                    _localRateLimitShown = true;
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         MessageBox.Show(
@@ -164,34 +164,38 @@ namespace CyberpunkModManager.Services
                 var json = await response.Content.ReadAsStringAsync();
                 var root = JsonDocument.Parse(json).RootElement;
 
-                var tasks = root.EnumerateArray().Select(async entry =>
-                {
-                    await _semaphore.WaitAsync();
-                    try
+                var tasks = root.EnumerateArray()
+                    .Where(entry => entry.TryGetProperty("domain_name", out var domainProp) &&
+                                    domainProp.GetString() == game) // filter by domain name
+                    .Select(async entry =>
                     {
-                        if (entry.TryGetProperty("mod_id", out var modIdElement) && modIdElement.TryGetInt32(out int modId))
+                        await _semaphore.WaitAsync();
+                        try
                         {
-                            Console.WriteLine($"Fetching details for Mod ID: {modId}");
-                            var modDetails = await GetModDetailsAsync(game, modId);
-                            if (modDetails != null)
+                            if (entry.TryGetProperty("mod_id", out var modIdElement) &&
+                        modIdElement.TryGetInt32(out int modId))
                             {
-                                lock (mods) mods.Add(modDetails);
+                                Console.WriteLine($"Fetching details for Mod ID: {modId}");
+                                var modDetails = await GetModDetailsAsync(game, modId);
+                                if (modDetails != null)
+                                {
+                                    lock (mods) mods.Add(modDetails);
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"Mod details not found or failed to parse for Mod ID: {modId}");
+                                }
                             }
                             else
                             {
-                                Console.WriteLine($"Mod details not found or failed to parse for Mod ID: {modId}");
+                                Console.WriteLine("mod_id not found or invalid in tracked entry.");
                             }
                         }
-                        else
+                        finally
                         {
-                            Console.WriteLine("mod_id not found or invalid in tracked entry.");
+                            _semaphore.Release();
                         }
-                    }
-                    finally
-                    {
-                        _semaphore.Release();
-                    }
-                });
+                    });
 
                 await Task.WhenAll(tasks);
                 Console.WriteLine($"Successfully fetched {mods.Count} tracked mods.");
@@ -203,6 +207,7 @@ namespace CyberpunkModManager.Services
                 return mods;
             }
         }
+
 
         public async Task<Mod?> GetModDetailsAsync(string game, int modId)
         {

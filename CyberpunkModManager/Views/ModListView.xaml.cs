@@ -48,14 +48,14 @@ namespace CyberpunkModManager.Views
 
         private async void ModListView_Loaded(object sender, RoutedEventArgs e)
         {
-            Loaded -= ModListView_Loaded; // Run only once
+            Loaded -= ModListView_Loaded; // run only once
 
-            await _viewModel.LoadTrackedModsFromCacheFirstAsync(); // Startup
+            await _viewModel.LoadTrackedModsFromCacheFirstAsync(); // startup
         }
 
         private async void FetchMods_Click(object sender, RoutedEventArgs e)
         {
-            await _viewModel.LoadTrackedModsFromApiFirstAsync(); // User-triggered fetch
+            await _viewModel.LoadTrackedModsFromApiFirstAsync(); // user-triggered fetch
 
         }
 
@@ -110,7 +110,7 @@ namespace CyberpunkModManager.Views
 
             if (result == true)
             {
-                await _viewModel.UpdateModStatusAsync(modId); // ✅ Force async status check
+                await _viewModel.UpdateModStatusAsync(modId);
                 MessageBox.Show("Download completed successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
@@ -229,7 +229,6 @@ namespace CyberpunkModManager.Views
                 MessageBox.Show(summary, "Files Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
                 await _viewModel.UpdateModStatusAsync(selected.ModId);
 
-                // Optional: refresh Files tab UI
                 if (Application.Current.MainWindow is MainWindow mainWindow &&
                     mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
                     filesTab.Content is FilesView filesView)
@@ -238,6 +237,31 @@ namespace CyberpunkModManager.Views
                 }
             }
         }
+
+
+
+        private void ModsListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (ModsListView.SelectedItem is ModDisplay selected)
+            {
+                int modId = selected.ModId;
+                string url = $"https://www.nexusmods.com/cyberpunk2077/mods/{modId}?tab=files";
+
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = url,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to open mod page.\n\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
 
 
 
