@@ -40,6 +40,7 @@ Navigate to the **Mods** tab and click **"Fetch Tracked Mods"** to populate your
 You can now:
 - See **status** of mods (e.g., *Downloaded*, *Update Available!*, etc.)
 - **Filter** by mod categories
+- **Search** mods by name
 <img width="818" alt="mod list status messages" src="https://github.com/user-attachments/assets/5b6dadb1-18c9-4d15-986a-4caafd4bd703" />
 
 
