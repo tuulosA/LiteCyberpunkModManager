@@ -7,10 +7,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AssemblyName>LiteCPMM</AssemblyName>
+    <ApplicationIcon>Resources\LITECPMM.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\LITECPMM.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SharpCompress" Version="0.39.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\LITECPMM.ico" />
   </ItemGroup>
 
 </Project>
