@@ -85,6 +85,24 @@ namespace CyberpunkModManager.Services
             {
                 var response = await GetAsync(url);
                 if (response == null) return null;
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show(
+                            "This feature requires a Nexus Mods Premium account.\n" +
+                            "Please log in to Nexus with a Premium account to use API-based downloads,\n" +
+                            "or use Mod Manager Download links on Nexus Mods.",
+                            "Premium Required",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information
+                        );
+                    });
+
+                    return null;
+                }
+
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();

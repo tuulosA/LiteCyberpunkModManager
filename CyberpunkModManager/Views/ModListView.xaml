@@ -97,7 +97,7 @@
                                                 <DataTrigger Binding="{Binding Status}" Value="Latest Downloaded">
                                                     <Setter Property="Foreground" Value="{DynamicResource LatestDownloadedStatusBrush}" />
                                                 </DataTrigger>
-                                                <DataTrigger Binding="{Binding Status}" Value="Not Installed">
+                                                <DataTrigger Binding="{Binding Status}" Value="Not Downloaded">
                                                     <Setter Property="Foreground" Value="{DynamicResource NotDownloadedStatusBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
