@@ -74,6 +74,43 @@ namespace CyberpunkModManager.Services
             }
         }
 
+
+
+        private async Task<DateTime> GetFileUploadTimeAsync(int modId, int fileId)
+        {
+            string url = $"{ApiBase}/games/{Game}/mods/{modId}/files/{fileId}.json";
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", SettingsService.LoadSettings().NexusApiKey);
+
+            try
+            {
+                var response = await _http.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Debug.WriteLine($"[WARN] Could not fetch file upload time: {response.StatusCode}");
+                    return DateTime.UtcNow;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var root = JsonDocument.Parse(json).RootElement;
+
+                if (root.TryGetProperty("uploaded_timestamp", out var timestampProp))
+                {
+                    long unixTimestamp = timestampProp.GetInt64();
+                    return DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).UtcDateTime;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ERROR] Exception fetching file upload time: {ex}");
+            }
+
+            return DateTime.UtcNow;
+        }
+
+
+
+
         private async Task DownloadAndTrackAsync(int modId, int fileId, string key, string expires)
         {
             Debug.WriteLine("Starting DownloadAndTrackAsync");
@@ -137,23 +174,17 @@ namespace CyberpunkModManager.Services
 
             string rawFileName = Path.GetFileName(new Uri(downloadUrl).LocalPath);
 
-            // strip versioning/timestamp 
+            // strip versioning/timestamp
             string nameWithoutExt = Path.GetFileNameWithoutExtension(rawFileName);
             string[] parts = nameWithoutExt.Split('-');
-
             string strippedBase = parts[0];
             for (int i = 1; i < parts.Length; i++)
             {
                 if (!int.TryParse(parts[i], out _))
-                {
                     strippedBase += "-" + parts[i];
-                }
                 else
-                {
                     break;
-                }
             }
-
             string fileName = $"{strippedBase}.zip";
 
             string modName = await GetModNameAsync(modId);
@@ -165,10 +196,43 @@ namespace CyberpunkModManager.Services
 
             Debug.WriteLine($"Downloading file to: {fullPath}");
 
-            using var download = await _http.GetAsync(downloadUrl);
-            await using var stream = await download.Content.ReadAsStreamAsync();
-            await using var fs = new FileStream(fullPath, FileMode.Create);
-            await stream.CopyToAsync(fs);
+            var progressWindow = new ProgressBarWindow();
+            progressWindow.Owner = Application.Current.MainWindow;
+            progressWindow.Show();
+
+            try
+            {
+                using var download = await _http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
+                await using var stream = await download.Content.ReadAsStreamAsync();
+                await using var fs = new FileStream(fullPath, FileMode.Create);
+
+                var buffer = new byte[81920];
+                long totalBytes = download.Content.Headers.ContentLength ?? -1;
+                long totalRead = 0;
+                int read;
+
+                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    await fs.WriteAsync(buffer, 0, read);
+                    totalRead += read;
+
+                    if (totalBytes > 0)
+                    {
+                        double progress = totalRead / (double)totalBytes * 100;
+                        Application.Current.Dispatcher.Invoke(() => progressWindow.SetProgress(progress));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Download] Error during file stream: {ex}");
+                MessageBox.Show($"Download failed:\n\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            finally
+            {
+                progressWindow.Close();
+            }
 
             Debug.WriteLine($"Successfully downloaded file: {fileName}");
 
@@ -177,8 +241,8 @@ namespace CyberpunkModManager.Services
                 ModId = modId,
                 ModName = modName,
                 FileId = fileId,
-                FileName = fileName,
-                UploadedTimestamp = DateTime.UtcNow
+                FileName = Path.GetFileNameWithoutExtension(fileName),
+                UploadedTimestamp = await GetFileUploadTimeAsync(modId, fileId)
             };
 
             var list = new System.Collections.Generic.List<InstalledModInfo>();
@@ -202,15 +266,18 @@ namespace CyberpunkModManager.Services
 
             Debug.WriteLine($"Metadata updated for modId: {modId}, fileId: {fileId}");
 
-            // refresh FilesView
             App.Current.Dispatcher.Invoke(() =>
             {
                 App.GlobalFilesView?.RefreshFileList();
             });
 
             MessageBox.Show($"Successfully downloaded: {fileName}", "NXM Download", MessageBoxButton.OK, MessageBoxImage.Information);
-
         }
+
+
+
+
+
 
         private async Task<string> GetModNameAsync(int modId)
         {

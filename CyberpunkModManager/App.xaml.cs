@@ -35,7 +35,7 @@ namespace CyberpunkModManager
                 return;
             }
 
-            // Start the pipe server to listen for forwarded links
+            // start the pipe server to listen for forwarded links
             SingleInstanceManager.StartPipeServer(async link =>
             {
                 await Application.Current.Dispatcher.Invoke(async () =>
@@ -58,7 +58,7 @@ namespace CyberpunkModManager
             };
             Resources.MergedDictionaries.Add(themeDict);
 
-            // Optionally handle the link on initial launch
+            // handle the link on initial launch
             if (e.Args.Length > 0 && e.Args[0].StartsWith("nxm://"))
             {
                 await HandleNxmLinkAsync(e.Args[0]);
