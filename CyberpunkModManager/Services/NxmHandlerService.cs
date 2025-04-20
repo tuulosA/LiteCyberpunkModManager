@@ -135,7 +135,27 @@ namespace CyberpunkModManager.Services
                 return;
             }
 
-            string fileName = Path.GetFileName(new Uri(downloadUrl).LocalPath);
+            string rawFileName = Path.GetFileName(new Uri(downloadUrl).LocalPath);
+
+            // strip versioning/timestamp 
+            string nameWithoutExt = Path.GetFileNameWithoutExtension(rawFileName);
+            string[] parts = nameWithoutExt.Split('-');
+
+            string strippedBase = parts[0];
+            for (int i = 1; i < parts.Length; i++)
+            {
+                if (!int.TryParse(parts[i], out _))
+                {
+                    strippedBase += "-" + parts[i];
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            string fileName = $"{strippedBase}.zip";
+
             string modName = await GetModNameAsync(modId);
             Debug.WriteLine($"Resolved mod name: {modName}");
 
