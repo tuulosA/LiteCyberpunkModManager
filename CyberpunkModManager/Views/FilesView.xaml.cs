@@ -18,6 +18,8 @@ namespace CyberpunkModManager.Views
             InitializeComponent();
             _viewModel = new FilesViewModel();
             DataContext = _viewModel;
+
+            App.GlobalFilesView = this; // set global reference
         }
 
         public void RefreshFileList()

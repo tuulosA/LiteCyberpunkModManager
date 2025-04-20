@@ -27,7 +27,9 @@ namespace CyberpunkModManager.Views
             _viewModel = new ModListViewModel(_api);
             DataContext = _viewModel;
 
-            Loaded += ModListView_Loaded; // auto-trigger on load
+            App.GlobalModListViewModel = _viewModel;
+
+            Loaded += ModListView_Loaded;
         }
 
         private void OpenTrackingCentre_Click(object sender, RoutedEventArgs e)
@@ -245,6 +247,7 @@ namespace CyberpunkModManager.Views
             if (ModsListView.SelectedItem is ModDisplay selected)
             {
                 int modId = selected.ModId;
+                string modName = selected.Name;
                 string url = $"https://www.nexusmods.com/cyberpunk2077/mods/{modId}?tab=files";
 
                 try
@@ -261,7 +264,6 @@ namespace CyberpunkModManager.Views
                 }
             }
         }
-
 
 
 

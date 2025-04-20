@@ -1,32 +1,104 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using CyberpunkModManager.Models;
 using CyberpunkModManager.Services;
+using CyberpunkModManager.ViewModels;
+using Microsoft.Win32;
+using System.Diagnostics;
+using CyberpunkModManager.Views;
 
 namespace CyberpunkModManager
 {
     public partial class App : Application
     {
-        protected override void OnStartup(StartupEventArgs e)
+        public static ModListViewModel? GlobalModListViewModel { get; set; }
+        public static FilesView? GlobalFilesView { get; set; }
+
+        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            Debug.WriteLine("==== Application Startup ====");
+
+            RegisterNxmProtocol();
+
+            bool isPrimary = SingleInstanceManager.InitializeAsPrimary();
+
+            if (!isPrimary)
+            {
+                if (e.Args.Length > 0 && e.Args[0].StartsWith("nxm://"))
+                {
+                    await SingleInstanceManager.SendNxmLinkToPrimaryAsync(e.Args[0]);
+                }
+                Shutdown();
+                return;
+            }
+
+            // Start the pipe server to listen for forwarded links
+            SingleInstanceManager.StartPipeServer(async link =>
+            {
+                await Application.Current.Dispatcher.Invoke(async () =>
+                {
+                    var handler = new NxmHandlerService();
+                    await handler.HandleAsync(link);
+                });
+            });
 
             var settings = SettingsService.LoadSettings();
+            var themeUri = settings.AppTheme == AppTheme.Dark
+                ? "/CyberpunkModManager;component/Resources/DarkTheme.xaml"
+                : "/CyberpunkModManager;component/Resources/LightTheme.xaml";
 
-            var themeDict = new ResourceDictionary();
+            Debug.WriteLine($"Loading theme: {themeUri}");
 
-            if (settings.AppTheme == AppTheme.Dark)
+            var themeDict = new ResourceDictionary
             {
-                themeDict.Source = new Uri("/CyberpunkModManager;component/Resources/DarkTheme.xaml", UriKind.Relative);
-            }
-            else
-            {
-                themeDict.Source = new Uri("/CyberpunkModManager;component/Resources/LightTheme.xaml", UriKind.Relative);
-            }
-
+                Source = new Uri(themeUri, UriKind.Relative)
+            };
             Resources.MergedDictionaries.Add(themeDict);
+
+            // Optionally handle the link on initial launch
+            if (e.Args.Length > 0 && e.Args[0].StartsWith("nxm://"))
+            {
+                await HandleNxmLinkAsync(e.Args[0]);
+            }
         }
 
+        private void RegisterNxmProtocol()
+        {
+            try
+            {
+                var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\nxm");
+                key?.SetValue("", "URL:Nexus Mod Protocol");
+                key?.SetValue("URL Protocol", "");
 
+                var commandKey = key?.CreateSubKey(@"shell\open\command");
+
+                string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "CyberpunkModManager.exe";
+                commandKey?.SetValue("", $"\"{exePath}\" \"%1\"");
+
+                Debug.WriteLine($"NXM protocol registered. exePath = {exePath}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to register NXM protocol: {ex}");
+            }
+        }
+
+        private async Task HandleNxmLinkAsync(string link)
+        {
+            try
+            {
+                Debug.WriteLine($"Handling .nxm link: {link}");
+                var nxmHandler = new NxmHandlerService();
+                await nxmHandler.HandleAsync(link);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception during .nxm link handling: {ex}");
+                MessageBox.Show($"Failed to handle .nxm link:\n\n{ex.Message}", "NXM Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

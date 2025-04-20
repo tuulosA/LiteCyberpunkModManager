@@ -7,7 +7,10 @@ namespace CyberpunkModManager.Services
 {
     public class SettingsService
     {
-        private const string SettingsPath = "settings.json";
+        private static readonly string SettingsPath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "settings.json"
+        );
 
         public static Settings LoadSettings()
         {
