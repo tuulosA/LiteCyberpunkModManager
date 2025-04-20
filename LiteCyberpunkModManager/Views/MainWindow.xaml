@@ -1,0 +1,19 @@
+﻿<Window x:Class="LiteCyberpunkModManager.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Lite CPMM"
+        Height="650" Width="1100">
+    <Grid>
+        <TabControl>
+            <TabItem Header="Mods">
+                <ContentControl x:Name="ModsTabContent" />
+            </TabItem>
+            <TabItem Header="Files">
+                <ContentControl x:Name="FilesTabContent" />
+            </TabItem>
+            <TabItem Header="Settings">
+                <ContentControl x:Name="SettingsTabContent" />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
