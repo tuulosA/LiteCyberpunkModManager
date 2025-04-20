@@ -115,24 +115,6 @@ namespace CyberpunkModManager.Services
         {
             Debug.WriteLine("Starting DownloadAndTrackAsync");
 
-            string settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
-
-            if (!File.Exists(settingsPath))
-            {
-                string devPath = @"C:\Users\aleks\source\repos\CyberpunkModManager\CyberpunkModManager\bin\Debug\net8.0-windows\settings.json";
-                if (File.Exists(devPath))
-                {
-                    settingsPath = devPath;
-                    Debug.WriteLine($"[Settings] Falling back to dev settings path: {settingsPath}");
-                }
-                else
-                {
-                    Debug.WriteLine("settings.json not found at runtime or dev path.");
-                    MessageBox.Show("Settings not found. Please launch the app normally first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-            }
-
             var settings = SettingsService.LoadSettings();
 
             if (string.IsNullOrWhiteSpace(settings.NexusApiKey))
