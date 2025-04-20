@@ -29,7 +29,7 @@
 <img width="368" alt="nexus mods example track mods" src="https://github.com/user-attachments/assets/25ace659-b140-4649-a8aa-c7646d0653ff" />
 
 Go to your desired mod's page and hit `Track` to add it to your tracked list.
-
+- `Tracking Centre` button takes you to your tracked mods.
 ---
 
 ### 3. Fetch Tracked Mods
@@ -53,6 +53,7 @@ You can now:
 <img width="443" alt="download files" src="https://github.com/user-attachments/assets/890ea63e-c242-489a-9b4c-10f0f7949b25" />
 
 - If you're a **non-premium user**, click the orange "Mod manager download" button on Nexus Mods. The app will handle the `.nxm` link and track the download.
+- You can **double click** the mod name in the manager to get to the mod's page.
 
 <img width="704" alt="nexus mods example" src="https://github.com/user-attachments/assets/2acb7a29-e40a-4341-82f6-86f2a6a26e5c" />
 
