@@ -10,9 +10,19 @@ namespace LiteCyberpunkModManager.Services
     {
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "https://api.nexusmods.com/v1";
-        private readonly string _apiKey;
+        private string _apiKey;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(2);
         [ThreadStatic] private static bool _localRateLimitShown;
+
+        public void SetApiKey(string newApiKey)
+        {
+            _apiKey = newApiKey;
+
+            if (_httpClient.DefaultRequestHeaders.Contains("apikey"))
+                _httpClient.DefaultRequestHeaders.Remove("apikey");
+
+            _httpClient.DefaultRequestHeaders.Add("apikey", _apiKey);
+        }
 
         public NexusApiService(string apiKey)
         {

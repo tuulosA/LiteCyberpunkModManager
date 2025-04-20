@@ -29,15 +29,25 @@ namespace LiteCyberpunkModManager.Views
             ApiKeyBox.Password = _settings.NexusApiKey;
         }
 
-        private void SaveSettings_Click(object sender, RoutedEventArgs e)
+        private async void SaveSettings_Click(object sender, RoutedEventArgs e)
         {
             _settings.NexusApiKey = ApiKeyBox.Password;
 
             Debug.WriteLine("[SettingsView] Saving settings...");
             SettingsService.SaveSettings(_settings);
-
             ApplyTheme(_settings.AppTheme);
+
+            MessageBox.Show("Settings saved successfully.", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            if (Application.Current.MainWindow is MainWindow mainWindow &&
+                mainWindow.FindName("ModsTabContent") is ContentControl modsTab &&
+                modsTab.Content is ModListView modListView)
+            {
+                modListView.ReinitializeApiService();
+                await modListView.FetchModsFromApiAsync();
+            }
         }
+
 
         private void ApplyTheme(AppTheme theme)
         {

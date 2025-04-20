@@ -28,6 +28,18 @@ namespace LiteCyberpunkModManager.Views
             Loaded += ModListView_Loaded;
         }
 
+        public void ReinitializeApiService()
+        {
+            var updatedSettings = SettingsService.LoadSettings();
+            _api.SetApiKey(updatedSettings.NexusApiKey);
+            _viewModel.RefreshApiService(_api);
+        }
+
+        public async Task FetchModsFromApiAsync()
+        {
+            await _viewModel.LoadTrackedModsFromApiFirstAsync();
+        }
+
         private void OpenTrackingCentre_Click(object sender, RoutedEventArgs e)
         {
             try

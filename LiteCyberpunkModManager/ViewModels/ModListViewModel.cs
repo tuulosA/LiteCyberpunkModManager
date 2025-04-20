@@ -12,11 +12,16 @@ namespace LiteCyberpunkModManager.ViewModels
 {
     public class ModListViewModel : INotifyPropertyChanged
     {
-        private readonly NexusApiService _apiService;
+        private NexusApiService _apiService;
         private string _statusMessage = "Ready.";
 
         public ObservableCollection<ModDisplay> Mods { get; set; } = new();
         public ListCollectionView ModsGrouped { get; set; }
+
+        public void RefreshApiService(NexusApiService api)
+        {
+            _apiService = api;
+        }
 
         public string StatusMessage
         {
