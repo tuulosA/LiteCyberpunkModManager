@@ -237,7 +237,7 @@ namespace LiteCyberpunkModManager.ViewModels
 
         private List<InstalledModInfo> LoadInstalledMetadata()
         {
-            var metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
+            var metadataPath = PathConfig.DownloadedMods;
             if (!File.Exists(metadataPath)) return new();
 
             try

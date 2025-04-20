@@ -72,7 +72,7 @@ namespace LiteCyberpunkModManager
 
                 var commandKey = key?.CreateSubKey(@"shell\open\command");
 
-                string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "LiteCyberpunkModManager.exe";
+                string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "LiteCPMM.exe";
                 commandKey?.SetValue("", $"\"{exePath}\" \"%1\"");
 
                 Debug.WriteLine($"NXM protocol registered. exePath = {exePath}");

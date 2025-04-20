@@ -2,25 +2,22 @@
 using System.IO;
 using System.Text.Json;
 using LiteCyberpunkModManager.Models;
+using LiteCyberpunkModManager.Helpers;
 
 namespace LiteCyberpunkModManager.Services
 {
     public class SettingsService
     {
-        private static readonly string SettingsPath = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "settings.json"
-        );
 
         public static Settings LoadSettings()
         {
             try
             {
-                if (File.Exists(SettingsPath))
+                if (File.Exists(PathConfig.SettingsFile))
                 {
-                    Debug.WriteLine($"[SettingsService] Found settings.json at: {Path.GetFullPath(SettingsPath)}");
+                    Debug.WriteLine($"[SettingsService] Found settings.json at: {Path.GetFullPath(PathConfig.SettingsFile)}");
 
-                    var json = File.ReadAllText(SettingsPath);
+                    var json = File.ReadAllText(PathConfig.SettingsFile);
                     Debug.WriteLine($"[SettingsService] JSON content: {json}");
 
                     var settings = JsonSerializer.Deserialize<Settings>(json);
@@ -59,7 +56,7 @@ namespace LiteCyberpunkModManager.Services
             try
             {
                 var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(SettingsPath, json);
+                File.WriteAllText(PathConfig.SettingsFile, json);
                 Debug.WriteLine("[SettingsService] Settings saved successfully.");
             }
             catch (Exception ex)

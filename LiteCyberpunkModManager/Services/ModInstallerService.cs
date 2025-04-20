@@ -4,6 +4,8 @@ using System.Windows;
 using LiteCyberpunkModManager.Models;
 using SharpCompress.Archives;
 using SharpCompress.Common;
+using LiteCyberpunkModManager.Helpers;
+
 
 namespace LiteCyberpunkModManager.Services
 {
@@ -12,7 +14,6 @@ namespace LiteCyberpunkModManager.Services
         private static Settings Settings => SettingsService.LoadSettings();
         private static string GameDir => Settings.GameInstallationDir;
         private static string ModsDir => Settings.OutputDir;
-        private static string InstalledJsonPath => Path.Combine(ModsDir, "installed_game_files.json");
 
 
         public static bool InstallModFile(
@@ -156,11 +157,11 @@ namespace LiteCyberpunkModManager.Services
 
         public static bool UninstallMod(string modName, string fileName)
         {
-            if (!File.Exists(InstalledJsonPath)) return false;
+            if (!File.Exists(PathConfig.InstalledGameFiles)) return false;
 
             try
             {
-                var list = JsonSerializer.Deserialize<List<InstalledGameFile>>(File.ReadAllText(InstalledJsonPath)) ?? new();
+                var list = JsonSerializer.Deserialize<List<InstalledGameFile>>(File.ReadAllText(PathConfig.InstalledGameFiles)) ?? new();
                 var matchingEntries = list.Where(m =>
                     m.ModName.Equals(modName, StringComparison.OrdinalIgnoreCase) &&
                     m.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -182,7 +183,7 @@ namespace LiteCyberpunkModManager.Services
                 }
 
                 var options = new JsonSerializerOptions { WriteIndented = true };
-                File.WriteAllText(InstalledJsonPath, JsonSerializer.Serialize(list, options));
+                File.WriteAllText(PathConfig.InstalledGameFiles, JsonSerializer.Serialize(list, options));
 
                 return true;
             }
@@ -197,11 +198,11 @@ namespace LiteCyberpunkModManager.Services
         private static void SaveInstallRecord(string modName, string fileName, List<string> paths)
         {
             List<InstalledGameFile> list = new();
-            if (File.Exists(InstalledJsonPath))
+            if (File.Exists(PathConfig.InstalledGameFiles))
             {
                 try
                 {
-                    string json = File.ReadAllText(InstalledJsonPath);
+                    string json = File.ReadAllText(PathConfig.InstalledGameFiles);
                     list = JsonSerializer.Deserialize<List<InstalledGameFile>>(json) ?? new();
                 }
                 catch { }
@@ -220,7 +221,7 @@ namespace LiteCyberpunkModManager.Services
             });
 
             var options = new JsonSerializerOptions { WriteIndented = true };
-            File.WriteAllText(InstalledJsonPath, JsonSerializer.Serialize(list, options));
+            File.WriteAllText(PathConfig.InstalledGameFiles, JsonSerializer.Serialize(list, options));
         }
 
 

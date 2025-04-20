@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.IO;
 
 namespace LiteCyberpunkModManager.Models
 {
@@ -16,8 +15,6 @@ namespace LiteCyberpunkModManager.Models
         private string _gameInstallationDir = DefaultGameDir;
         private string _nexusApiKey = "";
         private AppTheme _appTheme = AppTheme.Dark;
-
-        public static string ModCachePath => Path.Combine(DefaultModsDir, "mod_cache.json");
 
         public string OutputDir
         {
@@ -73,7 +70,6 @@ namespace LiteCyberpunkModManager.Models
 
         public static string DefaultGameDir => @"C:\Program Files (x86)\Steam\steamapps\common\Cyberpunk 2077";
         public static string DefaultModsDir => System.IO.Path.Combine(DefaultGameDir, "Mods");
-        public static string ArchiveFolder => System.IO.Path.Combine(DefaultGameDir, "archive", "pc", "mod");
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

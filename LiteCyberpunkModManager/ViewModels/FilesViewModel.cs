@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
+using LiteCyberpunkModManager.Helpers;
 using LiteCyberpunkModManager.Models;
 using LiteCyberpunkModManager.Services;
 
@@ -23,8 +24,8 @@ namespace LiteCyberpunkModManager.ViewModels
 
         private void LoadDownloadedFiles()
         {
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
-            string installTrackingPath = Path.Combine(Settings.DefaultModsDir, "installed_game_files.json");
+            string metadataPath = PathConfig.DownloadedMods;
+            string installTrackingPath = PathConfig.InstalledGameFiles;
 
             if (!File.Exists(metadataPath)) return;
 

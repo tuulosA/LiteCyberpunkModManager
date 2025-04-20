@@ -6,6 +6,7 @@ using System.Windows;
 using System.Diagnostics;
 using LiteCyberpunkModManager.Models;
 using LiteCyberpunkModManager.Views;
+using LiteCyberpunkModManager.Helpers;
 
 namespace LiteCyberpunkModManager.Services
 {
@@ -119,7 +120,7 @@ namespace LiteCyberpunkModManager.Services
                 return;
             }
 
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
+            string metadataPath = PathConfig.DownloadedMods;
 
             string linkUrl = $"{ApiBase}/games/{Game}/mods/{modId}/files/{fileId}/download_link.json?key={key}&expires={expires}";
             Debug.WriteLine($"Fetching download link: {linkUrl}");

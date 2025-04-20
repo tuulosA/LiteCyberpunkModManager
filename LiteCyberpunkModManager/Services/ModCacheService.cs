@@ -1,14 +1,15 @@
 ﻿using System.IO;
 using System.Text.Json;
+using LiteCyberpunkModManager.Helpers;
 using LiteCyberpunkModManager.Models;
 
-namespace LiteCyberpunkModManager.Helpers
+namespace LiteCyberpunkModManager.Services
 {
     public static class ModCacheService
     {
         public static List<Mod>? LoadCachedMods()
         {
-            var path = Settings.ModCachePath;
+            var path = PathConfig.ModCache;
             Console.WriteLine($"[CACHE] Attempting to load mod cache from: {path}");
 
             if (!File.Exists(path)) return null;
@@ -29,7 +30,7 @@ namespace LiteCyberpunkModManager.Helpers
 
         public static void SaveCachedMods(List<Mod> mods)
         {
-            var path = Settings.ModCachePath;
+            var path = PathConfig.ModCache;
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -43,5 +44,4 @@ namespace LiteCyberpunkModManager.Helpers
             }
         }
     }
-
 }

@@ -5,6 +5,7 @@ using LiteCyberpunkModManager.Services;
 using System.IO;
 using LiteCyberpunkModManager.Models;
 using System.Diagnostics;
+using LiteCyberpunkModManager.Helpers;
 
 namespace LiteCyberpunkModManager.Views
 {

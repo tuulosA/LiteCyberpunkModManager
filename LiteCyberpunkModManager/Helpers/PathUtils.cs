@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace LiteCyberpunkModManager.Services
+namespace LiteCyberpunkModManager.Helpers
 {
     public static class PathUtils
     {

@@ -6,6 +6,7 @@ using LiteCyberpunkModManager.ViewModels;
 using System.IO;
 using System.Text.Json;
 using System.Diagnostics;
+using LiteCyberpunkModManager.Helpers;
 
 namespace LiteCyberpunkModManager.Views
 {
@@ -97,7 +98,7 @@ namespace LiteCyberpunkModManager.Views
             }
 
             List<InstalledModInfo> alreadyDownloaded = new();
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
+            string metadataPath = PathConfig.DownloadedMods;
 
             if (File.Exists(metadataPath))
             {
@@ -132,7 +133,7 @@ namespace LiteCyberpunkModManager.Views
                 return;
             }
 
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
+            string metadataPath = PathConfig.DownloadedMods;
             if (!File.Exists(metadataPath))
             {
                 MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);

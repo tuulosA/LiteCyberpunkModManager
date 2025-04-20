@@ -6,7 +6,7 @@ using LiteCyberpunkModManager.Services;
 using System.Text.Json;
 using LiteCyberpunkModManager.ViewModels;
 using System.Windows.Media;
-using LiteCyberpunkModManager.Helpers; 
+using LiteCyberpunkModManager.Helpers;
 
 namespace LiteCyberpunkModManager.Views
 {
@@ -121,9 +121,10 @@ namespace LiteCyberpunkModManager.Views
             Close();
         }
 
+
         private void SaveDownloadMetadata(int modId, string modName, ModFile file)
         {
-            string metadataPath = Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
+            string metadataPath = PathConfig.DownloadedMods;
             var entry = new InstalledModInfo
             {
                 ModId = modId,
@@ -160,6 +161,7 @@ namespace LiteCyberpunkModManager.Views
                 Console.WriteLine($"[ERROR] Failed to write metadata: {ex.Message}");
             }
         }
+
 
         private void PopulateFileList()
         {
