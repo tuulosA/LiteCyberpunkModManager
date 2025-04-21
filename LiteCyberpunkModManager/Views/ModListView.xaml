@@ -54,10 +54,12 @@
         </Grid>
 
         <ListView Grid.Row="1"
-                  Name="ModsListView"
-                  ItemsSource="{Binding ModsGrouped}"
-                  Margin="0,5,0,5"
-                  MouseDoubleClick="ModsListView_MouseDoubleClick">
+          Name="ModsListView"
+          ItemsSource="{Binding ModsGrouped}"
+          Margin="0,5,0,5"
+          MouseDoubleClick="ModsListView_MouseDoubleClick"
+          PreviewMouseLeftButtonDown="ModsListView_PreviewMouseLeftButtonDown">
+
             <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>

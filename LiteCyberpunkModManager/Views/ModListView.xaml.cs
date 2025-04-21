@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.Json;
 using System.Diagnostics;
 using LiteCyberpunkModManager.Helpers;
+using System.Windows.Input;
 
 namespace LiteCyberpunkModManager.Views
 {
@@ -125,18 +126,28 @@ namespace LiteCyberpunkModManager.Views
             }
         }
 
+        private void ModsListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // avoid interfering with double click behavior
+            if (e.ClickCount > 1)
+                return;
+
+            var item = ItemsControl.ContainerFromElement(ModsListView, e.OriginalSource as DependencyObject) as ListViewItem;
+            if (item != null && item.IsSelected)
+            {
+                // unselect if already selected
+                ModsListView.SelectedItem = null;
+                e.Handled = true;
+            }
+        }
+
+
         private async void ManageFiles_Click(object sender, RoutedEventArgs e)
         {
-            if (ModsListView.SelectedItem is not ModDisplay selected)
-            {
-                MessageBox.Show("Please select a mod to manage files for.", "No Mod Selected", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
             string metadataPath = PathConfig.DownloadedMods;
             if (!File.Exists(metadataPath))
             {
-                MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No downloaded files found.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -152,40 +163,37 @@ namespace LiteCyberpunkModManager.Views
                 return;
             }
 
-            var modEntries = metadataList.Where(m => m.ModId == selected.ModId).ToList();
-            if (modEntries.Count == 0)
-            {
-                MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
+            List<string> filePaths = new();
+            ModDisplay? selectedMod = null;
 
-            HashSet<string> allFiles = new();
-            foreach (var entry in modEntries)
+            if (ModsListView.SelectedItem is ModDisplay selected)
             {
-                string folderName = PathUtils.SanitizeModName(entry.ModName);
-                string folderPath = Path.Combine(Settings.DefaultModsDir, folderName);
-
-                if (Directory.Exists(folderPath))
+                selectedMod = selected;
+                var modEntries = metadataList.Where(m => m.ModId == selectedMod.ModId).ToList();
+                if (modEntries.Count == 0)
                 {
-                    foreach (var file in Directory.GetFiles(folderPath))
-                    {
-                        allFiles.Add(file);
-                    }
+                    MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                filePaths = GetPathsForEntries(modEntries);
+            }
+            else
+            {
+                filePaths = GetPathsForEntries(metadataList);
+                if (filePaths.Count == 0)
+                {
+                    MessageBox.Show("No downloaded files found.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
                 }
             }
 
-            if (allFiles.Count == 0)
-            {
-                MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var dialog = new ManageFilesWindow(allFiles.ToList());
+            var dialog = new ManageFilesWindow(filePaths);
             var result = dialog.ShowDialog();
 
             if (result == true && dialog.SelectedFiles.Count > 0)
             {
-                List<string> deletedFileNames = new();
+                var deletedFileNames = new List<string>();
 
                 foreach (var filePath in dialog.SelectedFiles)
                 {
@@ -193,9 +201,7 @@ namespace LiteCyberpunkModManager.Views
                     string fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
 
                     var matchingEntry = metadataList.FirstOrDefault(entry =>
-                        entry.ModId == selected.ModId &&
-                        Path.GetFileNameWithoutExtension(entry.FileName)
-                            .Equals(fileNameNoExt, StringComparison.OrdinalIgnoreCase));
+                        Path.GetFileNameWithoutExtension(entry.FileName).Equals(fileNameNoExt, StringComparison.OrdinalIgnoreCase));
 
                     if (matchingEntry != null)
                     {
@@ -215,12 +221,6 @@ namespace LiteCyberpunkModManager.Views
                     }
                 }
 
-                bool hasRemaining = metadataList.Any(e => e.ModId == selected.ModId);
-                if (!hasRemaining)
-                {
-                    selected.Status = "Not Downloaded";
-                }
-
                 try
                 {
                     var options = new JsonSerializerOptions { WriteIndented = true };
@@ -236,7 +236,9 @@ namespace LiteCyberpunkModManager.Views
                     : "No matching metadata entries were found to remove.";
 
                 MessageBox.Show(summary, "Files Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
-                await _viewModel.UpdateModStatusAsync(selected.ModId);
+
+                if (selectedMod != null)
+                    await _viewModel.UpdateModStatusAsync(selectedMod.ModId);
 
                 if (Application.Current.MainWindow is MainWindow mainWindow &&
                     mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
@@ -245,6 +247,26 @@ namespace LiteCyberpunkModManager.Views
                     filesView.RefreshFileList();
                 }
             }
+        }
+
+
+        private List<string> GetPathsForEntries(List<InstalledModInfo> entries)
+        {
+            var filePaths = new List<string>();
+            foreach (var entry in entries)
+            {
+                string folderName = PathUtils.SanitizeModName(entry.ModName);
+                string folderPath = Path.Combine(Settings.DefaultModsDir, folderName);
+
+                if (Directory.Exists(folderPath))
+                {
+                    foreach (var file in Directory.GetFiles(folderPath))
+                    {
+                        filePaths.Add(file);
+                    }
+                }
+            }
+            return filePaths;
         }
 
 

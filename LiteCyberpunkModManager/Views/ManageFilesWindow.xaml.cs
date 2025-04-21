@@ -57,6 +57,28 @@ namespace LiteCyberpunkModManager.Views
             Close();
         }
 
+        private void SelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var child in FilesPanel.Children)
+            {
+                if (child is CheckBox check)
+                {
+                    check.IsChecked = true;
+                }
+            }
+        }
+
+        private void DeselectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var child in FilesPanel.Children)
+            {
+                if (child is CheckBox check)
+                {
+                    check.IsChecked = false;
+                }
+            }
+        }
+
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
