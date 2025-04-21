@@ -145,7 +145,6 @@ namespace LiteCyberpunkModManager.Views
             }
         }
 
-
         private async void ManageFiles_Click(object sender, RoutedEventArgs e)
         {
             string metadataPath = PathConfig.DownloadedMods;
@@ -170,12 +169,9 @@ namespace LiteCyberpunkModManager.Views
             var selectedMods = ModsListView.SelectedItems.Cast<ModDisplay>().ToList();
 
             List<string> filePaths;
-            List<int> selectedModIds;
-
             if (selectedMods.Count > 0)
             {
-                // Get all mod entries for selected mods
-                selectedModIds = selectedMods.Select(m => m.ModId).ToList();
+                var selectedModIds = selectedMods.Select(m => m.ModId).ToList();
                 var selectedEntries = metadataList.Where(m => selectedModIds.Contains(m.ModId)).ToList();
 
                 if (selectedEntries.Count == 0)
@@ -188,9 +184,7 @@ namespace LiteCyberpunkModManager.Views
             }
             else
             {
-                // Show all installed files
                 filePaths = GetPathsForEntries(metadataList);
-                selectedModIds = new List<int>(); // none
                 if (filePaths.Count == 0)
                 {
                     MessageBox.Show("No downloaded files found.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -204,6 +198,7 @@ namespace LiteCyberpunkModManager.Views
             if (result == true && dialog.SelectedFiles.Count > 0)
             {
                 var deletedFileNames = new List<string>();
+                var affectedModIds = new HashSet<int>();
 
                 foreach (var filePath in dialog.SelectedFiles)
                 {
@@ -217,6 +212,7 @@ namespace LiteCyberpunkModManager.Views
                     {
                         metadataList.Remove(matchingEntry);
                         deletedFileNames.Add(fileName);
+                        affectedModIds.Add(matchingEntry.ModId);
                         Console.WriteLine($"Removed metadata entry for file: {fileName} (ID: {matchingEntry.FileId})");
                     }
 
@@ -247,11 +243,13 @@ namespace LiteCyberpunkModManager.Views
 
                 MessageBox.Show(summary, "Files Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                foreach (var modId in selectedModIds)
+                // update status of affected mods
+                foreach (var modId in affectedModIds)
                 {
                     await _viewModel.UpdateModStatusAsync(modId);
                 }
 
+                // refresh the file list
                 if (Application.Current.MainWindow is MainWindow mainWindow &&
                     mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
                     filesTab.Content is FilesView filesView)
@@ -333,6 +331,7 @@ namespace LiteCyberpunkModManager.Views
                 return;
             }
 
+            // parse the mod list
             List<(int ModId, string ModName, int FileId, string FileName)> modsToDownload;
             try
             {
@@ -350,6 +349,19 @@ namespace LiteCyberpunkModManager.Views
             {
                 MessageBox.Show($"Invalid modlist format.\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
+            }
+
+            // save the used json into the Mods folder
+            try
+            {
+                string modsDir = Settings.DefaultModsDir;
+                Directory.CreateDirectory(modsDir); // just in case
+                string savePath = Path.Combine(modsDir, "downloaded_mods.json");
+                File.WriteAllText(savePath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARN] Failed to save downloaded_mods.json: {ex.Message}");
             }
 
             var trackedModIds = await _api.GetTrackedModIdsAsync();
@@ -382,7 +394,7 @@ namespace LiteCyberpunkModManager.Views
                 progressWindow.SetModName(modName);
                 progressWindow.SetFileName(fileName);
                 progressWindow.SetFileCounter(i + 1, total);
-                progressWindow.SetFileProgress(0); // Reset file progress
+                progressWindow.SetFileProgress(0); // reset file progress
                 progressWindow.SetOverallProgress((double)completed / total * 100);
                 progressWindow.SetStatusText("Getting download link...");
 
@@ -405,7 +417,6 @@ namespace LiteCyberpunkModManager.Views
                 {
                     progressWindow.SetFileProgress(value);
 
-                    // Smooth overall progress
                     double overall = (completed + value / 100.0) / total * 100;
                     progressWindow.SetOverallProgress(overall);
                 });
@@ -428,9 +439,14 @@ namespace LiteCyberpunkModManager.Views
             progressWindow.Close();
 
             MessageBox.Show($"Mass download complete.\nSuccess: {completed - failed}, Failed: {failed}", "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            if (Application.Current.MainWindow is MainWindow mainWindow &&
+                mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
+                filesTab.Content is FilesView filesView)
+            {
+                filesView.RefreshFileList();
+            }
         }
-
-
 
 
     }
