@@ -170,7 +170,7 @@ namespace LiteCyberpunkModManager.ViewModels
             }
             else
             {
-                StatusMessage = "Loaded mods from cache.";
+                StatusMessage = "Loaded mods from cache. Checking for updates...";
             }
 
             if (mods == null || mods.Count == 0)
@@ -181,6 +181,7 @@ namespace LiteCyberpunkModManager.ViewModels
 
             await PopulateModsAsync(mods);
         }
+
 
         public async Task LoadTrackedModsFromApiFirstAsync()
         {
