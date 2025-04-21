@@ -252,11 +252,16 @@ namespace LiteCyberpunkModManager.Views
 
         private List<string> GetPathsForEntries(List<InstalledModInfo> entries)
         {
-            var filePaths = new List<string>();
+            var seenFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var filePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             foreach (var entry in entries)
             {
                 string folderName = PathUtils.SanitizeModName(entry.ModName);
                 string folderPath = Path.Combine(Settings.DefaultModsDir, folderName);
+
+                // avoid scanning the same folder multiple times
+                if (!seenFolders.Add(folderPath)) continue;
 
                 if (Directory.Exists(folderPath))
                 {
@@ -266,7 +271,8 @@ namespace LiteCyberpunkModManager.Views
                     }
                 }
             }
-            return filePaths;
+
+            return filePaths.ToList();
         }
 
 
