@@ -17,11 +17,11 @@
 ## Getting Started
 
 ### 1. Set up your settings
-<img width="818" alt="settings" src="https://github.com/user-attachments/assets/f31efe22-c8cf-4a1a-91d5-7a25f3e56f43" />
-
+<img width="818" alt="settings" src="https://github.com/user-attachments/assets/1fd6e136-cded-4e8a-827d-c66fdc577348" />
 
 - Input your **Nexus API key** (required for fetching tracked mods).
 - Set your **Game Installation Directory** and **Output Directory** if not set correctly by default.
+- Here you can **export** and **import** mod lists, as well as **clear** all your tracked mods on Nexus Mods.
 
 ---
 
