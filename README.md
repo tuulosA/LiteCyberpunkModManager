@@ -43,8 +43,7 @@ You can now:
 - See **status** of mods (e.g., *Downloaded*, *Update Available!*, etc.)
 - **Filter** by mod categories
 - **Search** mods by name
-<img width="818" alt="mod list status messages" src="https://github.com/user-attachments/assets/5b6dadb1-18c9-4d15-986a-4caafd4bd703" />
-
+<img width="819" alt="mod list status messages" src="https://github.com/user-attachments/assets/d9d94b05-cdd7-48a6-9769-7cf363182459" />
 
 ---
 
@@ -68,13 +67,15 @@ You can now:
 <img width="443" alt="manage files" src="https://github.com/user-attachments/assets/a073e4f0-a524-4d7a-b71f-b464f9b582f4" />
 
 - Multiple mods can be selected at once with ctrl+click, and then clicking `Manage Files` button lets you delete files for selected mods. Without selection all downloaded files are shown.
-<img width="818" alt="mod list filter and selection" src="https://github.com/user-attachments/assets/9514c669-ba47-43b5-8209-040d6a72293a" />
+![mod list filter and selection](https://github.com/user-attachments/assets/21758337-f8c6-4809-9089-36939ffde845)
+
 
 ---
 
 #### Mod Status Meaning
 
-<img width="818" alt="mod list status messages" src="https://github.com/user-attachments/assets/89d0fcf0-28cb-4feb-b0ab-6e7fdfbab960" />
+<img width="819" alt="mod list status messages" src="https://github.com/user-attachments/assets/7f02029b-b651-4552-af07-9c7bb87183b5" />
+
 
 - **Latest Downloaded**: The most recent overall file by timestamp is downloaded.
 - **Downloaded**: A file is downloaded, but there are some newer files uploaded by mod author.
@@ -89,13 +90,25 @@ Go to the **Files** tab to:
 - **Install** or **Uninstall** mods with one click
 - Delete specific downloaded mod files
 
-<img width="819" alt="file list" src="https://github.com/user-attachments/assets/257a91e6-59cf-4d6f-a2b6-9ee9efe90413" />
+<img width="817" alt="file list" src="https://github.com/user-attachments/assets/f19c6202-3821-4bfb-bcf2-f704023a8619" />
 
+<img width="818" alt="mass install" src="https://github.com/user-attachments/assets/e17cd20e-83c6-427e-b384-e49c109960b6" />
 
 The manager automatically handles different archive structures, including:
 - Mods packed with a clean structure like: somezip.zip/archive/pc/mod/...
 - Mods packed inside an extra folder: somezip.zip/SOMERANDOMFOLDER/archive/pc/mod/...
 - Zipped `.archive` files without normal folder structures, which get extracted to archive/pc/mod/
+
+---
+
+### For users with premium account on Nexus Mods
+
+- You can export your downloaded mod files into a **modlist.json**, which can be used for mass download.
+- Useful for sharing a mod list you have created.
+
+<img width="818" alt="mass download" src="https://github.com/user-attachments/assets/a3106406-6ff3-486f-951b-6eb940dca0f6" />
+
+
 
 ---
 
