@@ -163,24 +163,30 @@ namespace LiteCyberpunkModManager.Views
                 return;
             }
 
-            List<string> filePaths = new();
-            ModDisplay? selectedMod = null;
+            var selectedMods = ModsListView.SelectedItems.Cast<ModDisplay>().ToList();
 
-            if (ModsListView.SelectedItem is ModDisplay selected)
+            List<string> filePaths;
+            List<int> selectedModIds;
+
+            if (selectedMods.Count > 0)
             {
-                selectedMod = selected;
-                var modEntries = metadataList.Where(m => m.ModId == selectedMod.ModId).ToList();
-                if (modEntries.Count == 0)
+                // Get all mod entries for selected mods
+                selectedModIds = selectedMods.Select(m => m.ModId).ToList();
+                var selectedEntries = metadataList.Where(m => selectedModIds.Contains(m.ModId)).ToList();
+
+                if (selectedEntries.Count == 0)
                 {
-                    MessageBox.Show("No downloaded files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("No downloaded files found for selected mod(s).", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                filePaths = GetPathsForEntries(modEntries);
+                filePaths = GetPathsForEntries(selectedEntries);
             }
             else
             {
+                // Show all installed files
                 filePaths = GetPathsForEntries(metadataList);
+                selectedModIds = new List<int>(); // none
                 if (filePaths.Count == 0)
                 {
                     MessageBox.Show("No downloaded files found.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -237,8 +243,10 @@ namespace LiteCyberpunkModManager.Views
 
                 MessageBox.Show(summary, "Files Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                if (selectedMod != null)
-                    await _viewModel.UpdateModStatusAsync(selectedMod.ModId);
+                foreach (var modId in selectedModIds)
+                {
+                    await _viewModel.UpdateModStatusAsync(modId);
+                }
 
                 if (Application.Current.MainWindow is MainWindow mainWindow &&
                     mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&

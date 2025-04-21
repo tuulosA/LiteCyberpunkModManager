@@ -55,6 +55,7 @@
 
         <ListView Grid.Row="1"
           Name="ModsListView"
+          SelectionMode="Extended"
           ItemsSource="{Binding ModsGrouped}"
           Margin="0,5,0,5"
           MouseDoubleClick="ModsListView_MouseDoubleClick"
