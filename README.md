@@ -6,19 +6,20 @@
 
 ## Features
 
-- Fetch and track mods using your Nexus Mods API key (account login integration to be implemented)
-- Filter and categorize mods
+- Fetch tracked mods using your Nexus Mods API key (account login integration to be implemented)
+- Filter based on category and search mods based on name
 - Check available update status
-- Download mod files (Premium + non-premium Nexus Mods account support)
-- Install and uninstall with a single click
+- Download individual mod files (Premium + non-premium Nexus Mods account support)
+- Mass install and uninstall with a single click
 - Export and import mod lists.
+- Users with **premium** Nexus Mods accounts can mass download from imported modlists.
 
 ---
 
 ## Getting Started
 
 ### 1. Set up your settings
-<img width="818" alt="settings" src="https://github.com/user-attachments/assets/1fd6e136-cded-4e8a-827d-c66fdc577348" />
+<img width="818" alt="settings" src="https://github.com/user-attachments/assets/e792596b-2218-465f-9bcc-17ce33140c83" />
 
 - Input your **Nexus API key** (required for fetching tracked mods).
 - Set your **Game Installation Directory** and **Output Directory** if not set correctly by default.
@@ -65,6 +66,9 @@ You can now:
 - Mod files can be deleted with the `Manage Files` button:
 
 <img width="443" alt="manage files" src="https://github.com/user-attachments/assets/a073e4f0-a524-4d7a-b71f-b464f9b582f4" />
+
+- Multiple mods can be selected at once with ctrl+click, and then clicking `Manage Files` button lets you delete files for selected mods. Without selection all downloaded files are shown.
+<img width="818" alt="mod list filter and selection" src="https://github.com/user-attachments/assets/9514c669-ba47-43b5-8209-040d6a72293a" />
 
 ---
 
