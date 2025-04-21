@@ -71,8 +71,8 @@ You can now:
 
 <img width="818" alt="mod list status messages" src="https://github.com/user-attachments/assets/89d0fcf0-28cb-4feb-b0ab-6e7fdfbab960" />
 
-- **Latest Downloaded**: The most recent version (by timestamp and file name) is installed.
-- **Downloaded**: A file is downloaded, there are some newer files uploaded by mod author.
+- **Latest Downloaded**: The most recent overall file by timestamp is downloaded.
+- **Downloaded**: A file is downloaded, but there are some newer files uploaded by mod author.
 - **Update Available!**: A newer file with the same filename exists.
 - **Not Downloaded**: No file for this mod yet.
 
