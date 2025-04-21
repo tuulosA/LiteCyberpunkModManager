@@ -14,7 +14,6 @@
 
         <TextBlock x:Name="StatusText"
                    Text="Downloading file..."
-                   FontWeight="Bold"
                    Margin="0,0,0,10"
                    HorizontalAlignment="Center"
                    Foreground="{DynamicResource TextBrush}" />

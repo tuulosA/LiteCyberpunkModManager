@@ -24,34 +24,57 @@
             </Grid.ColumnDefinitions>
 
             <ScrollViewer Grid.Column="0"
-                          VerticalScrollBarVisibility="Hidden"
-                          HorizontalScrollBarVisibility="Auto">
-                <WrapPanel VerticalAlignment="Center" Margin="0,0,10,0">
-                    <Button Content="Fetch Tracked Mods" Width="150" Height="30" Click="FetchMods_Click" Margin="0,0,10,0"/>
-                    <Button Content="Download Files" Width="150" Height="30" Click="DownloadFiles_Click" Margin="0,0,10,0"/>
-                    <Button Content="Manage Files" Width="150" Height="30" Click="ManageFiles_Click" Margin="0,0,10,0"/>
+                  VerticalScrollBarVisibility="Hidden"
+                  HorizontalScrollBarVisibility="Auto">
+                <WrapPanel VerticalAlignment="Center"
+                   Margin="0,0,10,0"
+                   ItemHeight="35"
+                   ItemWidth="Auto">
 
-                    <TextBox Width="200" Height="30"
-                             Margin="10,0,10,0"
-                             VerticalContentAlignment="Center"
-                             ToolTip="Search mods..."
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Fetch Tracked Mods"
+                    Width="120"
+                    Margin="0,0,8,4"
+                    Click="FetchMods_Click"/>
 
-                    <ComboBox Width="160" Height="30"
-                              ItemsSource="{Binding AvailableCategories}"
-                              SelectedItem="{Binding SelectedCategory, UpdateSourceTrigger=PropertyChanged}"
-                              Margin="0,0,10,0"
-                              ToolTip="Filter by category"/>
+                    <Button Content="Download Files"
+                    Width="120"
+                    Margin="0,0,8,4"
+                    Click="DownloadFiles_Click"/>
+
+                    <Button Content="Manage Files"
+                    Width="120"
+                    Margin="0,0,8,4"
+                    Click="ManageFiles_Click"/>
+
+                    <Button Content="Import List and Download"
+                    Width="150"
+                    Margin="0,0,8,4"
+                    Click="ImportAndDownloadAll_Click"
+                    ToolTip="Import your modlist and batch download all files (Premium only)"/>
+
+                    <TextBox Width="180"
+                     Margin="0,0,8,4"
+                     VerticalContentAlignment="Center"
+                     ToolTip="Search mods..."
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <ComboBox Width="150" Height="30"
+                      ItemsSource="{Binding AvailableCategories}"
+                      SelectedItem="{Binding SelectedCategory, UpdateSourceTrigger=PropertyChanged}"
+                      Margin="0,0,8,4"
+                      ToolTip="Filter by category"/>
                 </WrapPanel>
             </ScrollViewer>
 
             <Button Content="Tracking Centre"
-                    Width="140"
-                    Height="30"
-                    Grid.Column="1"
-                    Click="OpenTrackingCentre_Click"
-                    HorizontalAlignment="Right"/>
+            Width="100"
+            Height="30"
+            Grid.Column="1"
+            Click="OpenTrackingCentre_Click"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"/>
         </Grid>
+
 
         <ListView Grid.Row="1"
           Name="ModsListView"

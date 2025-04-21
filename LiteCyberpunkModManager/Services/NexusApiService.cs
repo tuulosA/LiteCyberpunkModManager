@@ -30,6 +30,27 @@ namespace LiteCyberpunkModManager.Services
             _httpClient.DefaultRequestHeaders.Add("apikey", _apiKey);
         }
 
+        public async Task<bool> IsPremiumUserAsync()
+        {
+            var url = $"{BaseUrl}/users/validate.json";
+            try
+            {
+                var response = await GetAsync(url);
+                if (response == null) return false;
+
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+                var root = JsonDocument.Parse(json).RootElement;
+
+                return root.TryGetProperty("is_premium", out var premiumProp) && premiumProp.GetBoolean();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to check premium status: {ex.Message}");
+                return false;
+            }
+        }
+
         private string GetCategoryName(int categoryId)
         {
             return categoryId switch

@@ -312,5 +312,126 @@ namespace LiteCyberpunkModManager.Views
         }
 
 
+        private async void ImportAndDownloadAll_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "JSON Files (*.json)|*.json",
+                Title = "Select a Modlist JSON File"
+            };
+
+            if (openFileDialog.ShowDialog() != true) return;
+
+            string json;
+            try
+            {
+                json = File.ReadAllText(openFileDialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to read modlist file.\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            List<(int ModId, string ModName, int FileId, string FileName)> modsToDownload;
+            try
+            {
+                var doc = JsonDocument.Parse(json);
+                modsToDownload = doc.RootElement
+                    .EnumerateArray()
+                    .Select(e => (
+                        e.GetProperty("ModId").GetInt32(),
+                        e.GetProperty("ModName").GetString()!,
+                        e.GetProperty("FileId").GetInt32(),
+                        e.GetProperty("FileName").GetString()!
+                    )).ToList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Invalid modlist format.\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var trackedModIds = await _api.GetTrackedModIdsAsync();
+            if (!modsToDownload.All(m => trackedModIds.Contains(m.ModId)))
+            {
+                MessageBox.Show("The mod list does not match your currently tracked mods.\nPlease import the list first in Settings.", "Modlist Mismatch", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var isPremium = await _api.IsPremiumUserAsync();
+            if (!isPremium)
+            {
+                MessageBox.Show("Mass downloading requires a Nexus Mods Premium account.", "Premium Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var progressWindow = new MassDownloadBarWindow();
+            progressWindow.Show();
+
+            int total = modsToDownload.Count;
+            int completed = 0;
+            int failed = 0;
+
+            for (int i = 0; i < total; i++)
+            {
+                var (modId, modName, fileId, fileName) = modsToDownload[i];
+
+                Console.WriteLine($"[INFO] Processing {modName} (ModId: {modId}, FileId: {fileId})");
+
+                progressWindow.SetModName(modName);
+                progressWindow.SetFileName(fileName);
+                progressWindow.SetFileCounter(i + 1, total);
+                progressWindow.SetFileProgress(0); // Reset file progress
+                progressWindow.SetOverallProgress((double)completed / total * 100);
+                progressWindow.SetStatusText("Getting download link...");
+
+                string? downloadUrl = await _api.GetDownloadLinkAsync("cyberpunk2077", modId, fileId);
+                if (string.IsNullOrWhiteSpace(downloadUrl))
+                {
+                    Console.WriteLine($"[WARN] No download URL found for {modName}");
+                    failed++;
+                    completed++;
+                    continue;
+                }
+
+                string folder = Path.Combine(Settings.DefaultModsDir, PathUtils.SanitizeModName(modName));
+                Directory.CreateDirectory(folder);
+                string filePath = Path.Combine(folder, fileName);
+
+                progressWindow.SetStatusText("Downloading...");
+
+                var progress = new Progress<double>(value =>
+                {
+                    progressWindow.SetFileProgress(value);
+
+                    // Smooth overall progress
+                    double overall = (completed + value / 100.0) / total * 100;
+                    progressWindow.SetOverallProgress(overall);
+                });
+
+                bool success = await _api.DownloadFileAsync(downloadUrl, filePath, progress);
+                if (success)
+                {
+                    Console.WriteLine($"[SUCCESS] Downloaded {modName}");
+                    await _viewModel.UpdateModStatusAsync(modId);
+                }
+                else
+                {
+                    Console.WriteLine($"[FAIL] Failed to download {modName}");
+                    failed++;
+                }
+
+                completed++;
+            }
+
+            progressWindow.Close();
+
+            MessageBox.Show($"Mass download complete.\nSuccess: {completed - failed}, Failed: {failed}", "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+
+
+
     }
 }
