@@ -73,58 +73,62 @@ namespace LiteCyberpunkModManager.Views
 
         private async void DownloadFiles_Click(object sender, RoutedEventArgs e)
         {
-            if (ModsListView.SelectedItem is not ModDisplay selected)
+            var selectedMods = ModsListView.SelectedItems.Cast<ModDisplay>().ToList();
+
+            if (selectedMods.Count == 0)
             {
-                MessageBox.Show("Please select a mod from the list.", "No Mod Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please select at least one mod from the list.", "No Mod Selected", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var modId = selected.ModId;
-            Console.WriteLine($"[DEBUG] Fetching files for Mod ID: {modId}");
-
-            var files = await _api.GetModFilesAsync("cyberpunk2077", modId);
-
-            if (files == null)
+            foreach (var selected in selectedMods)
             {
-                Console.WriteLine("[DEBUG] GetModFilesAsync returned null.");
-                MessageBox.Show("Failed to fetch files for this mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+                var modId = selected.ModId;
+                Console.WriteLine($"[DEBUG] Fetching files for Mod ID: {modId}");
 
-            Console.WriteLine($"[DEBUG] Fetched {files.Count} files.");
-            if (files.Count == 0)
-            {
-                MessageBox.Show("No files found for this mod.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            List<InstalledModInfo> alreadyDownloaded = new();
-            string metadataPath = PathConfig.DownloadedMods;
-
-            if (File.Exists(metadataPath))
-            {
-                try
+                var files = await _api.GetModFilesAsync("cyberpunk2077", modId);
+                if (files == null)
                 {
-                    string json = File.ReadAllText(metadataPath);
-                    alreadyDownloaded = JsonSerializer.Deserialize<List<InstalledModInfo>>(json)?
-                        .Where(m => m.ModId == selected.ModId)
-                        .ToList() ?? new();
+                    Console.WriteLine("[DEBUG] GetModFilesAsync returned null.");
+                    MessageBox.Show($"Failed to fetch files for mod: {selected.Name}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    continue;
                 }
-                catch (Exception ex)
+
+                if (files.Count == 0)
                 {
-                    Console.WriteLine($"[WARN] Failed to load existing mod metadata: {ex.Message}");
+                    MessageBox.Show($"No files found for mod: {selected.Name}", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
+                    continue;
                 }
-            }
 
-            var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId, selected.Name, _viewModel);
-            bool? result = dialog.ShowDialog();
+                List<InstalledModInfo> alreadyDownloaded = new();
+                string metadataPath = PathConfig.DownloadedMods;
 
-            if (result == true)
-            {
-                await _viewModel.UpdateModStatusAsync(modId);
-                MessageBox.Show("Download completed successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (File.Exists(metadataPath))
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(metadataPath);
+                        alreadyDownloaded = JsonSerializer.Deserialize<List<InstalledModInfo>>(json)?
+                            .Where(m => m.ModId == selected.ModId)
+                            .ToList() ?? new();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[WARN] Failed to load existing mod metadata: {ex.Message}");
+                    }
+                }
+
+                var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId, selected.Name, _viewModel);
+                bool? result = dialog.ShowDialog();
+
+                if (result == true)
+                {
+                    await _viewModel.UpdateModStatusAsync(modId);
+                    MessageBox.Show($"Download completed for {selected.Name}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
         }
+
 
         private void ModsListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
