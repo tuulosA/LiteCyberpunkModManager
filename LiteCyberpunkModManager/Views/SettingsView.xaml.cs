@@ -147,10 +147,25 @@ namespace LiteCyberpunkModManager.Views
             if (saveFileDialog.ShowDialog() == true)
             {
                 var path = saveFileDialog.FileName;
-                File.Copy(PathConfig.DownloadedMods, path, overwrite: true);
-                MessageBox.Show("Modlist exported successfully.", "Export Complete");
+
+                if (!File.Exists(PathConfig.DownloadedMods))
+                {
+                    MessageBox.Show("No modlist found to export. Download at least one mod first.", "Export Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                try
+                {
+                    File.Copy(PathConfig.DownloadedMods, path, overwrite: true);
+                    MessageBox.Show("Modlist exported successfully.", "Export Complete");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Export failed.\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
+
 
         private async void ImportModlist_Click(object sender, RoutedEventArgs e)
         {
