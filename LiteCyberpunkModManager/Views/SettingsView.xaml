@@ -14,6 +14,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -51,5 +52,10 @@
                   ItemsSource="{x:Static local:AppThemeValues.All}"/>
 
         <Button Grid.Row="4" Grid.Column="1" Content="Save Settings" Width="120" Margin="0,15,0,0" Click="SaveSettings_Click" HorizontalAlignment="Left"/>
+        <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal" Margin="0,10,0,0">
+            <Button Content="Export Modlist" Margin="0,0,10,0" Width="140" Click="ExportModlist_Click"/>
+            <Button Content="Import Modlist" Margin="0,0,10,0" Width="140" Click="ImportModlist_Click"/>
+            <Button Content="Clear Tracked Mods" Width="160" Click="ClearTrackedMods_Click"/>
+        </StackPanel>
     </Grid>
 </UserControl>

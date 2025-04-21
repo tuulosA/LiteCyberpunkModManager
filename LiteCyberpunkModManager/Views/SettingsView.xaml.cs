@@ -1,10 +1,13 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using LiteCyberpunkModManager.Helpers;
 using LiteCyberpunkModManager.Models;
 using LiteCyberpunkModManager.Services;
+using LiteCyberpunkModManager.ViewModels;
 
 namespace LiteCyberpunkModManager.Views
 {
@@ -131,5 +134,130 @@ namespace LiteCyberpunkModManager.Views
         {
             _settings.NexusApiKey = ApiKeyBox.Password;
         }
+
+
+        private void ExportModlist_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json",
+                FileName = "modlist.json"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                var path = saveFileDialog.FileName;
+                File.Copy(PathConfig.DownloadedMods, path, overwrite: true);
+                MessageBox.Show("Modlist exported successfully.", "Export Complete");
+            }
+        }
+
+        private async void ImportModlist_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json"
+            };
+
+            if (openFileDialog.ShowDialog() != true)
+                return;
+
+            var filePath = openFileDialog.FileName;
+            var json = File.ReadAllText(filePath);
+            var importedMods = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+
+            var api = new NexusApiService(SettingsService.LoadSettings().NexusApiKey);
+            var modsToTrack = importedMods.DistinctBy(m => m.ModId).ToList();
+
+            var importWindow = new ModlistTrackingWindow
+            {
+                Owner = Application.Current.MainWindow
+            };
+            importWindow.Show();
+
+            int total = modsToTrack.Count;
+            int completed = 0;
+            int successCount = 0;
+
+            var tasks = modsToTrack.Select(async mod =>
+            {
+                if (await api.TrackModAsync(mod.ModId))
+                    Interlocked.Increment(ref successCount);
+
+                int done = Interlocked.Increment(ref completed);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    double percent = (double)done / total * 100;
+                    importWindow.ReportProgress(percent);
+                    importWindow.SetStatus($"Tracking mod {done} of {total}...");
+                });
+            });
+
+            await Task.WhenAll(tasks);
+            importWindow.Close();
+
+            MessageBox.Show($"Successfully tracked {successCount} mod(s).", "Import Complete");
+        }
+
+        private async void ClearTrackedMods_Click(object sender, RoutedEventArgs e)
+        {
+            var confirm = MessageBox.Show(
+                "Are you sure you want to untrack all mods?",
+                "Confirm",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            var doubleConfirm = MessageBox.Show(
+                "This will untrack ALL currently followed mods. Are you REALLY sure?",
+                "Final Confirmation",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (doubleConfirm != MessageBoxResult.Yes) return;
+
+            var api = new NexusApiService(SettingsService.LoadSettings().NexusApiKey);
+            var modIds = await api.GetTrackedModIdsAsync();
+
+            if (modIds.Count == 0)
+            {
+                MessageBox.Show("No mods to untrack.", "Done");
+                return;
+            }
+
+            var progressWindow = new ModlistTrackingWindow
+            {
+                Owner = Application.Current.MainWindow
+            };
+            progressWindow.SetStatus("Untracking mods...");
+            progressWindow.Show();
+
+            int total = modIds.Count;
+            int completed = 0;
+            int removedCount = 0;
+
+            var tasks = modIds.Select(async modId =>
+            {
+                if (await api.UntrackModAsync(modId))
+                    Interlocked.Increment(ref removedCount);
+
+                int done = Interlocked.Increment(ref completed);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    double percent = (double)done / total * 100;
+                    progressWindow.SetStatus($"Untracking mod ID {modId} ({done}/{total})...");
+                    progressWindow.ReportProgress(percent);
+                });
+            });
+
+            await Task.WhenAll(tasks);
+            progressWindow.Close();
+
+            MessageBox.Show($"Successfully untracked {removedCount} mod(s).", "Clear Complete");
+        }
+
+
+
     }
 }

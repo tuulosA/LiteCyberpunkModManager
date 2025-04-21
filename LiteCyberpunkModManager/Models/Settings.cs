@@ -70,6 +70,8 @@ namespace LiteCyberpunkModManager.Models
 
         public static string DefaultGameDir => @"C:\Program Files (x86)\Steam\steamapps\common\Cyberpunk 2077";
         public static string DefaultModsDir => System.IO.Path.Combine(DefaultGameDir, "Mods");
+        public static string ArchiveFolder => System.IO.Path.Combine(DefaultGameDir, "archive", "pc", "mod");
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

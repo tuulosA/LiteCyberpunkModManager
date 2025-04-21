@@ -11,7 +11,6 @@ namespace LiteCyberpunkModManager.Services
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "https://api.nexusmods.com/v1";
         private string _apiKey;
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(2);
         [ThreadStatic] private static bool _localRateLimitShown;
 
         public void SetApiKey(string newApiKey)
@@ -194,32 +193,21 @@ namespace LiteCyberpunkModManager.Services
                                     domainProp.GetString() == game) // filter by domain name
                     .Select(async entry =>
                     {
-                        await _semaphore.WaitAsync();
-                        try
+                        if (entry.TryGetProperty("mod_id", out var modIdElement) &&
+                            modIdElement.TryGetInt32(out int modId))
                         {
-                            if (entry.TryGetProperty("mod_id", out var modIdElement) &&
-                        modIdElement.TryGetInt32(out int modId))
+                            Console.WriteLine($"Fetching details for Mod ID: {modId}");
+                            var modDetails = await GetModDetailsAsync(game, modId);
+                            if (modDetails != null)
                             {
-                                Console.WriteLine($"Fetching details for Mod ID: {modId}");
-                                var modDetails = await GetModDetailsAsync(game, modId);
-                                if (modDetails != null)
-                                {
-                                    lock (mods) mods.Add(modDetails);
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"Mod details not found or failed to parse for Mod ID: {modId}");
-                                }
+                                lock (mods) mods.Add(modDetails);
                             }
                             else
                             {
-                                Console.WriteLine("mod_id not found or invalid in tracked entry.");
+                                Console.WriteLine($"Mod details not found or failed to parse for Mod ID: {modId}");
                             }
                         }
-                        finally
-                        {
-                            _semaphore.Release();
-                        }
+
                     });
 
                 await Task.WhenAll(tasks);
@@ -362,5 +350,105 @@ namespace LiteCyberpunkModManager.Services
                 return new List<ModFile>();
             }
         }
+
+
+        public async Task<bool> TrackModAsync(int modId, string game = "cyberpunk2077")
+        {
+            var url = $"{BaseUrl}/user/tracked_mods.json?domain_name={game}";
+            var content = new FormUrlEncodedContent(new[]
+            {
+        new KeyValuePair<string, string>("mod_id", modId.ToString())
+    });
+
+            try
+            {
+                var response = await _httpClient.PostAsync(url, content);
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[INFO] Tracked mod {modId} successfully.");
+                    return true;
+                }
+
+                Console.WriteLine($"[WARN] Failed to track mod {modId}. Status: {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Error tracking mod {modId}: {ex.Message}");
+            }
+
+            return false;
+        }
+
+        public async Task<bool> UntrackModAsync(int modId, string game = "cyberpunk2077")
+        {
+            var url = $"{BaseUrl}/user/tracked_mods.json?domain_name={game}";
+            var content = new FormUrlEncodedContent(new[]
+            {
+        new KeyValuePair<string, string>("mod_id", modId.ToString())
+    });
+
+            try
+            {
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Delete,
+                    RequestUri = new Uri(url),
+                    Content = content
+                };
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[INFO] Untracked mod {modId} successfully.");
+                    return true;
+                }
+
+                Console.WriteLine($"[WARN] Failed to untrack mod {modId}. Status: {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Error untracking mod {modId}: {ex.Message}");
+            }
+
+            return false;
+        }
+
+
+        public async Task<List<int>> GetTrackedModIdsAsync(string game = "cyberpunk2077")
+        {
+            var url = $"{BaseUrl}/user/tracked_mods.json";
+            var modIds = new List<int>();
+
+            try
+            {
+                var response = await GetAsync(url);
+                if (response == null) return modIds;
+
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
+                var root = JsonDocument.Parse(json).RootElement;
+
+                foreach (var entry in root.EnumerateArray())
+                {
+                    if (entry.TryGetProperty("domain_name", out var domainProp) &&
+                        domainProp.GetString() == game &&
+                        entry.TryGetProperty("mod_id", out var modIdProp) &&
+                        modIdProp.TryGetInt32(out int modId))
+                    {
+                        modIds.Add(modId);
+                    }
+                }
+
+                return modIds;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to fetch tracked mod IDs: {ex.Message}");
+                return modIds;
+            }
+        }
+
+
+
     }
 }
