@@ -11,6 +11,7 @@
 - Check available update status
 - Download mod files (Premium + non-premium Nexus Mods account support)
 - Install and uninstall with a single click
+- Export and import mod lists.
 
 ---
 
