@@ -11,7 +11,7 @@
     <SolidColorBrush x:Key="ListItemHoverBrush" Color="#F2F2F2"/>
     <SolidColorBrush x:Key="ListItemSelectedBrush" Color="#E5F1FB"/>
 
-    <!-- Status -->
+    <!-- Status Text -->
     <SolidColorBrush x:Key="DownloadedStatusBrush" Color="#004C99"/>
     <SolidColorBrush x:Key="LatestDownloadedStatusBrush" Color="#004C99"/>
     <SolidColorBrush x:Key="UpdateAvailableStatusBrush" Color="#C23616"/>
@@ -69,7 +69,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-
 
 </ResourceDictionary>

@@ -14,12 +14,11 @@
     <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="#2B2B30"/>
     <SolidColorBrush x:Key="HeaderTextBrush" Color="#F5F5F5"/>
 
+    <!-- Status Text -->
     <SolidColorBrush x:Key="DownloadedStatusBrush" Color="#89CFF0"/>
     <SolidColorBrush x:Key="LatestDownloadedStatusBrush" Color="#89CFF0"/>
     <SolidColorBrush x:Key="UpdateAvailableStatusBrush" Color="#FFD700"/>
     <SolidColorBrush x:Key="NotDownloadedStatusBrush" Color="Gray"/>
-
-
 
     <!-- Window -->
     <Style TargetType="Window">
@@ -40,7 +39,6 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="4" />
     </Style>
-
     <Style TargetType="PasswordBox">
         <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
@@ -48,7 +46,6 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="4" />
     </Style>
-
 
     <!-- ComboBox Toggle Button -->
     <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
@@ -79,8 +76,6 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-
-
     <!-- ComboBox TextBox -->
     <ControlTemplate x:Key="ComboBoxTextBox" TargetType="TextBox">
         <Border Background="{TemplateBinding Background}"
@@ -93,8 +88,6 @@
         </Border>
     </ControlTemplate>
     
-    
-
     <!-- ComboBox -->
     <Style TargetType="ComboBox">
         <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -121,7 +114,7 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Margin="0">
-                                                    <ContentPresenter
+                            <ContentPresenter
                                 Name="ContentSite"
                                 IsHitTestVisible="False"
                                 Content="{TemplateBinding SelectionBoxItem}"
@@ -183,8 +176,6 @@
         </Setter>
     </Style>
 
-
-
     <!-- ComboBoxItem -->
     <Style TargetType="ComboBoxItem">
         <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
@@ -206,7 +197,6 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-
 
     <!-- Buttons -->
     <Style TargetType="Button">
@@ -249,16 +239,48 @@
         </Setter>
     </Style>
 
-
-
     <!-- CheckBoxes -->
     <Style TargetType="CheckBox">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
         <Setter Property="Margin" Value="4,2" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal">
+                        <Border x:Name="Border"
+                            Width="16" Height="16"
+                            Background="{StaticResource ControlBackgroundBrush}"
+                            BorderBrush="{StaticResource ControlBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="2"
+                            Margin="0,0,4,0"
+                            VerticalAlignment="Center">
+                            <Path x:Name="CheckMark"
+                              Data="M 0 0 L 4 4 L 8 -2"
+                              Stroke="{StaticResource TextBrush}"
+                              StrokeThickness="2"
+                              SnapsToDevicePixels="True"
+                              Stretch="None"
+                              Visibility="Collapsed"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+                        </Border>
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DisabledTextBrush}"/>
+                            <Setter TargetName="CheckMark" Property="Stroke" Value="{StaticResource DisabledTextBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
-    
-    
-    
 
     <!-- ListView -->
     <Style TargetType="ListView">
@@ -310,7 +332,6 @@
         </Setter>
     </Style>
 
-
     <!-- TabControl -->
     <Style TargetType="TabControl">
         <Setter Property="Template">
@@ -347,8 +368,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-
 
     <!-- TabItem -->
     <Style TargetType="TabItem">
@@ -391,11 +410,12 @@
         </Setter>
     </Style>
 
-    <!-- ScrollViewer & ScrollBar -->
+    <!-- ScrollViewer -->
     <Style TargetType="ScrollViewer">
         <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
     </Style>
 
+    <!-- ScrollBar -->
     <Style TargetType="ScrollBar">
         <Setter Property="Background" Value="#2D2D30"/>
         <Setter Property="Foreground" Value="#AAAAAA"/>
@@ -415,7 +435,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-
 
     <!-- DataGrid -->
     <Style TargetType="DataGrid">
@@ -443,7 +462,6 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-
 
     <!-- DataGridRow -->
     <Style TargetType="DataGridRow">
@@ -500,7 +518,6 @@
         </Setter>
     </Style>
 
-
     <!-- GridViewColumnHeader -->
     <Style TargetType="GridViewColumnHeader">
         <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
@@ -540,6 +557,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-
 
 </ResourceDictionary>

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
 using LiteCyberpunkModManager.Helpers;
@@ -7,9 +8,22 @@ using LiteCyberpunkModManager.Services;
 
 namespace LiteCyberpunkModManager.ViewModels
 {
-    public class FilesViewModel
+    public class FilesViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<InstalledModDisplay> DownloadedFiles { get; set; } = new();
+        public ObservableCollection<InstalledModDisplay> AllDownloadedFiles { get; set; } = new();
+        public ObservableCollection<InstalledModDisplay> FilteredDownloadedFiles { get; set; } = new();
+
+        private string _searchText = "";
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                _searchText = value;
+                OnPropertyChanged(nameof(SearchText));
+                ApplyFilter();
+            }
+        }
 
         public FilesViewModel()
         {
@@ -18,7 +32,8 @@ namespace LiteCyberpunkModManager.ViewModels
 
         public void Reload()
         {
-            DownloadedFiles.Clear();
+            AllDownloadedFiles.Clear();
+            FilteredDownloadedFiles.Clear();
             LoadDownloadedFiles();
         }
 
@@ -33,7 +48,6 @@ namespace LiteCyberpunkModManager.ViewModels
             {
                 string json = File.ReadAllText(metadataPath);
                 var list = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
-
                 HashSet<string> installedGameFiles = new();
 
                 if (File.Exists(installTrackingPath))
@@ -59,26 +73,44 @@ namespace LiteCyberpunkModManager.ViewModels
                         sizeMB = sizeBytes / 1024.0 / 1024.0;
                     }
 
-                    // determine install status based on installed_game_files.json
                     string cleanName = Path.GetFileNameWithoutExtension(entry.FileName).ToLower();
                     bool isInstalled = installedGameFiles.Contains(cleanName + ".archive");
 
-                    DownloadedFiles.Add(new InstalledModDisplay
+                    var display = new InstalledModDisplay
                     {
                         ModName = entry.ModName,
                         FileName = entry.FileName,
                         FileSizeMB = sizeMB,
                         UploadedTimestamp = entry.UploadedTimestamp.ToString("yyyy-MM-dd HH:mm:ss"),
                         Status = isInstalled ? "Installed" : "Not Installed"
-                    });
+                    };
+
+                    AllDownloadedFiles.Add(display);
+                }
+
+                ApplyFilter();
+            }
+            catch { }
+        }
+
+        private void ApplyFilter()
+        {
+            FilteredDownloadedFiles.Clear();
+            foreach (var mod in AllDownloadedFiles)
+            {
+                if (string.IsNullOrWhiteSpace(_searchText) ||
+                    mod.ModName.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
+                    mod.FileName.Contains(_searchText, StringComparison.OrdinalIgnoreCase))
+                {
+                    FilteredDownloadedFiles.Add(mod);
                 }
             }
-            catch
-            {
-
-            }
         }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
+
 
     public class InstalledModDisplay
     {
