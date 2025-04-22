@@ -12,7 +12,24 @@
     <SolidColorBrush x:Key="DisabledTextBrush" Color="#777777"/>
     <SolidColorBrush x:Key="StatusTextBrush" Color="#89CFF0"/>
     <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="#2B2B30"/>
-    <SolidColorBrush x:Key="HeaderTextBrush" Color="#F5F5F5"/>
+
+    <!-- Buttons & Tabs -->
+    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#3E3E42"/>
+    <SolidColorBrush x:Key="ButtonPressedBrush" Color="#505050"/>
+    <SolidColorBrush x:Key="ButtonDisabledBrush" Color="#2D2D30"/>
+    <SolidColorBrush x:Key="TabItemSelectedBackgroundBrush" Color="#3A3F4B"/>
+
+    <!-- CheckBox -->
+    <SolidColorBrush x:Key="CheckboxDisabledBackgroundBrush" Color="#4A4A4A"/>
+    <SolidColorBrush x:Key="CheckboxBorderBrush" Color="#5A5A5A"/>
+
+    <!-- ScrollBar -->
+    <SolidColorBrush x:Key="ScrollBarBackgroundBrush" Color="#2D2D30"/>
+    <SolidColorBrush x:Key="ScrollBarForegroundBrush" Color="#AAAAAA"/>
+
+    <!-- DataGrid -->
+    <SolidColorBrush x:Key="AlternatingRowBrush" Color="#252526"/>
+    <SolidColorBrush x:Key="DataGridColumnHeaderPressedBrush" Color="#505050"/>
 
     <!-- Status Text -->
     <SolidColorBrush x:Key="DownloadedStatusBrush" Color="#89CFF0"/>
@@ -68,7 +85,7 @@
                 <Setter TargetName="Border" Property="Background" Value="{StaticResource ListItemHoverBrush}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="Border" Property="Background" Value="#505050"/>
+                <Setter TargetName="Border" Property="Background" Value="{StaticResource ButtonPressedBrush}"/>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource DisabledTextBrush}" />
@@ -223,14 +240,14 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#3E3E42"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#505050"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ButtonPressedBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Border" Property="Background" Value="#2D2D30"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="#2D2D30"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ButtonDisabledBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource ButtonDisabledBrush}"/>
                             <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -250,7 +267,7 @@
                         <Border x:Name="Border"
                             Width="16" Height="16"
                             Background="{StaticResource ControlBackgroundBrush}"
-                            BorderBrush="#5A5A5A"
+                            BorderBrush="{StaticResource CheckboxBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="2"
                             Margin="0,0,4,0"
@@ -273,8 +290,8 @@
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
-                            <Setter TargetName="Border" Property="Background" Value="#4A4A4A"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="#5A5A5A"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource CheckboxDisabledBackgroundBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource CheckboxBorderBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -394,12 +411,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#3A3F4B"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource TabItemSelectedBackgroundBrush}"/>
                             <Setter Property="Foreground" Value="White"/>
                             <Setter TargetName="Border" Property="BorderThickness" Value="1,1,1,0"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#3E3E42" />
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
@@ -417,8 +434,8 @@
 
     <!-- ScrollBar -->
     <Style TargetType="ScrollBar">
-        <Setter Property="Background" Value="#2D2D30"/>
-        <Setter Property="Foreground" Value="#AAAAAA"/>
+        <Setter Property="Background" Value="{StaticResource ScrollBarBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource ScrollBarForegroundBrush}" />
     </Style>
 
     <!-- Group Headers -->
@@ -442,7 +459,7 @@
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
         <Setter Property="GridLinesVisibility" Value="None"/>
         <Setter Property="RowBackground" Value="Transparent"/>
-        <Setter Property="AlternatingRowBackground" Value="#252526"/>
+        <Setter Property="AlternatingRowBackground" Value="{StaticResource AlternatingRowBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
     </Style>
 
@@ -506,7 +523,7 @@
                             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#505050"/>
+                            <Setter Property="Background" Value="{StaticResource DataGridColumnHeaderPressedBrush}" />
                             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
@@ -546,7 +563,7 @@
                             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#505050"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource DataGridColumnHeaderPressedBrush}" />
                             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
