@@ -212,7 +212,17 @@ namespace LiteCyberpunkModManager.Views
             importWindow.Close();
 
             MessageBox.Show($"Successfully tracked {successCount} mod(s).", "Import Complete");
+
+            // refresh mod list view if available
+            if (Application.Current.MainWindow is MainWindow mainWindow &&
+                mainWindow.FindName("ModsTabContent") is ContentControl modsTab &&
+                modsTab.Content is ModListView modListView)
+            {
+                await modListView.FetchModsFromApiAsync();
+            }
         }
+
+
 
         private async void ClearTrackedMods_Click(object sender, RoutedEventArgs e)
         {
@@ -269,7 +279,24 @@ namespace LiteCyberpunkModManager.Views
             await Task.WhenAll(tasks);
             progressWindow.Close();
 
+            // remove untracked mods from cache
+            var cachedMods = ModCacheService.LoadCachedMods();
+            if (cachedMods != null)
+            {
+                cachedMods.RemoveAll(mod => modIds.Contains(mod.ModId));
+                ModCacheService.SaveCachedMods(cachedMods);
+                Console.WriteLine($"[CACHE] Removed {removedCount} mods from mod_cache.json.");
+            }
+
             MessageBox.Show($"Successfully untracked {removedCount} mod(s).", "Clear Complete");
+
+            // refresh mod list view if available
+            if (Application.Current.MainWindow is MainWindow mainWindow &&
+                mainWindow.FindName("ModsTabContent") is ContentControl modsTab &&
+                modsTab.Content is ModListView modListView)
+            {
+                await modListView.FetchModsFromApiAsync();
+            }
         }
 
 
