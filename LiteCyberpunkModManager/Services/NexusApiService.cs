@@ -1,8 +1,10 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
 using LiteCyberpunkModManager.Models;
+using LiteCyberpunkModManager.Helpers;
 
 namespace LiteCyberpunkModManager.Services
 {
@@ -150,13 +152,21 @@ namespace LiteCyberpunkModManager.Services
             }
         }
 
+
         public async Task<bool> DownloadFileAsync(string downloadUrl, string savePath, IProgress<double>? progress = null)
         {
             try
             {
                 string targetDirectory = Path.GetDirectoryName(savePath)!;
-                string baseFileName = Path.GetFileNameWithoutExtension(savePath);
-                string finalFilePath = Path.Combine(targetDirectory, baseFileName + ".zip");
+                string rawFileName = Path.GetFileNameWithoutExtension(savePath);
+
+                string cleanFileName = FileNameCleaner.ExtractCleanName(rawFileName) + ".zip";
+                string finalFilePath = Path.Combine(targetDirectory, cleanFileName);
+
+                Debug.WriteLine($"[Download] targetDirectory: {targetDirectory}");
+                Debug.WriteLine($"[Download] rawFileName: {rawFileName}");
+                Debug.WriteLine($"[Download] cleanFileName: {cleanFileName}");
+                Debug.WriteLine($"[Download] finalFilePath: {finalFilePath}");
 
                 Directory.CreateDirectory(targetDirectory);
 
@@ -189,10 +199,103 @@ namespace LiteCyberpunkModManager.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Failed to download file: {ex.Message}");
+                Debug.WriteLine($"[ERROR] Failed to download file: {ex.Message}");
                 return false;
             }
         }
+
+        public async Task<List<ModFile>> GetModFilesAsync(string game, int modId)
+        {
+            string url = $"{BaseUrl}/games/{game}/mods/{modId}/files.json";
+            Debug.WriteLine($"[NexusApiService] Fetching mod files for Mod ID {modId}");
+            Debug.WriteLine($"[NexusApiService] Request URL: {url}");
+
+            var modFiles = new List<ModFile>();
+
+            try
+            {
+                var response = await GetAsync(url);
+                if (response == null)
+                {
+                    Debug.WriteLine($"[NexusApiService] Response was null for Mod ID {modId}.");
+                    return modFiles;
+                }
+
+                Debug.WriteLine($"[NexusApiService] HTTP Status Code: {response.StatusCode}");
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    Debug.WriteLine($"[NexusApiService] Access denied for Mod ID {modId} (403 Forbidden).");
+                    return modFiles;
+                }
+
+                response.EnsureSuccessStatusCode();
+                string json = await response.Content.ReadAsStringAsync();
+                var root = JsonDocument.Parse(json).RootElement;
+
+                if (!root.TryGetProperty("files", out var filesArray) || filesArray.ValueKind != JsonValueKind.Array)
+                {
+                    Debug.WriteLine($"[NexusApiService] 'files' property missing or not an array for Mod ID {modId}.");
+                    return modFiles;
+                }
+
+                Debug.WriteLine($"[NexusApiService] Found {filesArray.GetArrayLength()} file entries.");
+
+                foreach (var file in filesArray.EnumerateArray())
+                {
+                    try
+                    {
+                        int fileId = file.GetProperty("id").ValueKind switch
+                        {
+                            JsonValueKind.Number => file.GetProperty("id").GetInt32(),
+                            JsonValueKind.Array => file.GetProperty("id")[0].GetInt32(),
+                            _ => throw new InvalidOperationException("Invalid 'id' format")
+                        };
+
+                        string originalFileName = file.TryGetProperty("file_name", out var fileNameProp) && fileNameProp.ValueKind == JsonValueKind.String
+                            ? fileNameProp.GetString() ?? $"file_{fileId}.zip"
+                            : $"file_{fileId}.zip";
+
+                        string cleanedFileName = FileNameCleaner.ExtractCleanName(Path.GetFileNameWithoutExtension(originalFileName)) + ".zip";
+
+                        long sizeBytes = file.TryGetProperty("size_kb", out var sizeProp) && sizeProp.ValueKind == JsonValueKind.Number
+                            ? sizeProp.GetInt64() * 1024
+                            : 0;
+
+                        DateTime uploaded = file.TryGetProperty("uploaded_timestamp", out var tsProp) && tsProp.ValueKind == JsonValueKind.Number
+                            ? DateTimeOffset.FromUnixTimeSeconds(tsProp.GetInt64()).UtcDateTime
+                            : DateTime.MinValue;
+
+                        string description = file.TryGetProperty("description", out var descProp) && descProp.ValueKind == JsonValueKind.String
+                            ? descProp.GetString() ?? ""
+                            : "";
+
+                        Debug.WriteLine($"[NexusApiService] Parsed File -> ID: {fileId}, Name: {cleanedFileName}, Size: {sizeBytes} bytes, Uploaded: {uploaded}");
+
+                        modFiles.Add(new ModFile
+                        {
+                            FileId = fileId,
+                            FileName = cleanedFileName,
+                            FileSizeBytes = sizeBytes,
+                            UploadedTimestamp = uploaded,
+                            Description = description
+                        });
+                    }
+                    catch (Exception innerEx)
+                    {
+                        Debug.WriteLine($"[NexusApiService] Failed to parse file entry: {innerEx.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[NexusApiService] Error fetching mod files for Mod ID {modId}: {ex.Message}");
+            }
+
+            return modFiles;
+        }
+
+
 
         public async Task<List<Mod>> GetTrackedModsAsync(string game = "cyberpunk2077")
         {
@@ -272,106 +375,6 @@ namespace LiteCyberpunkModManager.Services
                 return null;
             }
         }
-
-        public async Task<List<ModFile>> GetModFilesAsync(string game, int modId)
-        {
-            var url = $"{BaseUrl}/games/{game}/mods/{modId}/files.json";
-            Console.WriteLine($"[DEBUG] Fetching mod files for Mod ID: {modId}");
-            Console.WriteLine($"[DEBUG] URL: {url}");
-
-            try
-            {
-                var response = await GetAsync(url);
-                if (response == null) return new List<ModFile>();
-                Console.WriteLine($"[DEBUG] Status Code: {response.StatusCode}");
-
-                if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                {
-                    Console.WriteLine($"[WARN] Mod ID {modId} is no longer accessible (403 Forbidden).");
-                    return new List<ModFile>();
-                }
-
-                response.EnsureSuccessStatusCode();
-
-                var json = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[DEBUG] Raw JSON Response: {json}");
-
-                var root = JsonDocument.Parse(json).RootElement;
-                var files = new List<ModFile>();
-
-                if (root.TryGetProperty("files", out var filesArray) && filesArray.ValueKind == JsonValueKind.Array)
-                {
-                    Console.WriteLine($"[DEBUG] Found {filesArray.GetArrayLength()} file entries.");
-
-                    foreach (var file in filesArray.EnumerateArray())
-                    {
-                        int fileId;
-                        try
-                        {
-                            var idElement = file.GetProperty("id");
-                            fileId = idElement.ValueKind switch
-                            {
-                                JsonValueKind.Number => idElement.GetInt32(),
-                                JsonValueKind.Array when idElement.GetArrayLength() > 0 && idElement[0].ValueKind == JsonValueKind.Number => idElement[0].GetInt32(),
-                                _ => throw new InvalidOperationException("Invalid file ID format")
-                            };
-                        }
-                        catch (Exception idEx)
-                        {
-                            Console.WriteLine($"[WARN] Skipping file due to invalid ID: {idEx.Message}");
-                            continue;
-                        }
-
-                        string fileName = file.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
-                            ? nameProp.GetString() ?? "Unknown"
-                            : "Unknown";
-
-                        long sizeBytes = file.TryGetProperty("size_kb", out var sizeProp) && sizeProp.ValueKind == JsonValueKind.Number
-                            ? sizeProp.GetInt64() * 1024
-                            : 0;
-
-                        DateTime uploaded;
-                        try
-                        {
-                            var timestampSeconds = file.GetProperty("uploaded_timestamp").GetInt64();
-                            uploaded = DateTimeOffset.FromUnixTimeSeconds(timestampSeconds).UtcDateTime;
-                        }
-                        catch
-                        {
-                            uploaded = DateTime.MinValue;
-                            Console.WriteLine($"[WARN] Invalid uploaded_timestamp for file {fileId}");
-                        }
-
-                        string description = file.TryGetProperty("description", out var descProp) && descProp.ValueKind == JsonValueKind.String
-                            ? descProp.GetString() ?? ""
-                            : "";
-
-                        Console.WriteLine($"[DEBUG] File ID: {fileId}, Name: {fileName}, Size: {sizeBytes}, Uploaded: {uploaded}");
-
-                        files.Add(new ModFile
-                        {
-                            FileId = fileId,
-                            FileName = fileName,
-                            FileSizeBytes = sizeBytes,
-                            UploadedTimestamp = uploaded,
-                            Description = description
-                        });
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("[DEBUG] 'files' array not found in JSON.");
-                }
-
-                return files;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] Failed to fetch mod files for Mod ID {modId}: {ex.Message}");
-                return new List<ModFile>();
-            }
-        }
-
 
         public async Task<bool> TrackModAsync(int modId, string game = "cyberpunk2077")
         {
