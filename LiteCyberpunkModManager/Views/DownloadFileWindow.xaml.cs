@@ -83,8 +83,7 @@ namespace LiteCyberpunkModManager.Views
                 string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModFolder);
                 Directory.CreateDirectory(modFolderPath);
 
-                string baseName = Path.GetFileNameWithoutExtension(file.FileName);
-                string savePath = Path.Combine(modFolderPath, baseName + ".zip");
+                string savePath = Path.Combine(modFolderPath, file.FileName);
 
                 var progress = new Progress<double>(async percent =>
                 {

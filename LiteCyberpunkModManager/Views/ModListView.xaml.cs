@@ -388,6 +388,10 @@ namespace LiteCyberpunkModManager.Views
             for (int i = 0; i < total; i++)
             {
                 var (modId, modName, fileId, fileName) = modsToDownload[i];
+                if (!fileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                {
+                    fileName += ".zip";
+                }
 
                 Console.WriteLine($"[INFO] Processing {modName} (ModId: {modId}, FileId: {fileId})");
 

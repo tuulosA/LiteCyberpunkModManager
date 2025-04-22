@@ -150,20 +150,8 @@ namespace LiteCyberpunkModManager.Services
                 return;
             }
 
-            string rawFileName = Path.GetFileName(new Uri(downloadUrl).LocalPath);
-
-            // strip versioning/timestamp
-            string nameWithoutExt = Path.GetFileNameWithoutExtension(rawFileName);
-            string[] parts = nameWithoutExt.Split('-');
-            string strippedBase = parts[0];
-            for (int i = 1; i < parts.Length; i++)
-            {
-                if (!int.TryParse(parts[i], out _))
-                    strippedBase += "-" + parts[i];
-                else
-                    break;
-            }
-            string fileName = $"{strippedBase}.zip";
+            string rawFileName = Path.GetFileNameWithoutExtension(new Uri(downloadUrl).LocalPath);
+            string fileName = FileNameCleaner.ExtractCleanName(rawFileName) + ".zip";
 
             string modName = await GetModNameAsync(modId);
             Debug.WriteLine($"Resolved mod name: {modName}");
@@ -219,7 +207,7 @@ namespace LiteCyberpunkModManager.Services
                 ModId = modId,
                 ModName = modName,
                 FileId = fileId,
-                FileName = fileName, // FIXED, store full file name with extension
+                FileName = fileName,
                 UploadedTimestamp = await GetFileUploadTimeAsync(modId, fileId)
             };
 
