@@ -250,7 +250,7 @@
                         <Border x:Name="Border"
                             Width="16" Height="16"
                             Background="{StaticResource ControlBackgroundBrush}"
-                            BorderBrush="{StaticResource ControlBorderBrush}"
+                            BorderBrush="#5A5A5A"
                             BorderThickness="1"
                             CornerRadius="2"
                             Margin="0,0,4,0"
@@ -273,8 +273,8 @@
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DisabledTextBrush}"/>
-                            <Setter TargetName="CheckMark" Property="Stroke" Value="{StaticResource DisabledTextBrush}"/>
+                            <Setter TargetName="Border" Property="Background" Value="#4A4A4A"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="#5A5A5A"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
