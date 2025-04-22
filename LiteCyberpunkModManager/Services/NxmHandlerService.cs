@@ -219,7 +219,7 @@ namespace LiteCyberpunkModManager.Services
                 ModId = modId,
                 ModName = modName,
                 FileId = fileId,
-                FileName = Path.GetFileNameWithoutExtension(fileName),
+                FileName = fileName, // FIXED, store full file name with extension
                 UploadedTimestamp = await GetFileUploadTimeAsync(modId, fileId)
             };
 
