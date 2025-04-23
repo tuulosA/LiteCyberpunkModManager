@@ -161,7 +161,6 @@ namespace LiteCyberpunkModManager.Views
             }
         }
 
-
         private void PopulateFileList()
         {
             var sortedFiles = _files.OrderByDescending(f => f.UploadedTimestamp).ToList();
@@ -173,24 +172,31 @@ namespace LiteCyberpunkModManager.Views
                     ? $"{sizeInMb:F2} MB"
                     : $"{file.FileSizeBytes / 1024.0:F2} KB";
 
-                var text = $"{file.FileName}\nSize: {sizeLabel}\nUploaded: {file.UploadedTimestamp:G}\n{file.Description}";
+                string formattedDescription = TextFormatter.ConvertHtmlToPlainText(file.Description);
+                string fullText = $"{file.FileName}\nSize: {sizeLabel}\nUploaded: {file.UploadedTimestamp:G}\n{formattedDescription}";
+
+                var textBlock = new TextBlock
+                {
+                    TextWrapping = TextWrapping.Wrap,
+                    Width = 550,
+                    Foreground = (Brush)Application.Current.Resources["TextBrush"],
+                    Background = Brushes.Transparent
+                };
+
+                // Add parsed inlines one by one
+                foreach (var inline in TextFormatter.ParseToInlines(fullText))
+                {
+                    textBlock.Inlines.Add(inline);
+                }
 
                 var checkbox = new CheckBox
                 {
-                    Content = new TextBlock
-                    {
-                        Text = text,
-                        TextWrapping = TextWrapping.Wrap,
-                        Width = 550,
-                        Foreground = (Brush)Application.Current.Resources["TextBrush"],
-                        Background = Brushes.Transparent
-                    },
+                    Content = textBlock,
                     Tag = file.FileId,
                     Margin = new Thickness(5),
                     Foreground = (Brush)Application.Current.Resources["TextBrush"],
                     Background = (Brush)Application.Current.Resources["ControlBackgroundBrush"]
                 };
-
 
                 string fullName = file.FileName;
                 _checkboxFileNames[checkbox] = fullName;
@@ -214,6 +220,7 @@ namespace LiteCyberpunkModManager.Views
                 FilesPanel.Children.Add(checkbox);
             }
         }
+
 
         private void Checkbox_Checked(object sender, RoutedEventArgs e)
         {
