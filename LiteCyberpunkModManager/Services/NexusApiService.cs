@@ -135,17 +135,10 @@ namespace LiteCyberpunkModManager.Services
             try
             {
                 string targetDirectory = Path.GetDirectoryName(savePath)!;
-                string rawFileName = Path.GetFileNameWithoutExtension(savePath);
-
-                string cleanFileName = FileNameCleaner.ExtractCleanName(rawFileName) + ".zip";
-                string finalFilePath = Path.Combine(targetDirectory, cleanFileName);
+                Directory.CreateDirectory(targetDirectory);
 
                 Debug.WriteLine($"[Download] targetDirectory: {targetDirectory}");
-                Debug.WriteLine($"[Download] rawFileName: {rawFileName}");
-                Debug.WriteLine($"[Download] cleanFileName: {cleanFileName}");
-                Debug.WriteLine($"[Download] finalFilePath: {finalFilePath}");
-
-                Directory.CreateDirectory(targetDirectory);
+                Debug.WriteLine($"[Download] savePath: {savePath}");
 
                 using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
@@ -154,7 +147,7 @@ namespace LiteCyberpunkModManager.Services
                 var canReportProgress = totalBytes != -1 && progress != null;
 
                 await using var stream = await response.Content.ReadAsStreamAsync();
-                await using var fs = new FileStream(finalFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                await using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
                 var buffer = new byte[8192];
                 long totalRead = 0;
@@ -180,6 +173,7 @@ namespace LiteCyberpunkModManager.Services
                 return false;
             }
         }
+
 
         public async Task<List<ModFile>> GetModFilesAsync(string game, int modId)
         {
@@ -229,11 +223,9 @@ namespace LiteCyberpunkModManager.Services
                             _ => throw new InvalidOperationException("Invalid 'id' format")
                         };
 
-                        string originalFileName = file.TryGetProperty("file_name", out var fileNameProp) && fileNameProp.ValueKind == JsonValueKind.String
-                            ? fileNameProp.GetString() ?? $"file_{fileId}.zip"
-                            : $"file_{fileId}.zip";
-
-                        string cleanedFileName = FileNameCleaner.ExtractCleanName(Path.GetFileNameWithoutExtension(originalFileName)) + ".zip";
+                        string displayName = file.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
+                            ? nameProp.GetString() ?? $"file_{fileId}"
+                            : $"file_{fileId}";
 
                         long sizeBytes = file.TryGetProperty("size_kb", out var sizeProp) && sizeProp.ValueKind == JsonValueKind.Number
                             ? sizeProp.GetInt64() * 1024
@@ -247,12 +239,12 @@ namespace LiteCyberpunkModManager.Services
                             ? descProp.GetString() ?? ""
                             : "";
 
-                        Debug.WriteLine($"[NexusApiService] Parsed File -> ID: {fileId}, Name: {cleanedFileName}, Size: {sizeBytes} bytes, Uploaded: {uploaded}");
+                        Debug.WriteLine($"[NexusApiService] Parsed File -> ID: {fileId}, Name: {displayName}, Size: {sizeBytes} bytes, Uploaded: {uploaded}");
 
                         modFiles.Add(new ModFile
                         {
                             FileId = fileId,
-                            FileName = cleanedFileName,
+                            FileName = displayName,
                             FileSizeBytes = sizeBytes,
                             UploadedTimestamp = uploaded,
                             Description = description
@@ -271,7 +263,6 @@ namespace LiteCyberpunkModManager.Services
 
             return modFiles;
         }
-
 
 
         public async Task<List<Mod>> GetTrackedModsAsync(string game = "cyberpunk2077")

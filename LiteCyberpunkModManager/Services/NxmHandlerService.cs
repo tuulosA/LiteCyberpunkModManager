@@ -107,6 +107,21 @@ namespace LiteCyberpunkModManager.Services
         }
 
 
+        private async Task<string> GetFileDisplayNameAsync(int modId, int fileId)
+        {
+            string url = $"{ApiBase}/games/{Game}/mods/{modId}/files/{fileId}.json";
+            var response = await _http.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("Failed to fetch file metadata");
+
+            var json = await response.Content.ReadAsStringAsync();
+            var root = JsonDocument.Parse(json).RootElement;
+
+            return root.TryGetProperty("name", out var nameProp) ? nameProp.GetString() ?? $"file_{fileId}" : $"file_{fileId}";
+        }
+
+
         private async Task DownloadAndTrackAsync(int modId, int fileId, string key, string expires)
         {
             Debug.WriteLine("Starting DownloadAndTrackAsync");
@@ -150,8 +165,9 @@ namespace LiteCyberpunkModManager.Services
                 return;
             }
 
-            string rawFileName = Path.GetFileNameWithoutExtension(new Uri(downloadUrl).LocalPath);
-            string fileName = FileNameCleaner.ExtractCleanName(rawFileName) + ".zip";
+            // Get clean file name from Nexus API (use the 'name' field, not download URL parsing)
+            string fileDisplayName = await GetFileDisplayNameAsync(modId, fileId);
+            string fileName = fileDisplayName + ".zip";
 
             string modName = await GetModNameAsync(modId);
             Debug.WriteLine($"Resolved mod name: {modName}");
