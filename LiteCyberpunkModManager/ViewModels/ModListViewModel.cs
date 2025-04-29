@@ -175,31 +175,36 @@ namespace LiteCyberpunkModManager.ViewModels
 
             Debug.WriteLine($"[StatusCheck] ModId {modId}: Newest remote file: {newestRemote.FileName} (Uploaded: {newestRemote.UploadedTimestamp:O})");
 
+            // 1. Check if any installed file has a *newer remote* with the SAME filename
             foreach (var installed in installedForMod)
             {
                 Debug.WriteLine($"[StatusCheck] Checking installed file: {installed.FileName} (Uploaded: {installed.UploadedTimestamp:O})");
 
-                if (installed.FileName.Equals(newestRemote.FileName, StringComparison.OrdinalIgnoreCase) &&
-                    installed.UploadedTimestamp == newestRemote.UploadedTimestamp)
+                var newerSameNameRemote = latestFiles.FirstOrDefault(remote =>
+                    remote.FileName.Equals(installed.FileName, StringComparison.OrdinalIgnoreCase) &&
+                    remote.UploadedTimestamp > installed.UploadedTimestamp);
 
+                if (newerSameNameRemote != null)
                 {
-                    Debug.WriteLine($"[StatusCheck] -> MATCH: Installed file matches newest remote file exactly -> Latest Downloaded");
-                    return "Latest Downloaded";
+                    Debug.WriteLine($"[StatusCheck] -> UPDATE: Newer file with the same filename found -> Update Available!");
+                    return "Update Available!";
                 }
             }
 
-            bool isUpdateAvailable = installedForMod.Any(inst => inst.UploadedTimestamp < newestRemote.UploadedTimestamp);
+            // 2. Check if installed file matches the newest overall file
+            bool hasLatest = installedForMod.Any(inst =>
+                inst.UploadedTimestamp == newestRemote.UploadedTimestamp);
 
-            if (isUpdateAvailable)
+            if (hasLatest)
             {
-                Debug.WriteLine($"[StatusCheck] -> UPDATE: Installed files are older than newest remote -> Update Available!");
-                return "Update Available!";
+                Debug.WriteLine($"[StatusCheck] -> MATCH: Installed file matches newest remote overall -> Latest Downloaded");
+                return "Latest Downloaded";
             }
 
-            Debug.WriteLine($"[StatusCheck] -> FALLBACK: Installed file(s) but not latest, no update -> Downloaded");
+            // 3. Otherwise, a file is installed but newer files exist
+            Debug.WriteLine($"[StatusCheck] -> FALLBACK: Installed file(s) exist but not the newest -> Downloaded");
             return "Downloaded";
         }
-
 
 
         public async Task UpdateModStatusAsync(int modId)
