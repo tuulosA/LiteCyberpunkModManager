@@ -53,29 +53,6 @@ namespace LiteCyberpunkModManager.Services
             }
         }
 
-        private string GetCategoryName(int categoryId)
-        {
-            return categoryId switch
-            {
-                2 => "Miscellaneous",
-                3 => "Armour and Clothing",
-                4 => "Audio",
-                5 => "Characters",
-                6 => "Crafting",
-                7 => "Gameplay",
-                8 => "User Interface",
-                9 => "Utilities",
-                10 => "Visuals and Graphics",
-                11 => "Weapons",
-                12 => "Modders Resources",
-                13 => "Appearance",
-                14 => "Vehicles",
-                15 => "Animations",
-                16 => "Locations",
-                17 => "Scripts",
-                _ => "Unknown"
-            };
-        }
 
         private async Task<HttpResponseMessage?> GetAsync(string url)
         {
@@ -359,8 +336,13 @@ namespace LiteCyberpunkModManager.Services
                 var json = await response.Content.ReadAsStringAsync();
                 var root = JsonDocument.Parse(json).RootElement;
 
-                var name = root.TryGetProperty("name", out var nameProp) ? nameProp.GetString() ?? "Unknown Name" : "Unknown Name";
-                var category = root.TryGetProperty("category_id", out var catProp) ? GetCategoryName(catProp.GetInt32()) : "Unknown";
+                var name = root.TryGetProperty("name", out var nameProp)
+                    ? nameProp.GetString() ?? "Unknown Name"
+                    : "Unknown Name";
+
+                var category = root.TryGetProperty("category_id", out var catProp)
+                    ? CategoryHelper.GetCategoryName(catProp.GetInt32())
+                    : "Unknown";
 
                 return new Mod
                 {
@@ -375,6 +357,7 @@ namespace LiteCyberpunkModManager.Services
                 return null;
             }
         }
+
 
         public async Task<bool> TrackModAsync(int modId, string game = "cyberpunk2077")
         {

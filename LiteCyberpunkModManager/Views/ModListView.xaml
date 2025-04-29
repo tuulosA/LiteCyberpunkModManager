@@ -7,7 +7,7 @@
              mc:Ignorable="d">
 
     <UserControl.Resources>
-        <views:ModNameColumnWidthConverter x:Key="ModNameColumnWidthConverter" />
+        <views:ColumnWidthConverter x:Key="ColumnWidthConverter" />
     </UserControl.Resources>
 
     <Grid Margin="10">
@@ -109,7 +109,7 @@
                         <GridViewColumn.Width>
                             <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=ListView}"
                                      Path="ActualWidth"
-                                     Converter="{StaticResource ModNameColumnWidthConverter}" />
+                                     Converter="{StaticResource ColumnWidthConverter}" />
                         </GridViewColumn.Width>
                         <GridViewColumn.DisplayMemberBinding>
                             <Binding Path="Name" />

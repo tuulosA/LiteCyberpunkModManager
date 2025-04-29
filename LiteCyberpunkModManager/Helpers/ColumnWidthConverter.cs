@@ -3,7 +3,7 @@ using System.Windows.Data;
 
 namespace LiteCyberpunkModManager.Views
 {
-    public class ModNameColumnWidthConverter : IValueConverter
+    public class ColumnWidthConverter : IValueConverter
     {
         // subtract width taken by other columns and scrollbar
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
