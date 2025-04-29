@@ -224,8 +224,14 @@ namespace LiteCyberpunkModManager.Services
                         };
 
                         string displayName = file.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
-                            ? nameProp.GetString() ?? $"file_{fileId}.zip"
-                            : $"file_{fileId}.zip";
+                            ? nameProp.GetString() ?? $"file_{fileId}"
+                            : $"file_{fileId}";
+
+                        // Always ensure .zip extension once
+                        if (!displayName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            displayName += ".zip";
+                        }
 
                         long sizeBytes = file.TryGetProperty("size_kb", out var sizeProp) && sizeProp.ValueKind == JsonValueKind.Number
                             ? sizeProp.GetInt64() * 1024

@@ -179,8 +179,7 @@ namespace LiteCyberpunkModManager.ViewModels
             {
                 Debug.WriteLine($"[StatusCheck] Checking installed file: {installed.FileName} (Uploaded: {installed.UploadedTimestamp:O})");
 
-                if ((installed.FileName.Equals(newestRemote.FileName, StringComparison.OrdinalIgnoreCase) ||
-                     installed.FileName.Equals(newestRemote.FileName + ".zip", StringComparison.OrdinalIgnoreCase)) &&
+                if (installed.FileName.Equals(newestRemote.FileName, StringComparison.OrdinalIgnoreCase) &&
                     installed.UploadedTimestamp == newestRemote.UploadedTimestamp)
 
                 {
