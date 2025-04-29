@@ -285,7 +285,7 @@ namespace LiteCyberpunkModManager.Views
             {
                 cachedMods.RemoveAll(mod => modIds.Contains(mod.ModId));
                 ModCacheService.SaveCachedMods(cachedMods);
-                Console.WriteLine($"[CACHE] Removed {removedCount} mods from mod_cache.json.");
+                Debug.WriteLine($"[CACHE] Removed {removedCount} mods from mod_cache.json.");
             }
 
             MessageBox.Show($"Successfully untracked {removedCount} mod(s).", "Clear Complete");

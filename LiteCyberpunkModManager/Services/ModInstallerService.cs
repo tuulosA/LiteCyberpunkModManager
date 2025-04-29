@@ -5,6 +5,7 @@ using LiteCyberpunkModManager.Models;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using LiteCyberpunkModManager.Helpers;
+using System.Diagnostics;
 
 
 namespace LiteCyberpunkModManager.Services
@@ -129,7 +130,7 @@ namespace LiteCyberpunkModManager.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Install failed: {ex.Message}");
+                Debug.WriteLine($"[ERROR] Install failed: {ex.Message}");
                 MessageBox.Show("Mod installation failed after extraction. Files might be invalid.", "Install Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -175,7 +176,7 @@ namespace LiteCyberpunkModManager.Services
                         if (File.Exists(path))
                         {
                             try { File.Delete(path); }
-                            catch (Exception ex) { Console.WriteLine($"[WARN] Could not delete: {path} - {ex.Message}"); }
+                            catch (Exception ex) { Debug.WriteLine($"[WARN] Could not delete: {path} - {ex.Message}"); }
                         }
                     }
 
@@ -189,7 +190,7 @@ namespace LiteCyberpunkModManager.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Uninstall failed: {ex.Message}");
+                Debug.WriteLine($"[ERROR] Uninstall failed: {ex.Message}");
                 return false;
             }
         }

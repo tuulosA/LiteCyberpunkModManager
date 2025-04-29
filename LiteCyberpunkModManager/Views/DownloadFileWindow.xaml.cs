@@ -7,6 +7,7 @@ using System.Text.Json;
 using LiteCyberpunkModManager.ViewModels;
 using System.Windows.Media;
 using LiteCyberpunkModManager.Helpers;
+using System.Diagnostics;
 
 namespace LiteCyberpunkModManager.Views
 {
@@ -143,7 +144,7 @@ namespace LiteCyberpunkModManager.Views
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[WARN] Could not read existing metadata: {ex.Message}");
+                    Debug.WriteLine($"[WARN] Could not read existing metadata: {ex.Message}");
                 }
             }
 
@@ -157,7 +158,7 @@ namespace LiteCyberpunkModManager.Views
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Failed to write metadata: {ex.Message}");
+                Debug.WriteLine($"[ERROR] Failed to write metadata: {ex.Message}");
             }
         }
 

@@ -48,7 +48,7 @@ namespace LiteCyberpunkModManager.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Failed to check premium status: {ex.Message}");
+                Debug.WriteLine($"[ERROR] Failed to check premium status: {ex.Message}");
                 return false;
             }
         }
@@ -60,7 +60,7 @@ namespace LiteCyberpunkModManager.Services
 
             if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {
-                Console.WriteLine("[ERROR] Rate limit reached for URL: " + url);
+                Debug.WriteLine("[ERROR] Rate limit reached for URL: " + url);
 
                 if (!_localRateLimitShown)
                 {
@@ -119,12 +119,12 @@ namespace LiteCyberpunkModManager.Services
                     return links[0].GetProperty("URI").GetString();
                 }
 
-                Console.WriteLine($"No download links returned for file {fileId} of mod {modId}.");
+                Debug.WriteLine($"No download links returned for file {fileId} of mod {modId}.");
                 return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting download link for Mod ID {modId}, File ID {fileId}: {ex.Message}");
+                Debug.WriteLine($"Error getting download link for Mod ID {modId}, File ID {fileId}: {ex.Message}");
                 return null;
             }
         }
@@ -272,7 +272,7 @@ namespace LiteCyberpunkModManager.Services
 
             try
             {
-                Console.WriteLine("Fetching tracked mods...");
+                Debug.WriteLine("Fetching tracked mods...");
                 var response = await GetAsync(url);
                 if (response == null) return mods;
                 response.EnsureSuccessStatusCode();
@@ -288,7 +288,7 @@ namespace LiteCyberpunkModManager.Services
                         if (entry.TryGetProperty("mod_id", out var modIdElement) &&
                             modIdElement.TryGetInt32(out int modId))
                         {
-                            Console.WriteLine($"Fetching details for Mod ID: {modId}");
+                            Debug.WriteLine($"Fetching details for Mod ID: {modId}");
                             var modDetails = await GetModDetailsAsync(game, modId);
                             if (modDetails != null)
                             {
@@ -296,19 +296,19 @@ namespace LiteCyberpunkModManager.Services
                             }
                             else
                             {
-                                Console.WriteLine($"Mod details not found or failed to parse for Mod ID: {modId}");
+                                Debug.WriteLine($"Mod details not found or failed to parse for Mod ID: {modId}");
                             }
                         }
 
                     });
 
                 await Task.WhenAll(tasks);
-                Console.WriteLine($"Successfully fetched {mods.Count} tracked mods.");
+                Debug.WriteLine($"Successfully fetched {mods.Count} tracked mods.");
                 return mods;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error fetching tracked mods: {ex.Message}");
+                Debug.WriteLine($"Error fetching tracked mods: {ex.Message}");
                 return mods;
             }
         }
@@ -344,7 +344,7 @@ namespace LiteCyberpunkModManager.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting details for Mod ID {modId}: {ex.Message}");
+                Debug.WriteLine($"Error getting details for Mod ID {modId}: {ex.Message}");
                 return null;
             }
         }
@@ -363,15 +363,15 @@ namespace LiteCyberpunkModManager.Services
                 var response = await _httpClient.PostAsync(url, content);
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"[INFO] Tracked mod {modId} successfully.");
+                    Debug.WriteLine($"[INFO] Tracked mod {modId} successfully.");
                     return true;
                 }
 
-                Console.WriteLine($"[WARN] Failed to track mod {modId}. Status: {response.StatusCode}");
+                Debug.WriteLine($"[WARN] Failed to track mod {modId}. Status: {response.StatusCode}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Error tracking mod {modId}: {ex.Message}");
+                Debug.WriteLine($"[ERROR] Error tracking mod {modId}: {ex.Message}");
             }
 
             return false;
@@ -397,15 +397,15 @@ namespace LiteCyberpunkModManager.Services
                 var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"[INFO] Untracked mod {modId} successfully.");
+                    Debug.WriteLine($"[INFO] Untracked mod {modId} successfully.");
                     return true;
                 }
 
-                Console.WriteLine($"[WARN] Failed to untrack mod {modId}. Status: {response.StatusCode}");
+                Debug.WriteLine($"[WARN] Failed to untrack mod {modId}. Status: {response.StatusCode}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Error untracking mod {modId}: {ex.Message}");
+                Debug.WriteLine($"[ERROR] Error untracking mod {modId}: {ex.Message}");
             }
 
             return false;
@@ -441,7 +441,7 @@ namespace LiteCyberpunkModManager.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Failed to fetch tracked mod IDs: {ex.Message}");
+                Debug.WriteLine($"[ERROR] Failed to fetch tracked mod IDs: {ex.Message}");
                 return modIds;
             }
         }

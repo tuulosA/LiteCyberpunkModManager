@@ -84,12 +84,12 @@ namespace LiteCyberpunkModManager.Views
             foreach (var selected in selectedMods)
             {
                 var modId = selected.ModId;
-                Console.WriteLine($"[DEBUG] Fetching files for Mod ID: {modId}");
+                Debug.WriteLine($"[DEBUG] Fetching files for Mod ID: {modId}");
 
                 var files = await _api.GetModFilesAsync("cyberpunk2077", modId);
                 if (files == null)
                 {
-                    Console.WriteLine("[DEBUG] GetModFilesAsync returned null.");
+                    Debug.WriteLine("[DEBUG] GetModFilesAsync returned null.");
                     MessageBox.Show($"Failed to fetch files for mod: {selected.Name}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     continue;
                 }
@@ -114,7 +114,7 @@ namespace LiteCyberpunkModManager.Views
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[WARN] Failed to load existing mod metadata: {ex.Message}");
+                        Debug.WriteLine($"[WARN] Failed to load existing mod metadata: {ex.Message}");
                     }
                 }
 
@@ -162,7 +162,7 @@ namespace LiteCyberpunkModManager.Views
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[WARN] Failed to load downloaded_mods.json: {ex.Message}");
+                Debug.WriteLine($"[WARN] Failed to load downloaded_mods.json: {ex.Message}");
                 return;
             }
 
@@ -213,13 +213,13 @@ namespace LiteCyberpunkModManager.Views
                         metadataList.Remove(matchingEntry);
                         deletedFileNames.Add(fileName);
                         affectedModIds.Add(matchingEntry.ModId);
-                        Console.WriteLine($"Removed metadata entry for file: {fileName} (ID: {matchingEntry.FileId})");
+                        Debug.WriteLine($"Removed metadata entry for file: {fileName} (ID: {matchingEntry.FileId})");
                     }
 
                     try
                     {
                         File.Delete(filePath);
-                        Console.WriteLine($"Deleted: {filePath}");
+                        Debug.WriteLine($"Deleted: {filePath}");
                     }
                     catch (Exception ex)
                     {
@@ -234,7 +234,7 @@ namespace LiteCyberpunkModManager.Views
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[ERROR] Failed to update downloaded_mods.json: {ex.Message}");
+                    Debug.WriteLine($"[ERROR] Failed to update downloaded_mods.json: {ex.Message}");
                 }
 
                 string summary = deletedFileNames.Count > 0
@@ -361,7 +361,7 @@ namespace LiteCyberpunkModManager.Views
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[WARN] Failed to save downloaded_mods.json: {ex.Message}");
+                Debug.WriteLine($"[WARN] Failed to save downloaded_mods.json: {ex.Message}");
             }
 
             var trackedModIds = await _api.GetTrackedModIdsAsync();
@@ -393,7 +393,7 @@ namespace LiteCyberpunkModManager.Views
                     fileName += ".zip";
                 }
 
-                Console.WriteLine($"[INFO] Processing {modName} (ModId: {modId}, FileId: {fileId})");
+                Debug.WriteLine($"[INFO] Processing {modName} (ModId: {modId}, FileId: {fileId})");
 
                 progressWindow.SetModName(modName);
                 progressWindow.SetFileName(fileName);
@@ -405,7 +405,7 @@ namespace LiteCyberpunkModManager.Views
                 string? downloadUrl = await _api.GetDownloadLinkAsync("cyberpunk2077", modId, fileId);
                 if (string.IsNullOrWhiteSpace(downloadUrl))
                 {
-                    Console.WriteLine($"[WARN] No download URL found for {modName}");
+                    Debug.WriteLine($"[WARN] No download URL found for {modName}");
                     failed++;
                     completed++;
                     continue;
@@ -428,12 +428,12 @@ namespace LiteCyberpunkModManager.Views
                 bool success = await _api.DownloadFileAsync(downloadUrl, filePath, progress);
                 if (success)
                 {
-                    Console.WriteLine($"[SUCCESS] Downloaded {modName}");
+                    Debug.WriteLine($"[SUCCESS] Downloaded {modName}");
                     await _viewModel.UpdateModStatusAsync(modId);
                 }
                 else
                 {
-                    Console.WriteLine($"[FAIL] Failed to download {modName}");
+                    Debug.WriteLine($"[FAIL] Failed to download {modName}");
                     failed++;
                 }
 

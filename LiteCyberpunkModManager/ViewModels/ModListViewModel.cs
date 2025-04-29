@@ -244,7 +244,7 @@ namespace LiteCyberpunkModManager.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[WARN] Error fetching from API: {ex.Message}");
+                Debug.WriteLine($"[WARN] Error fetching from API: {ex.Message}");
                 return null;
             }
         }
