@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Data;
 using LiteCyberpunkModManager.Helpers;
+using System.Diagnostics;
 
 namespace LiteCyberpunkModManager.ViewModels
 {
@@ -28,6 +29,25 @@ namespace LiteCyberpunkModManager.ViewModels
             get => _statusMessage;
             set { _statusMessage = value; OnPropertyChanged(); }
         }
+
+        private void ApplyFilters()
+        {
+            ModsGrouped.Filter = obj =>
+            {
+                if (obj is not ModDisplay mod) return false;
+
+                bool matchesSearch = string.IsNullOrWhiteSpace(SearchText) ||
+                                     mod.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+
+                bool matchesCategory = SelectedCategory == "All" || SelectedCategory == null ||
+                                       mod.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase);
+
+                return matchesSearch && matchesCategory;
+            };
+
+            ModsGrouped.Refresh();
+        }
+
 
         private string _searchText = "";
         public string SearchText
@@ -137,22 +157,113 @@ namespace LiteCyberpunkModManager.ViewModels
         }
 
 
-        private void ApplyFilters()
+        private string GetUpdateStatus(int modId, List<ModFile> latestFiles, List<InstalledModInfo> installedFiles)
         {
-            ModsGrouped.Filter = obj =>
+            var installedForMod = installedFiles.Where(f => f.ModId == modId).ToList();
+            if (!installedForMod.Any() || latestFiles.Count == 0)
             {
-                if (obj is not ModDisplay mod) return false;
+                Debug.WriteLine($"[StatusCheck] ModId {modId}: No installed files or no remote files. -> Not Downloaded");
+                return "Not Downloaded";
+            }
 
-                bool matchesSearch = string.IsNullOrWhiteSpace(SearchText) ||
-                                     mod.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+            var newestRemote = latestFiles.OrderByDescending(f => f.UploadedTimestamp).FirstOrDefault();
+            if (newestRemote == null)
+            {
+                Debug.WriteLine($"[StatusCheck] ModId {modId}: No newest remote file found. -> Downloaded");
+                return "Downloaded";
+            }
 
-                bool matchesCategory = SelectedCategory == "All" || SelectedCategory == null ||
-                                       mod.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase);
+            Debug.WriteLine($"[StatusCheck] ModId {modId}: Newest remote file: {newestRemote.FileName} (Uploaded: {newestRemote.UploadedTimestamp:O})");
 
-                return matchesSearch && matchesCategory;
-            };
+            foreach (var installed in installedForMod)
+            {
+                Debug.WriteLine($"[StatusCheck] Checking installed file: {installed.FileName} (Uploaded: {installed.UploadedTimestamp:O})");
 
-            ModsGrouped.Refresh();
+                if ((installed.FileName.Equals(newestRemote.FileName, StringComparison.OrdinalIgnoreCase) ||
+                     installed.FileName.Equals(newestRemote.FileName + ".zip", StringComparison.OrdinalIgnoreCase)) &&
+                    installed.UploadedTimestamp == newestRemote.UploadedTimestamp)
+
+                {
+                    Debug.WriteLine($"[StatusCheck] -> MATCH: Installed file matches newest remote file exactly -> Latest Downloaded");
+                    return "Latest Downloaded";
+                }
+            }
+
+            bool isUpdateAvailable = installedForMod.Any(inst => inst.UploadedTimestamp < newestRemote.UploadedTimestamp);
+
+            if (isUpdateAvailable)
+            {
+                Debug.WriteLine($"[StatusCheck] -> UPDATE: Installed files are older than newest remote -> Update Available!");
+                return "Update Available!";
+            }
+
+            Debug.WriteLine($"[StatusCheck] -> FALLBACK: Installed file(s) but not latest, no update -> Downloaded");
+            return "Downloaded";
+        }
+
+
+
+        public async Task UpdateModStatusAsync(int modId)
+        {
+            var installed = LoadInstalledMetadata(); // reloads from disk every time
+            var remoteFiles = await _apiService.GetModFilesAsync("cyberpunk2077", modId);
+
+            var modDisplay = Mods.FirstOrDefault(m => m.ModId == modId);
+            if (modDisplay == null) return;
+
+            int fileCount = installed.Count(i => i.ModId == modId);
+            modDisplay.DownloadedFileCount = fileCount;
+
+            if (fileCount > 0)
+            {
+                modDisplay.Status = GetUpdateStatus(modId, remoteFiles, installed);
+            }
+            else
+            {
+                modDisplay.Status = "Not Downloaded";
+            }
+
+            RefreshModList();
+        }
+
+        private async Task<List<Mod>?> TryFetchFromApiAsync()
+        {
+            // reset rate-limit warning flag before retry
+            typeof(NexusApiService)
+                .GetField("_localRateLimitShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                ?.SetValue(null, false);
+
+            try
+            {
+                var mods = await _apiService.GetTrackedModsAsync();
+                if (mods != null && mods.Count > 0)
+                {
+                    ModCacheService.SaveCachedMods(mods);
+                }
+                return mods;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARN] Error fetching from API: {ex.Message}");
+                return null;
+            }
+        }
+
+
+        private List<InstalledModInfo> LoadInstalledMetadata()
+        {
+            var metadataPath = PathConfig.DownloadedMods;
+            if (!File.Exists(metadataPath)) return new();
+
+            try
+            {
+                string json = File.ReadAllText(metadataPath);
+                return JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+            }
+            catch
+            {
+                return new();
+            }
         }
 
 
@@ -209,99 +320,6 @@ namespace LiteCyberpunkModManager.ViewModels
             }
 
             await PopulateModsAsync(mods);
-        }
-
-
-        private async Task<List<Mod>?> TryFetchFromApiAsync()
-        {
-            // reset rate-limit warning flag before retry
-            typeof(NexusApiService)
-                .GetField("_localRateLimitShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                ?.SetValue(null, false);
-
-            try
-            {
-                var mods = await _apiService.GetTrackedModsAsync();
-                if (mods != null && mods.Count > 0)
-                {
-                    ModCacheService.SaveCachedMods(mods);
-                }
-                return mods;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[WARN] Error fetching from API: {ex.Message}");
-                return null;
-            }
-        }
-
-
-        private List<InstalledModInfo> LoadInstalledMetadata()
-        {
-            var metadataPath = PathConfig.DownloadedMods;
-            if (!File.Exists(metadataPath)) return new();
-
-            try
-            {
-                string json = File.ReadAllText(metadataPath);
-                return JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
-            }
-            catch
-            {
-                return new();
-            }
-        }
-
-        private string GetUpdateStatus(int modId, List<ModFile> latestFiles, List<InstalledModInfo> installedFiles)
-        {
-            var installedForMod = installedFiles.Where(f => f.ModId == modId).ToList();
-            if (!installedForMod.Any() || latestFiles.Count == 0)
-                return "Not Downloaded";
-
-            // check for matching filename updates
-            foreach (var installed in installedForMod)
-            {
-                var newerSameName = latestFiles.FirstOrDefault(remote =>
-                    remote.FileName.Equals(installed.FileName, StringComparison.OrdinalIgnoreCase) &&
-                    remote.UploadedTimestamp > installed.UploadedTimestamp);
-
-                if (newerSameName != null)
-                    return "Update Available!";
-            }
-
-            // if any installed file is the latest by timestamp
-            var newestRemote = latestFiles.OrderByDescending(f => f.UploadedTimestamp).FirstOrDefault();
-            if (newestRemote != null && installedForMod.Any(i =>
-                i.FileName.Equals(newestRemote.FileName, StringComparison.OrdinalIgnoreCase) &&
-                i.UploadedTimestamp == newestRemote.UploadedTimestamp))
-            {
-                return "Latest Downloaded";
-            }
-
-            return "Downloaded";
-        }
-
-        public async Task UpdateModStatusAsync(int modId)
-        {
-            var installed = LoadInstalledMetadata(); // reloads from disk every time
-            var remoteFiles = await _apiService.GetModFilesAsync("cyberpunk2077", modId);
-
-            var modDisplay = Mods.FirstOrDefault(m => m.ModId == modId);
-            if (modDisplay == null) return;
-
-            int fileCount = installed.Count(i => i.ModId == modId);
-            modDisplay.DownloadedFileCount = fileCount;
-
-            if (fileCount > 0)
-            {
-                modDisplay.Status = GetUpdateStatus(modId, remoteFiles, installed);
-            }
-            else
-            {
-                modDisplay.Status = "Not Downloaded";
-            }
-
-            RefreshModList();
         }
 
 
