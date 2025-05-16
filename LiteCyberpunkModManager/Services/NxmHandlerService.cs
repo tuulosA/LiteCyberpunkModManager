@@ -241,7 +241,10 @@ namespace LiteCyberpunkModManager.Services
                 }
             }
 
-            list.RemoveAll(x => x.ModId == modId && x.FileId == fileId);
+            list.RemoveAll(x =>
+                x.ModId == modId &&
+                x.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+
             list.Add(entry);
 
             File.WriteAllText(metadataPath, JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true }));
