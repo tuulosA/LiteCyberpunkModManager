@@ -37,6 +37,123 @@
     <SolidColorBrush x:Key="UpdateAvailableStatusBrush" Color="#FFD700"/>
     <SolidColorBrush x:Key="NotDownloadedStatusBrush" Color="Gray"/>
 
+    <!-- ContextMenu (SO-style template + dark colors) -->
+    <Style TargetType="{x:Type ContextMenu}">
+        <Setter Property="Background"     Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="BorderBrush"    Value="{StaticResource ControlBorderBrush}" />
+        <Setter Property="Foreground"     Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ContextMenu}">
+                    <Border>
+                        <!-- mimic system dropshadow behavior -->
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Tag" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Padding"    Value="0,0,5,5"/>
+                                        <Setter Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="1"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                            <ScrollViewer CanContentScroll="True"
+                                      Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}}">
+                                <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle"
+                                            Margin="{TemplateBinding Padding}"
+                                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </ScrollViewer>
+                        </Border>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- MenuItem: darken the checkmark gutter + highlight/disabled colors -->
+    <Style TargetType="{x:Type MenuItem}">
+        <Setter Property="Foreground"  Value="{StaticResource TextBrush}"/>
+        <Setter Property="Background"  Value="{StaticResource ControlBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}"/>
+        <Setter Property="Padding"     Value="6,3"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type MenuItem}">
+                    <Border x:Name="Outer"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="0,0,0,1">
+                        <Grid Margin="0" MinHeight="28">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- gutter -->
+                            <Border Grid.Column="0" Background="{StaticResource HeaderBackgroundBrush}" />
+
+                            <!-- checkmark -->
+                            <Path x:Name="Check"
+                              Grid.Column="0"
+                              Data="M 0 6 L 5 11 L 12 0"
+                              Stroke="{StaticResource TextBrush}"
+                              StrokeThickness="2"
+                              Stretch="Uniform"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Visibility="Collapsed"/>
+
+                            <!-- IMPORTANT: bind to Header -->
+                            <ContentPresenter Grid.Column="1"
+                                          Margin="8,0,8,0"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True"
+                                          ContentSource="Header"/>
+                        </Grid>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Outer" Property="Background" Value="{StaticResource ListItemHoverBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <!-- Optional: separator in the same palette -->
+    <Style TargetType="{x:Type Separator}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Separator}">
+                    <Border Height="1" Background="{StaticResource ControlBorderBrush}" Margin="6,3"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
     <!-- Window -->
     <Style TargetType="Window">
         <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}" />

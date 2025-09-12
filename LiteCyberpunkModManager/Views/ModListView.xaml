@@ -117,14 +117,43 @@
                     </GridViewColumn>
 
                     <GridViewColumn Header="Status" Width="180">
-                        <GridViewColumn.CellTemplate>
+                        <!-- HEADER: clickable, opens a context menu with status options -->
+                        <GridViewColumn.HeaderTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Status}"
-                                           Padding="4"
-                                           FontWeight="SemiBold"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           TextAlignment="Center">
+                                <Border Padding="0"
+                  Background="Transparent"
+                  MouseLeftButtonDown="StatusHeader_MouseLeftButtonDown">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,0">
+                                            <TextBlock Text="Status" FontWeight="Bold" />
+                                            <TextBlock Text="  ▼" Margin="2,0,0,0" Opacity="0.7"/>
+                                        </StackPanel>
+
+                                        <!-- Context menu appears when clicking the header -->
+                                        <Border.ContextMenu>
+                                            <ContextMenu StaysOpen="False"
+                           Opened="StatusHeader_ContextMenu_Opened">
+                                                <MenuItem Header="All statuses" Click="StatusHeaderMenu_Click"/>
+                                                <Separator/>
+                                                <MenuItem Header="Latest Downloaded" Click="StatusHeaderMenu_Click"/>
+                                                <MenuItem Header="Downloaded" Click="StatusHeaderMenu_Click"/>
+                                                <MenuItem Header="Not Downloaded" Click="StatusHeaderMenu_Click"/>
+                                                <MenuItem Header="Update Available!" Click="StatusHeaderMenu_Click"/>
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                    </Border>
+                                </DataTemplate>
+                            </GridViewColumn.HeaderTemplate>
+
+                            <!-- your existing CellTemplate for status -->
+                            <GridViewColumn.CellTemplate>
+                                <!-- unchanged -->
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Status}"
+                     Padding="4"
+                     FontWeight="SemiBold"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     TextAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
@@ -148,6 +177,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+
 
                     <GridViewColumn Header="Files Downloaded" Width="140">
                         <GridViewColumn.CellTemplate>

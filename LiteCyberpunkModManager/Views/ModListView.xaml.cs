@@ -8,6 +8,8 @@ using System.Text.Json;
 using System.Diagnostics;
 using LiteCyberpunkModManager.Helpers;
 using System.Windows.Input;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace LiteCyberpunkModManager.Views
 {
@@ -16,6 +18,8 @@ namespace LiteCyberpunkModManager.Views
         private readonly ModListViewModel _viewModel;
         private readonly Settings _settings;
         private readonly NexusApiService _api;
+        private ICollectionView? _modsView;
+        private string _statusFilter = "All statuses";
 
         public ModListView()
         {
@@ -29,6 +33,103 @@ namespace LiteCyberpunkModManager.Views
 
             Loaded += ModListView_Loaded;
         }
+
+        private void EnsureModsViewHooked()
+        {
+            if (ModsListView == null) return;                 // <- add this guard
+            if (_modsView == null && ModsListView.ItemsSource != null)
+            {
+                _modsView = CollectionViewSource.GetDefaultView(ModsListView.ItemsSource);
+                if (_modsView != null)
+                {
+                    _modsView.Filter = ModStatusFilterPredicate;
+                }
+            }
+        }
+
+        private bool ModStatusFilterPredicate(object? obj)
+        {
+            if (obj is not ModDisplay mod) return true;
+            var status = mod.Status ?? string.Empty;
+
+            switch (_statusFilter)
+            {
+                case "Latest Downloaded":
+                    return status.Equals("Latest Downloaded", StringComparison.OrdinalIgnoreCase);
+                case "Downloaded":
+                    return status.Equals("Downloaded", StringComparison.OrdinalIgnoreCase);
+                case "Not Downloaded":
+                    return status.Equals("Not Downloaded", StringComparison.OrdinalIgnoreCase);
+                case "Update Available!":
+                    return status.Equals("Update Available!", StringComparison.OrdinalIgnoreCase);
+                case "All statuses":
+                default:
+                    return true;
+            }
+        }
+
+        private void RefreshStatusFilter()
+        {
+            EnsureModsViewHooked();
+            _modsView?.Refresh();
+        }
+
+        // Opens the header's context menu when the "Status" header is clicked
+        private void StatusHeader_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is Border b && b.ContextMenu != null)
+            {
+                b.ContextMenu.PlacementTarget = b;
+                b.ContextMenu.IsOpen = true;
+                e.Handled = true;
+            }
+        }
+
+        // Keeps a checkmark on the active status filter
+        private void StatusHeader_ContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            if (sender is ContextMenu cm)
+            {
+                foreach (var item in cm.Items)
+                {
+                    if (item is MenuItem mi && mi.Header is string text)
+                    {
+                        mi.IsCheckable = true;
+                        mi.IsChecked = string.Equals(_statusFilter, text, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+            }
+        }
+
+        // Applies the selected status filter from the header menu
+        private void StatusHeaderMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem mi && mi.Header is string choice)
+            {
+                _statusFilter = choice;
+                RefreshStatusFilter();
+            }
+        }
+
+
+        private async void ModListView_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= ModListView_Loaded;
+
+            await _viewModel.LoadTrackedModsFromCacheFirstAsync();
+
+            // ensure the ListView field is created & bound before we grab its view
+            await Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.Loaded);
+            EnsureModsViewHooked();
+        }
+
+
+        private async void FetchMods_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.LoadTrackedModsFromApiFirstAsync(); // user-triggered fetch
+            EnsureModsViewHooked(); // NEW: re-attach if ItemsSource swapped
+        }
+
 
         public void ReinitializeApiService()
         {
@@ -56,19 +157,6 @@ namespace LiteCyberpunkModManager.Views
             {
                 MessageBox.Show("Failed to open Tracking Centre.\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private async void ModListView_Loaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= ModListView_Loaded; // run only once
-
-            await _viewModel.LoadTrackedModsFromCacheFirstAsync(); // startup
-        }
-
-        private async void FetchMods_Click(object sender, RoutedEventArgs e)
-        {
-            await _viewModel.LoadTrackedModsFromApiFirstAsync(); // user-triggered fetch
-
         }
 
         private async void DownloadFiles_Click(object sender, RoutedEventArgs e)
