@@ -36,14 +36,23 @@ namespace LiteCyberpunkModManager.Views
 
         private void EnsureModsViewHooked()
         {
-            if (ModsListView == null) return;                 // <- add this guard
-            if (_modsView == null && ModsListView.ItemsSource != null)
+            if (ModsListView == null) return;
+
+            var currentSource = ModsListView.ItemsSource;
+
+            // If ItemsSource is gone, drop the old view.
+            if (currentSource == null)
             {
-                _modsView = CollectionViewSource.GetDefaultView(ModsListView.ItemsSource);
+                _modsView = null;
+                return;
+            }
+
+            // (Re)attach if we never attached OR the ItemsSource has changed.
+            if (_modsView == null || !ReferenceEquals(_modsView.SourceCollection, currentSource))
+            {
+                _modsView = CollectionViewSource.GetDefaultView(currentSource);
                 if (_modsView != null)
-                {
                     _modsView.Filter = ModStatusFilterPredicate;
-                }
             }
         }
 
