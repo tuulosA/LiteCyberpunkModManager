@@ -22,4 +22,20 @@
     <Content Include="Resources\LITECPMM.ico" />
   </ItemGroup>
 
+  <!-- Do NOT copy settings.json to build or publish output -->
+  <ItemGroup>
+    <!-- Make sure it's not treated as Content -->
+    <Content Remove="settings.json" />
+    <!-- Track it as None, but never copy -->
+    <None Include="settings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Safety net: even if settings.json appears, delete it from the publish dir -->
+  <Target Name="StripSettingsFromPublish" AfterTargets="Publish">
+    <Delete Files="$(PublishDir)settings.json" />
+  </Target>
+
 </Project>

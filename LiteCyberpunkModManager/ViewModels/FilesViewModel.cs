@@ -46,6 +46,10 @@ namespace LiteCyberpunkModManager.ViewModels
 
             try
             {
+                // NEW: load cached mods for category lookup
+                var cachedMods = ModCacheService.LoadCachedMods() ?? new List<Mod>();
+                var modsById = cachedMods.ToDictionary(m => m.ModId, m => m);
+
                 string json = File.ReadAllText(metadataPath);
                 var list = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
                 HashSet<string> installedGameFiles = new();
@@ -76,13 +80,21 @@ namespace LiteCyberpunkModManager.ViewModels
                     string cleanName = Path.GetFileNameWithoutExtension(entry.FileName).ToLower();
                     bool isInstalled = installedGameFiles.Contains(cleanName + ".archive");
 
+                    // NEW: resolve category from cache by ModId; fallback to "Unknown"
+                    string category = "Unknown";
+                    if (modsById.TryGetValue(entry.ModId, out var modFromCache))
+                    {
+                        category = string.IsNullOrWhiteSpace(modFromCache.Category) ? "Unknown" : modFromCache.Category;
+                    }
+
                     var display = new InstalledModDisplay
                     {
                         ModName = entry.ModName,
                         FileName = entry.FileName,
                         FileSizeMB = sizeMB,
                         UploadedTimestamp = entry.UploadedTimestamp.ToString("yyyy-MM-dd HH:mm:ss"),
-                        Status = isInstalled ? "Installed" : "Not Installed"
+                        Status = isInstalled ? "Installed" : "Not Installed",
+                        Category = category   // <-- IMPORTANT
                     };
 
                     AllDownloadedFiles.Add(display);
@@ -90,8 +102,12 @@ namespace LiteCyberpunkModManager.ViewModels
 
                 ApplyFilter();
             }
-            catch { }
+            catch
+            {
+                // swallow or log if you prefer
+            }
         }
+
 
         private void ApplyFilter()
         {
@@ -123,6 +139,10 @@ namespace LiteCyberpunkModManager.ViewModels
 
         public string UploadedTimestamp { get; set; } = "";
         public string Status { get; set; } = "Not Installed";
+
+        // NEW: used by the XAML group description
+        public string Category { get; set; } = "Unknown";
     }
+
 
 }
