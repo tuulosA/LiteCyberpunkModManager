@@ -77,6 +77,8 @@ namespace LiteCyberpunkModManager.Views
             progressWindow.Close();
             DownloadedFilesGrid.Items.Refresh();
             MessageBox.Show("Selected mods installed.", "Install Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            _viewModel.RefreshSummary();
+
         }
 
 
@@ -100,6 +102,7 @@ namespace LiteCyberpunkModManager.Views
 
             DownloadedFilesGrid.Items.Refresh();
             MessageBox.Show("Selected mods uninstalled.", "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            _viewModel.RefreshSummary();
         }
 
 

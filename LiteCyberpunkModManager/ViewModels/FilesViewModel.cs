@@ -5,6 +5,8 @@ using System.Text.Json;
 using LiteCyberpunkModManager.Helpers;
 using LiteCyberpunkModManager.Models;
 using LiteCyberpunkModManager.Services;
+using System.Linq;
+using System.Collections.Specialized;
 
 namespace LiteCyberpunkModManager.ViewModels
 {
@@ -12,6 +14,21 @@ namespace LiteCyberpunkModManager.ViewModels
     {
         public ObservableCollection<InstalledModDisplay> AllDownloadedFiles { get; set; } = new();
         public ObservableCollection<InstalledModDisplay> FilteredDownloadedFiles { get; set; } = new();
+
+        public int TotalCount => FilteredDownloadedFiles.Count;
+        public int InstalledCount => FilteredDownloadedFiles.Count(x =>
+            x.Status.Equals("Installed", StringComparison.OrdinalIgnoreCase));
+        public int NotInstalledCount => TotalCount - InstalledCount;
+        public string SummaryText => $"{TotalCount} files — {InstalledCount} installed, {NotInstalledCount} not installed";
+
+        public void RefreshSummary()
+        {
+            OnPropertyChanged(nameof(TotalCount));
+            OnPropertyChanged(nameof(InstalledCount));
+            OnPropertyChanged(nameof(NotInstalledCount));
+            OnPropertyChanged(nameof(SummaryText));
+        }
+
 
         private string _searchText = "";
         public string SearchText
@@ -28,14 +45,11 @@ namespace LiteCyberpunkModManager.ViewModels
         public FilesViewModel()
         {
             LoadDownloadedFiles();
+
+            // keep summary in sync when the filtered list changes
+            FilteredDownloadedFiles.CollectionChanged += (_, __) => RefreshSummary();
         }
 
-        public void Reload()
-        {
-            AllDownloadedFiles.Clear();
-            FilteredDownloadedFiles.Clear();
-            LoadDownloadedFiles();
-        }
 
         private void LoadDownloadedFiles()
         {
@@ -121,7 +135,17 @@ namespace LiteCyberpunkModManager.ViewModels
                     FilteredDownloadedFiles.Add(mod);
                 }
             }
+            RefreshSummary(); // <—
         }
+
+        public void Reload()
+        {
+            AllDownloadedFiles.Clear();
+            FilteredDownloadedFiles.Clear();
+            LoadDownloadedFiles();
+            RefreshSummary(); // <—
+        }
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
