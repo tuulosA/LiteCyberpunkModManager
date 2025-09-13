@@ -30,19 +30,45 @@ namespace LiteCyberpunkModManager.ViewModels
             set { _statusMessage = value; OnPropertyChanged(); }
         }
 
+        private string _statusFilter = "All statuses";
+        public string StatusFilter
+        {
+            get => _statusFilter;
+            set
+            {
+                if (_statusFilter == value) return;
+                _statusFilter = value;
+                OnPropertyChanged();
+                ApplyFilters(); // <- re-apply when status changes
+            }
+        }
+
         private void ApplyFilters()
         {
             ModsGrouped.Filter = obj =>
             {
                 if (obj is not ModDisplay mod) return false;
 
+                // Search
                 bool matchesSearch = string.IsNullOrWhiteSpace(SearchText) ||
-                                     mod.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+                                     (mod.Name?.IndexOf(SearchText, StringComparison.OrdinalIgnoreCase) >= 0);
 
+                // Category
                 bool matchesCategory = SelectedCategory == "All" || SelectedCategory == null ||
-                                       mod.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase);
+                                       string.Equals(mod.Category, SelectedCategory, StringComparison.OrdinalIgnoreCase);
 
-                return matchesSearch && matchesCategory;
+                // Status
+                var status = mod.Status ?? string.Empty;
+                bool matchesStatus = _statusFilter switch
+                {
+                    "Latest Downloaded" => status.Equals("Latest Downloaded", StringComparison.OrdinalIgnoreCase),
+                    "Downloaded" => status.Equals("Downloaded", StringComparison.OrdinalIgnoreCase),
+                    "Not Downloaded" => status.Equals("Not Downloaded", StringComparison.OrdinalIgnoreCase),
+                    "Update Available!" => status.Equals("Update Available!", StringComparison.OrdinalIgnoreCase),
+                    _ => true, // "All statuses"
+                };
+
+                return matchesSearch && matchesCategory && matchesStatus;
             };
 
             ModsGrouped.Refresh();

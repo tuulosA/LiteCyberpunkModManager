@@ -115,8 +115,8 @@ namespace LiteCyberpunkModManager.Views
         {
             if (sender is MenuItem mi && mi.Header is string choice)
             {
-                _statusFilter = choice;
-                RefreshStatusFilter();
+                _viewModel.StatusFilter = choice; // <- single source of truth
+                                                  // No manual Refresh() here; setter calls ApplyFilters()
             }
         }
 
