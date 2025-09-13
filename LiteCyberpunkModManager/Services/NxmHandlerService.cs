@@ -167,7 +167,7 @@ namespace LiteCyberpunkModManager.Services
 
             // Get clean file name from Nexus API (use the 'name' field, not download URL parsing)
             string fileDisplayName = await GetFileDisplayNameAsync(modId, fileId);
-            string fileName = fileDisplayName + ".zip";
+            string fileName = FileNameHelper.NormalizeDisplayFileName(fileDisplayName);
 
             string modName = await GetModNameAsync(modId);
             Debug.WriteLine($"Resolved mod name: {modName}");

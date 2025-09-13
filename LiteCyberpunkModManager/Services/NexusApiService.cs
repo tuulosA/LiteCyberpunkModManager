@@ -223,15 +223,12 @@ namespace LiteCyberpunkModManager.Services
                             _ => throw new InvalidOperationException("Invalid 'id' format")
                         };
 
-                        string displayName = file.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
-                            ? nameProp.GetString() ?? $"file_{fileId}"
+                        string nameForDisplay = file.TryGetProperty("name", out var nameProp) && nameProp.ValueKind == JsonValueKind.String
+                            ? (nameProp.GetString() ?? $"file_{fileId}")
                             : $"file_{fileId}";
 
-                        // Always ensure .zip extension once
-                        if (!displayName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                        {
-                            displayName += ".zip";
-                        }
+                        string displayName = FileNameHelper.NormalizeDisplayFileName(nameForDisplay);
+
 
                         long sizeBytes = file.TryGetProperty("size_kb", out var sizeProp) && sizeProp.ValueKind == JsonValueKind.Number
                             ? sizeProp.GetInt64() * 1024
