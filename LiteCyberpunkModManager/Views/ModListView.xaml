@@ -198,10 +198,28 @@
             </ListView.View>
         </ListView>
 
-        <TextBlock Grid.Row="2"
-                   Text="{Binding StatusMessage}"
-                   Margin="0,5,0,0"
-                   FontStyle="Italic"
-                   Foreground="Gray"/>
+        <Grid Grid.Row="2" Margin="0,5,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: existing status message (this already shows total) -->
+            <TextBlock Grid.Column="0"
+               Margin="0,0,10,0"
+               VerticalAlignment="Center"
+               FontStyle="Italic"
+               Foreground="Gray"
+               Text="{Binding StatusMessage}" />
+
+            <!-- Right: counts without total -->
+            <TextBlock Grid.Column="1"
+               VerticalAlignment="Center"
+               FontStyle="Italic"
+               Foreground="Gray"
+               Text="{Binding SummaryText}" />
+        </Grid>
+
+
     </Grid>
 </UserControl>

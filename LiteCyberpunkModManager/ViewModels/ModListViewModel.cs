@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Windows.Data;
 using LiteCyberpunkModManager.Helpers;
 using System.Diagnostics;
+using System.Linq;
 
 namespace LiteCyberpunkModManager.ViewModels
 {
@@ -18,6 +19,29 @@ namespace LiteCyberpunkModManager.ViewModels
 
         public ObservableCollection<ModDisplay> Mods { get; set; } = new();
         public ListCollectionView ModsGrouped { get; set; }
+
+        public int TotalModsCount =>
+    ModsGrouped?.Cast<ModDisplay>().Count() ?? 0;
+
+        public int NotDownloadedCount =>
+            ModsGrouped?.Cast<ModDisplay>().Count(m =>
+                m.Status.Equals("Not Downloaded", StringComparison.OrdinalIgnoreCase)) ?? 0;
+
+        public int UpdateAvailableCount =>
+            ModsGrouped?.Cast<ModDisplay>().Count(m =>
+                m.Status.Equals("Update Available!", StringComparison.OrdinalIgnoreCase)) ?? 0;
+
+        public string SummaryText =>
+    $"{NotDownloadedCount} not downloaded, {UpdateAvailableCount} with updates available";
+
+
+        private void RefreshSummary()
+        {
+            OnPropertyChanged(nameof(TotalModsCount));
+            OnPropertyChanged(nameof(NotDownloadedCount));
+            OnPropertyChanged(nameof(UpdateAvailableCount));
+            OnPropertyChanged(nameof(SummaryText));
+        }
 
         public void RefreshApiService(NexusApiService api)
         {
@@ -49,15 +73,12 @@ namespace LiteCyberpunkModManager.ViewModels
             {
                 if (obj is not ModDisplay mod) return false;
 
-                // Search
                 bool matchesSearch = string.IsNullOrWhiteSpace(SearchText) ||
                                      (mod.Name?.IndexOf(SearchText, StringComparison.OrdinalIgnoreCase) >= 0);
 
-                // Category
                 bool matchesCategory = SelectedCategory == "All" || SelectedCategory == null ||
                                        string.Equals(mod.Category, SelectedCategory, StringComparison.OrdinalIgnoreCase);
 
-                // Status
                 var status = mod.Status ?? string.Empty;
                 bool matchesStatus = _statusFilter switch
                 {
@@ -65,14 +86,16 @@ namespace LiteCyberpunkModManager.ViewModels
                     "Downloaded" => status.Equals("Downloaded", StringComparison.OrdinalIgnoreCase),
                     "Not Downloaded" => status.Equals("Not Downloaded", StringComparison.OrdinalIgnoreCase),
                     "Update Available!" => status.Equals("Update Available!", StringComparison.OrdinalIgnoreCase),
-                    _ => true, // "All statuses"
+                    _ => true,
                 };
 
                 return matchesSearch && matchesCategory && matchesStatus;
             };
 
             ModsGrouped.Refresh();
+            RefreshSummary(); // <— added
         }
+
 
 
         private string _searchText = "";
@@ -178,6 +201,7 @@ namespace LiteCyberpunkModManager.ViewModels
 
             SelectedCategory = "All";
             ApplyFilters();
+            RefreshSummary(); // <— added
 
             StatusMessage = $"Mods loaded ({modDisplays.Length}).";
         }
@@ -254,6 +278,7 @@ namespace LiteCyberpunkModManager.ViewModels
             }
 
             RefreshModList();
+            RefreshSummary(); // <— added
         }
 
         private async Task<List<Mod>?> TryFetchFromApiAsync()
@@ -356,7 +381,9 @@ namespace LiteCyberpunkModManager.ViewModels
         public void RefreshModList()
         {
             ModsGrouped.Refresh();
+            RefreshSummary(); // <— added
         }
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = "") =>
