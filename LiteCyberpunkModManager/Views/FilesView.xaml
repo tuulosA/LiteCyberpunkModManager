@@ -54,6 +54,36 @@
                   BorderThickness="0">
             <DataGrid.ColumnWidth>*</DataGrid.ColumnWidth>
 
+            <DataGrid.Resources>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsMissingDownload}" Value="True">
+                            <!-- pick whatever visuals you like -->
+                            <Setter Property="Foreground" Value="IndianRed"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <!-- Optional background:
+                    <Setter Property="Background" Value="#22FF0000"/> -->
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
+
+            <DataGrid.ItemContainerStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                    <Style.Triggers>
+                        <!-- Visually indicate missing .zip, but keep row enabled & selectable -->
+                        <DataTrigger Binding="{Binding IsMissingDownload}" Value="True">
+                            <Setter Property="Opacity" Value="0.7"/>
+                            <Setter Property="FontStyle" Value="Italic"/>
+                            <Setter Property="ToolTip"
+                        Value="Installed in game, but the downloaded .zip is missing. You can still uninstall it."/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.ItemContainerStyle>
+
             <!-- Group header look -->
             <DataGrid.GroupStyle>
                 <GroupStyle>
@@ -133,9 +163,15 @@
                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="1.5*">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
-                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                            <Setter Property="Padding" Value="2,0"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                            <Style.Triggers>
+                                <!-- highlight when the .zip is missing but the mod is still installed -->
+                                <DataTrigger Binding="{Binding IsMissingDownload}" Value="True">
+                                    <Setter Property="Foreground" Value="Tomato"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="ToolTip" Value="Installed in game, but the downloaded .zip is missing."/>
+                                </DataTrigger>
+                            </Style.Triggers>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>

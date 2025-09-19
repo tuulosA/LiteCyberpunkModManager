@@ -29,14 +29,47 @@ namespace LiteCyberpunkModManager.Views
 
         private async void InstallSelected_Click(object sender, RoutedEventArgs e)
         {
-            var selectedMods = DownloadedFilesGrid.SelectedItems.Cast<InstalledModDisplay>().ToList();
-            if (selectedMods.Count == 0)
+            var allSelected = DownloadedFilesGrid.SelectedItems.Cast<InstalledModDisplay>().ToList();
+            if (allSelected.Count == 0)
             {
                 MessageBox.Show("Select at least one mod to install.");
                 return;
             }
 
-            var progressWindow = new ProgressWindow(selectedMods.Count);
+            // Filter out rows that can’t be installed (no zip on disk)
+            var installable = new List<InstalledModDisplay>();
+            var skipped = new List<InstalledModDisplay>();
+
+            foreach (var mod in allSelected)
+            {
+                string folderName = PathUtils.SanitizeModName(mod.ModName);
+                string zipPath = Path.Combine(Settings.DefaultModsDir, folderName, Path.GetFileName(mod.FileName));
+
+                // “IsMissingDownload” is great, but double-check disk too
+                if (mod.IsMissingDownload || !File.Exists(zipPath))
+                    skipped.Add(mod);
+                else
+                    installable.Add(mod);
+            }
+
+            if (skipped.Count > 0)
+            {
+                var names = string.Join("\n• ", skipped.Select(m => $"{m.ModName} — {m.FileName}"));
+                MessageBox.Show(
+                    $"These file(s) can’t be installed because the downloaded .zip is missing:\n\n• {names}",
+                    "Some items were skipped",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
+            }
+
+            if (installable.Count == 0)
+            {
+                // Nothing left to install
+                return;
+            }
+
+            var progressWindow = new ProgressWindow(installable.Count);
             progressWindow.Owner = Window.GetWindow(this);
             progressWindow.Show();
 
@@ -44,12 +77,21 @@ namespace LiteCyberpunkModManager.Views
             {
                 int current = 0;
 
-                foreach (var mod in selectedMods)
+                foreach (var mod in installable)
                 {
                     string folderName = PathUtils.SanitizeModName(mod.ModName);
-                    string zipPath = Path.Combine(Settings.DefaultModsDir, folderName, Path.GetFileNameWithoutExtension(mod.FileName) + ".zip");
+                    string zipPath = Path.Combine(Settings.DefaultModsDir, folderName, Path.GetFileName(mod.FileName));
 
-                    if (!File.Exists(zipPath)) continue;
+                    if (!File.Exists(zipPath))
+                    {
+                        // Shouldn’t happen now, but be defensive
+                        current++;
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            progressWindow.UpdateProgress(current, mod.ModName);
+                        });
+                        continue;
+                    }
 
                     bool success = ModInstallerService.InstallModFile(
                         zipPath,
@@ -78,7 +120,6 @@ namespace LiteCyberpunkModManager.Views
             DownloadedFilesGrid.Items.Refresh();
             MessageBox.Show("Selected mods installed.", "Install Complete", MessageBoxButton.OK, MessageBoxImage.Information);
             _viewModel.RefreshSummary();
-
         }
 
 
@@ -91,19 +132,43 @@ namespace LiteCyberpunkModManager.Views
                 return;
             }
 
+            var toRemove = new List<InstalledModDisplay>();
+
             foreach (var mod in selectedMods)
             {
                 if (ModInstallerService.UninstallMod(mod.ModName, mod.FileName))
                 {
                     mod.Status = "Not Installed";
-                }
 
+                    // If the downloaded .zip is gone too, remove the row entirely
+                    string folderName = PathUtils.SanitizeModName(mod.ModName);
+                    string zipPath = Path.Combine(
+                        Settings.DefaultModsDir,
+                        folderName,
+                        Path.GetFileNameWithoutExtension(mod.FileName) + ".zip"
+                    );
+
+                    if (!File.Exists(zipPath))
+                    {
+                        toRemove.Add(mod);
+                    }
+                }
+            }
+
+            // Remove after the loop to avoid modifying the collection while iterating
+            foreach (var m in toRemove)
+            {
+                _viewModel.AllDownloadedFiles.Remove(m);
+                _viewModel.FilteredDownloadedFiles.Remove(m); // safe even if not present
             }
 
             DownloadedFilesGrid.Items.Refresh();
-            MessageBox.Show("Selected mods uninstalled.", "Uninstall Complete", MessageBoxButton.OK, MessageBoxImage.Information);
             _viewModel.RefreshSummary();
+
+            MessageBox.Show("Selected mods uninstalled.", "Uninstall Complete",
+                MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
 
 
         private void ModName_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

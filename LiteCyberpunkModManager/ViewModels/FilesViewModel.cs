@@ -5,19 +5,16 @@ using System.Text.Json;
 using LiteCyberpunkModManager.Helpers;
 using LiteCyberpunkModManager.Models;
 using LiteCyberpunkModManager.Services;
-using System.Linq;
-using System.Collections.Specialized;
 
 namespace LiteCyberpunkModManager.ViewModels
 {
     public class FilesViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<InstalledModDisplay> AllDownloadedFiles { get; set; } = new();
-        public ObservableCollection<InstalledModDisplay> FilteredDownloadedFiles { get; set; } = new();
+        public ObservableCollection<InstalledModDisplay> AllDownloadedFiles { get; } = new();
+        public ObservableCollection<InstalledModDisplay> FilteredDownloadedFiles { get; } = new();
 
         public int TotalCount => FilteredDownloadedFiles.Count;
-        public int InstalledCount => FilteredDownloadedFiles.Count(x =>
-            x.Status.Equals("Installed", StringComparison.OrdinalIgnoreCase));
+        public int InstalledCount => FilteredDownloadedFiles.Count(x => x.Status.StartsWith("Installed", System.StringComparison.OrdinalIgnoreCase));
         public int NotInstalledCount => TotalCount - InstalledCount;
         public string SummaryText => $"{TotalCount} files — {InstalledCount} installed, {NotInstalledCount} not installed";
 
@@ -28,7 +25,6 @@ namespace LiteCyberpunkModManager.ViewModels
             OnPropertyChanged(nameof(NotInstalledCount));
             OnPropertyChanged(nameof(SummaryText));
         }
-
 
         private string _searchText = "";
         public string SearchText
@@ -44,129 +40,149 @@ namespace LiteCyberpunkModManager.ViewModels
 
         public FilesViewModel()
         {
-            LoadDownloadedFiles();
-
-            // keep summary in sync when the filtered list changes
-            FilteredDownloadedFiles.CollectionChanged += (_, __) => RefreshSummary();
-        }
-
-
-        private void LoadDownloadedFiles()
-        {
-            string metadataPath = PathConfig.DownloadedMods;
-            string installTrackingPath = PathConfig.InstalledGameFiles;
-
-            if (!File.Exists(metadataPath)) return;
-
-            try
-            {
-                // NEW: load cached mods for category lookup
-                var cachedMods = ModCacheService.LoadCachedMods() ?? new List<Mod>();
-                var modsById = cachedMods.ToDictionary(m => m.ModId, m => m);
-
-                string json = File.ReadAllText(metadataPath);
-                var list = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
-                HashSet<string> installedGameFiles = new();
-
-                if (File.Exists(installTrackingPath))
-                {
-                    string gameJson = File.ReadAllText(installTrackingPath);
-                    var installedList = JsonSerializer.Deserialize<List<InstalledGameFile>>(gameJson) ?? new();
-
-                    foreach (var entry in installedList)
-                    {
-                        installedGameFiles.Add(Path.GetFileNameWithoutExtension(entry.FileName).ToLower() + ".archive");
-                    }
-                }
-
-                foreach (var entry in list)
-                {
-                    double sizeMB = 0;
-                    string folder = Path.Combine(Settings.DefaultModsDir, PathUtils.SanitizeModName(entry.ModName));
-                    string fullPath = Path.Combine(folder, Path.GetFileNameWithoutExtension(entry.FileName) + ".zip");
-
-                    if (File.Exists(fullPath))
-                    {
-                        long sizeBytes = new FileInfo(fullPath).Length;
-                        sizeMB = sizeBytes / 1024.0 / 1024.0;
-                    }
-
-                    string cleanName = Path.GetFileNameWithoutExtension(entry.FileName).ToLower();
-                    bool isInstalled = installedGameFiles.Contains(cleanName + ".archive");
-
-                    // NEW: resolve category from cache by ModId; fallback to "Unknown"
-                    string category = "Unknown";
-                    if (modsById.TryGetValue(entry.ModId, out var modFromCache))
-                    {
-                        category = string.IsNullOrWhiteSpace(modFromCache.Category) ? "Unknown" : modFromCache.Category;
-                    }
-
-                    var display = new InstalledModDisplay
-                    {
-                        ModName = entry.ModName,
-                        FileName = entry.FileName,
-                        FileSizeMB = sizeMB,
-                        UploadedTimestamp = entry.UploadedTimestamp.ToString("yyyy-MM-dd HH:mm:ss"),
-                        Status = isInstalled ? "Installed" : "Not Installed",
-                        Category = category   // <-- IMPORTANT
-                    };
-
-                    AllDownloadedFiles.Add(display);
-                }
-
-                ApplyFilter();
-            }
-            catch
-            {
-                // swallow or log if you prefer
-            }
-        }
-
-
-        private void ApplyFilter()
-        {
-            FilteredDownloadedFiles.Clear();
-            foreach (var mod in AllDownloadedFiles)
-            {
-                if (string.IsNullOrWhiteSpace(_searchText) ||
-                    mod.ModName.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
-                    mod.FileName.Contains(_searchText, StringComparison.OrdinalIgnoreCase))
-                {
-                    FilteredDownloadedFiles.Add(mod);
-                }
-            }
-            RefreshSummary(); // <—
+            LoadFiles();
         }
 
         public void Reload()
         {
             AllDownloadedFiles.Clear();
             FilteredDownloadedFiles.Clear();
-            LoadDownloadedFiles();
-            RefreshSummary(); // <—
+            LoadFiles();
         }
 
+        private void LoadFiles()
+        {
+            var metadataPath = PathConfig.DownloadedMods;          // downloaded_mods.json
+            var installPath = PathConfig.InstalledGameFiles;      // installed_game_files.json
+
+            // Cache for category lookup
+            var cachedMods = ModCacheService.LoadCachedMods() ?? new List<Mod>();
+            var modsByName = cachedMods
+                .GroupBy(m => m.Name, System.StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), System.StringComparer.OrdinalIgnoreCase);
+
+            // Load downloaded metadata (optional)
+            var downloadedList = File.Exists(metadataPath)
+                ? (JsonSerializer.Deserialize<List<InstalledModInfo>>(File.ReadAllText(metadataPath)) ?? new())
+                : new List<InstalledModInfo>();
+
+            // Load install tracking (optional)
+            var installedList = File.Exists(installPath)
+                ? (JsonSerializer.Deserialize<List<InstalledGameFile>>(File.ReadAllText(installPath)) ?? new())
+                : new List<InstalledGameFile>();
+
+            // Index installed by (ModName, FileName[zip])
+            var installedByKey = installedList.ToDictionary(
+                igf => Key(igf.ModName, igf.FileName),
+                igf => igf,
+                System.StringComparer.OrdinalIgnoreCase);
+
+            // 1) Start with everything in downloaded_mods.json
+            foreach (var entry in downloadedList)
+            {
+                string modName = entry.ModName;
+                string zipName = entry.FileName; // zip filename in downloaded_mods.json
+                string folder = Path.Combine(Settings.DefaultModsDir, PathUtils.SanitizeModName(modName));
+                string zipPath = Path.Combine(folder, Path.GetFileName(zipName)); // exact zip name
+
+                bool zipExists = File.Exists(zipPath);
+                double sizeMB = zipExists ? new FileInfo(zipPath).Length / 1024.0 / 1024.0 : 0;
+
+                bool isInstalled = installedByKey.ContainsKey(Key(modName, zipName));
+
+                string category = "Unknown";
+                if (modsByName.TryGetValue(modName, out var modFromCache) && !string.IsNullOrWhiteSpace(modFromCache.Category))
+                    category = modFromCache.Category;
+
+                // Skip only if neither installed nor the zip exists
+                if (!isInstalled && !zipExists)
+                    continue;
+
+                AllDownloadedFiles.Add(new InstalledModDisplay
+                {
+                    ModName = modName,
+                    FileName = zipName,
+                    FileSizeMB = sizeMB,
+                    UploadedTimestamp = entry.UploadedTimestamp.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Status = isInstalled ? (zipExists ? "Installed" : "Installed (Missing Zip)") : "Not Installed",
+                    Category = category,
+                    IsMissingDownload = isInstalled && !zipExists
+                });
+            }
+
+            // 2) Add installed-only items that are NOT in downloaded_mods.json
+            var downloadedKeys = downloadedList
+                .Select(d => Key(d.ModName, d.FileName))
+                .ToHashSet(System.StringComparer.OrdinalIgnoreCase);
+
+            foreach (var inst in installedList)
+            {
+                var key = Key(inst.ModName, inst.FileName);
+                if (downloadedKeys.Contains(key))
+                    continue;
+
+                string category = "Unknown";
+                if (modsByName.TryGetValue(inst.ModName, out var modFromCache) && !string.IsNullOrWhiteSpace(modFromCache.Category))
+                    category = modFromCache.Category;
+
+                AllDownloadedFiles.Add(new InstalledModDisplay
+                {
+                    ModName = inst.ModName,
+                    FileName = inst.FileName,      // keep the zip filename from install tracking
+                    FileSizeMB = 0,
+                    UploadedTimestamp = "",                 // unknown here
+                    Status = "Installed (Missing Zip)",
+                    Category = category,
+                    IsMissingDownload = true
+                });
+            }
+
+            ApplyFilter();
+            RefreshSummary();
+        }
+
+        private static string Key(string modName, string zipFileName) => $"{modName}|||{zipFileName}";
+
+        private void ApplyFilter()
+        {
+            FilteredDownloadedFiles.Clear();
+
+            foreach (var item in AllDownloadedFiles)
+            {
+                if (string.IsNullOrWhiteSpace(_searchText) ||
+                    item.ModName.Contains(_searchText, System.StringComparison.OrdinalIgnoreCase) ||
+                    item.FileName.Contains(_searchText, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    FilteredDownloadedFiles.Add(item);
+                }
+            }
+
+            RefreshSummary();
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        private void OnPropertyChanged(string name) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-
+    // View-model row
     public class InstalledModDisplay
     {
         public string ModName { get; set; } = "";
         public string FileName { get; set; } = "";
         public double FileSizeMB { get; set; }
-        public string FileSizeDisplay => FileSizeMB > 1
-            ? $"{FileSizeMB:F2} MB"
-            : $"{FileSizeMB * 1024:F2} KB";
-
+        public string FileSizeDisplay => FileSizeMB > 1 ? $"{FileSizeMB:F2} MB" : $"{FileSizeMB * 1024:F2} KB";
         public string UploadedTimestamp { get; set; } = "";
         public string Status { get; set; } = "Not Installed";
-
-        // NEW: used by the XAML group description
         public string Category { get; set; } = "Unknown";
+        public bool IsMissingDownload { get; set; }
     }
 
-
+    // Matches installed_game_files.json
+    public class InstalledGameFile
+    {
+        public string ModName { get; set; } = "";
+        public string FileName { get; set; } = ""; // zip filename
+        public List<string> InstalledPaths { get; set; } = new(); // .archive paths
+    }
 }
