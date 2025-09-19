@@ -216,7 +216,11 @@ namespace LiteCyberpunkModManager.Views
                     }
                 }
 
-                var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId, selected.Name, _viewModel);
+                var dialog = new DownloadFileWindow(files, alreadyDownloaded, modId, selected.Name, _viewModel)
+                {
+                    Owner = Application.Current.MainWindow,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
                 bool? result = dialog.ShowDialog();
 
                 if (result == true)
@@ -290,7 +294,11 @@ namespace LiteCyberpunkModManager.Views
                 }
             }
 
-            var dialog = new ManageFilesWindow(filePaths);
+            var dialog = new ManageFilesWindow(filePaths)
+            {
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             var result = dialog.ShowDialog();
 
             if (result == true && dialog.SelectedFiles.Count > 0)
