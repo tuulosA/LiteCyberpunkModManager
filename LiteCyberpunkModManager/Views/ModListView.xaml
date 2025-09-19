@@ -117,48 +117,84 @@
                     </GridViewColumn>
 
                     <GridViewColumn Header="Status" Width="180">
-                        <!-- HEADER: clickable, opens a context menu with status options -->
+                        <!-- HEADER: clickable, shows ▼ when 'All statuses', funnel when a filter is applied -->
                         <GridViewColumn.HeaderTemplate>
                             <DataTemplate>
                                 <Border Padding="0"
-                  Background="Transparent"
-                  MouseLeftButtonDown="StatusHeader_MouseLeftButtonDown">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,0">
-                                        <TextBlock Text="Status" FontWeight="Bold" />
+                    Background="Transparent"
+                    MouseLeftButtonDown="StatusHeader_MouseLeftButtonDown">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Status" FontWeight="Bold"/>
+
+                                        <!-- Excel-style down triangle when NO filter -->
+                                        <TextBlock Text="▼"
+                               FontSize="13"
+                               Margin="4,0,0,0"
+                               Foreground="Gray"
+                               VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger
+                                        Binding="{Binding DataContext.StatusFilter,
+                                                          RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Value="All statuses">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <!-- Funnel icon when a filter IS applied -->
                                         <TextBlock FontFamily="Segoe MDL2 Assets"
-               Text="&#xE16E;"
-               FontSize="14"
-               Margin="4,0,0,0"
-               Foreground="Gray"
-               VerticalAlignment="Center"/>
+                               Text="&#xE16E;"
+                               FontSize="14"
+                               Margin="4,0,0,0"
+                               Foreground="Gray"
+                               VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger
+                                        Binding="{Binding DataContext.StatusFilter,
+                                                          RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Value="All statuses">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </StackPanel>
 
-                                    <!-- Context menu appears when clicking the header -->
-                                        <Border.ContextMenu>
-                                            <ContextMenu StaysOpen="False"
-                           Opened="StatusHeader_ContextMenu_Opened">
-                                                <MenuItem Header="All statuses" Click="StatusHeaderMenu_Click"/>
-                                                <Separator/>
-                                                <MenuItem Header="Latest Downloaded" Click="StatusHeaderMenu_Click"/>
-                                                <MenuItem Header="Downloaded" Click="StatusHeaderMenu_Click"/>
-                                                <MenuItem Header="Not Downloaded" Click="StatusHeaderMenu_Click"/>
-                                                <MenuItem Header="Update Available!" Click="StatusHeaderMenu_Click"/>
-                                            </ContextMenu>
-                                        </Border.ContextMenu>
-                                    </Border>
-                                </DataTemplate>
-                            </GridViewColumn.HeaderTemplate>
+                                    <!-- Context menu opened by clicking the header -->
+                                    <Border.ContextMenu>
+                                        <ContextMenu StaysOpen="False"
+                                 Opened="StatusHeader_ContextMenu_Opened">
+                                            <MenuItem Header="All statuses" Click="StatusHeaderMenu_Click"/>
+                                            <Separator/>
+                                            <MenuItem Header="Latest Downloaded" Click="StatusHeaderMenu_Click"/>
+                                            <MenuItem Header="Downloaded" Click="StatusHeaderMenu_Click"/>
+                                            <MenuItem Header="Not Downloaded" Click="StatusHeaderMenu_Click"/>
+                                            <MenuItem Header="Update Available!" Click="StatusHeaderMenu_Click"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                </Border>
+                            </DataTemplate>
+                        </GridViewColumn.HeaderTemplate>
 
-                            <!-- your existing CellTemplate for status -->
-                            <GridViewColumn.CellTemplate>
-                                <!-- unchanged -->
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Status}"
-                     Padding="4"
-                     FontWeight="SemiBold"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     TextAlignment="Center">
+                        <!-- CELL TEMPLATE (unchanged) -->
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Status}"
+                       Padding="4"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
@@ -182,6 +218,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+
 
 
                     <GridViewColumn Header="Files Downloaded" Width="140">
