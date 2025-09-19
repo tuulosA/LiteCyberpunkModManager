@@ -133,6 +133,8 @@
                             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                             <Setter Property="Padding" Value="2,0"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
+                            <!-- enable the same double-click behavior here -->
+                            <EventSetter Event="MouseLeftButtonDown" Handler="ModName_DoubleClick" />
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
