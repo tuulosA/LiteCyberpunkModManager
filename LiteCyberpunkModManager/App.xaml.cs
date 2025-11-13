@@ -38,6 +38,7 @@ namespace LiteCyberpunkModManager
                 await Application.Current.Dispatcher.Invoke(async () =>
                 {
                     var handler = new NxmHandlerService();
+                    AttachNotifications(handler);
                     await handler.HandleAsync(link);
                 });
             });
@@ -89,6 +90,7 @@ namespace LiteCyberpunkModManager
             {
                 Debug.WriteLine($"Handling .nxm link: {link}");
                 var nxmHandler = new NxmHandlerService();
+                AttachNotifications(nxmHandler);
                 await nxmHandler.HandleAsync(link);
             }
             catch (Exception ex)
@@ -96,6 +98,20 @@ namespace LiteCyberpunkModManager
                 Debug.WriteLine($"Exception during .nxm link handling: {ex}");
                 MessageBox.Show($"Failed to handle .nxm link:\n\n{ex.Message}", "NXM Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void AttachNotifications(NxmHandlerService handler)
+        {
+            handler.NotificationRaised += n =>
+            {
+                var icon = n.Type switch
+                {
+                    NotificationType.Error => MessageBoxImage.Error,
+                    NotificationType.Warning => MessageBoxImage.Warning,
+                    _ => MessageBoxImage.Information
+                };
+                MessageBox.Show(n.Message, n.Title, MessageBoxButton.OK, icon);
+            };
         }
     }
 }

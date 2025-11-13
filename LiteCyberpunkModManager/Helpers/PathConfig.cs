@@ -1,13 +1,26 @@
-﻿using System.IO;
+using System;
+using System.IO;
 using LiteCyberpunkModManager.Models;
 
 namespace LiteCyberpunkModManager.Helpers
 {
     public static class PathConfig
     {
-        public static string ModCache => Path.Combine(Settings.DefaultModsDir, "mod_cache.json");
-        public static string DownloadedMods => Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
-        public static string InstalledGameFiles => Path.Combine(Settings.DefaultModsDir, "installed_game_files.json");
-        public static string SettingsFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
+        // Application data root: %LocalAppData%/LiteCPMM
+        public static string AppDataRoot => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "LiteCPMM");
+
+        // New canonical paths under AppData
+        public static string SettingsFile => Path.Combine(AppDataRoot, "settings.json");
+        public static string ModCache => Path.Combine(AppDataRoot, "mod_cache.json");
+        public static string DownloadedMods => Path.Combine(AppDataRoot, "downloaded_mods.json");
+        public static string InstalledGameFiles => Path.Combine(AppDataRoot, "installed_game_files.json");
+
+        // Legacy file locations (pre-migration) for one-time migration
+        public static string LegacySettingsFile => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
+        public static string LegacyModCache => Path.Combine(Settings.DefaultModsDir, "mod_cache.json");
+        public static string LegacyDownloadedMods => Path.Combine(Settings.DefaultModsDir, "downloaded_mods.json");
+        public static string LegacyInstalledGameFiles => Path.Combine(Settings.DefaultModsDir, "installed_game_files.json");
     }
 }

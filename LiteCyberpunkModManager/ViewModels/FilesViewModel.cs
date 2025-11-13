@@ -53,7 +53,18 @@ namespace LiteCyberpunkModManager.ViewModels
         private void LoadFiles()
         {
             var metadataPath = PathConfig.DownloadedMods;          // downloaded_mods.json
-            var installPath = PathConfig.InstalledGameFiles;      // installed_game_files.json
+            var installPath = PathConfig.InstalledGameFiles;       // installed_game_files.json
+
+            // Ensure app data dir exists and migrate legacy metadata if present
+            try
+            {
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
+                if (!File.Exists(metadataPath) && File.Exists(PathConfig.LegacyDownloadedMods))
+                    File.Copy(PathConfig.LegacyDownloadedMods, metadataPath, overwrite: false);
+                if (!File.Exists(installPath) && File.Exists(PathConfig.LegacyInstalledGameFiles))
+                    File.Copy(PathConfig.LegacyInstalledGameFiles, installPath, overwrite: false);
+            }
+            catch { /* best effort */ }
 
             // Cache for category lookup
             var cachedMods = ModCacheService.LoadCachedMods() ?? new List<Mod>();
@@ -82,7 +93,8 @@ namespace LiteCyberpunkModManager.ViewModels
             {
                 string modName = entry.ModName;
                 string zipName = entry.FileName; // zip filename in downloaded_mods.json
-                string folder = Path.Combine(Settings.DefaultModsDir, PathUtils.SanitizeModName(modName));
+                var settings = SettingsService.LoadSettings();
+                string folder = Path.Combine(settings.OutputDir, PathUtils.SanitizeModName(modName));
                 string zipPath = Path.Combine(folder, Path.GetFileName(zipName)); // exact zip name
 
                 bool zipExists = File.Exists(zipPath);

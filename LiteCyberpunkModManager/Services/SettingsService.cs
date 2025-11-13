@@ -13,6 +13,10 @@ namespace LiteCyberpunkModManager.Services
         {
             try
             {
+                // Ensure app data root exists and migrate legacy settings if needed
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
+                TryMigrateLegacySettings();
+
                 if (File.Exists(PathConfig.SettingsFile))
                 {
                     Debug.WriteLine($"[SettingsService] Found settings.json at: {Path.GetFullPath(PathConfig.SettingsFile)}");
@@ -55,6 +59,7 @@ namespace LiteCyberpunkModManager.Services
         {
             try
             {
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
                 var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(PathConfig.SettingsFile, json);
                 Debug.WriteLine("[SettingsService] Settings saved successfully.");
@@ -62,6 +67,25 @@ namespace LiteCyberpunkModManager.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"[SettingsService] Failed to save settings: {ex.Message}");
+            }
+        }
+
+        private static void TryMigrateLegacySettings()
+        {
+            try
+            {
+                if (File.Exists(PathConfig.SettingsFile)) return;
+
+                if (File.Exists(PathConfig.LegacySettingsFile))
+                {
+                    Directory.CreateDirectory(PathConfig.AppDataRoot);
+                    File.Copy(PathConfig.LegacySettingsFile, PathConfig.SettingsFile, overwrite: false);
+                    Debug.WriteLine($"[SettingsService] Migrated legacy settings.json from {PathConfig.LegacySettingsFile} -> {PathConfig.SettingsFile}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[SettingsService] Failed migrating legacy settings: {ex.Message}");
             }
         }
     }

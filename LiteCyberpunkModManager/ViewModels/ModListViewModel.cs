@@ -308,6 +308,16 @@ namespace LiteCyberpunkModManager.ViewModels
         private List<InstalledModInfo> LoadInstalledMetadata()
         {
             var metadataPath = PathConfig.DownloadedMods;
+            try
+            {
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
+                if (!File.Exists(metadataPath) && File.Exists(PathConfig.LegacyDownloadedMods))
+                {
+                    File.Copy(PathConfig.LegacyDownloadedMods, metadataPath, overwrite: false);
+                }
+            }
+            catch { }
+
             if (!File.Exists(metadataPath)) return new();
 
             try

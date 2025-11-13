@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
-using System.Windows;
+// Removed direct UI dependency; UI should subscribe to notifications
 using LiteCyberpunkModManager.Models;
 using LiteCyberpunkModManager.Helpers;
 
@@ -14,6 +14,8 @@ namespace LiteCyberpunkModManager.Services
         private const string BaseUrl = "https://api.nexusmods.com/v1";
         private string _apiKey;
         [ThreadStatic] private static bool _localRateLimitShown;
+
+        public event Action<Notification>? NotificationRaised;
 
         public void SetApiKey(string newApiKey)
         {
@@ -65,15 +67,10 @@ namespace LiteCyberpunkModManager.Services
                 if (!_localRateLimitShown)
                 {
                     _localRateLimitShown = true;
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        MessageBox.Show(
-                            "Nexus Mods API rate limit reached. Try again later.",
-                            "Rate Limit Triggered",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning
-                        );
-                    });
+                    NotificationRaised?.Invoke(new Notification(
+                        "Rate Limit Triggered",
+                        "Nexus Mods API rate limit reached. Try again later.",
+                        NotificationType.Warning));
                 }
 
                 return null;
@@ -94,18 +91,10 @@ namespace LiteCyberpunkModManager.Services
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        MessageBox.Show(
-                            "This feature requires a Nexus Mods Premium account.\n" +
-                            "Please log in to Nexus with a Premium account to use API-based downloads,\n" +
-                            "or use Mod Manager Download links on Nexus Mods.",
-                            "Premium Required",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information
-                        );
-                    });
-
+                    NotificationRaised?.Invoke(new Notification(
+                        "Premium Required",
+                        "This feature requires a Nexus Mods Premium account.\nPlease log in to Nexus with a Premium account to use API-based downloads,\nor use Mod Manager Download links on Nexus Mods.",
+                        NotificationType.Info));
                     return null;
                 }
 

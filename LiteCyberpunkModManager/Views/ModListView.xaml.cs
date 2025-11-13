@@ -26,6 +26,16 @@ namespace LiteCyberpunkModManager.Views
             InitializeComponent();
             _settings = SettingsService.LoadSettings();
             _api = new NexusApiService(_settings.NexusApiKey);
+            _api.NotificationRaised += n =>
+            {
+                var icon = n.Type switch
+                {
+                    NotificationType.Error => MessageBoxImage.Error,
+                    NotificationType.Warning => MessageBoxImage.Warning,
+                    _ => MessageBoxImage.Information
+                };
+                MessageBox.Show(n.Message, n.Title, MessageBoxButton.OK, icon);
+            };
             _viewModel = new ModListViewModel(_api);
             DataContext = _viewModel;
 
@@ -200,6 +210,7 @@ namespace LiteCyberpunkModManager.Views
 
                 List<InstalledModInfo> alreadyDownloaded = new();
                 string metadataPath = PathConfig.DownloadedMods;
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
 
                 if (File.Exists(metadataPath))
                 {
@@ -250,6 +261,7 @@ namespace LiteCyberpunkModManager.Views
         private async void ManageFiles_Click(object sender, RoutedEventArgs e)
         {
             string metadataPath = PathConfig.DownloadedMods;
+            Directory.CreateDirectory(PathConfig.AppDataRoot);
             if (!File.Exists(metadataPath))
             {
                 MessageBox.Show("No downloaded files found.", "No Files", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -374,7 +386,7 @@ namespace LiteCyberpunkModManager.Views
             foreach (var entry in entries)
             {
                 string folderName = PathUtils.SanitizeModName(entry.ModName);
-                string folderPath = Path.Combine(Settings.DefaultModsDir, folderName);
+                string folderPath = Path.Combine(SettingsService.LoadSettings().OutputDir, folderName);
 
                 // avoid scanning the same folder multiple times
                 if (!seenFolders.Add(folderPath)) continue;
@@ -460,7 +472,7 @@ namespace LiteCyberpunkModManager.Views
             // save the used json into the Mods folder
             try
             {
-                string modsDir = Settings.DefaultModsDir;
+                string modsDir = SettingsService.LoadSettings().OutputDir;
                 Directory.CreateDirectory(modsDir); // just in case
                 string savePath = Path.Combine(modsDir, "downloaded_mods.json");
                 File.WriteAllText(savePath, json);
@@ -517,7 +529,7 @@ namespace LiteCyberpunkModManager.Views
                     continue;
                 }
 
-                string folder = Path.Combine(Settings.DefaultModsDir, PathUtils.SanitizeModName(modName));
+                string folder = Path.Combine(SettingsService.LoadSettings().OutputDir, PathUtils.SanitizeModName(modName));
                 Directory.CreateDirectory(folder);
                 string filePath = Path.Combine(folder, fileName);
 

@@ -20,6 +20,18 @@ namespace LiteCyberpunkModManager.Views
             DataContext = _viewModel;
 
             App.GlobalFilesView = this; // set global reference
+
+            // Subscribe to installer notifications and render via UI
+            ModInstallerService.NotificationRaised += n =>
+            {
+                var icon = n.Type switch
+                {
+                    NotificationType.Error => MessageBoxImage.Error,
+                    NotificationType.Warning => MessageBoxImage.Warning,
+                    _ => MessageBoxImage.Information
+                };
+                MessageBox.Show(n.Message, n.Title, MessageBoxButton.OK, icon);
+            };
         }
 
         public void RefreshFileList()
@@ -43,7 +55,7 @@ namespace LiteCyberpunkModManager.Views
             foreach (var mod in allSelected)
             {
                 string folderName = PathUtils.SanitizeModName(mod.ModName);
-                string zipPath = Path.Combine(Settings.DefaultModsDir, folderName, Path.GetFileName(mod.FileName));
+                string zipPath = Path.Combine(SettingsService.LoadSettings().OutputDir, folderName, Path.GetFileName(mod.FileName));
 
                 // “IsMissingDownload” is great, but double-check disk too
                 if (mod.IsMissingDownload || !File.Exists(zipPath))
@@ -80,7 +92,7 @@ namespace LiteCyberpunkModManager.Views
                 foreach (var mod in installable)
                 {
                     string folderName = PathUtils.SanitizeModName(mod.ModName);
-                    string zipPath = Path.Combine(Settings.DefaultModsDir, folderName, Path.GetFileName(mod.FileName));
+                    string zipPath = Path.Combine(SettingsService.LoadSettings().OutputDir, folderName, Path.GetFileName(mod.FileName));
 
                     if (!File.Exists(zipPath))
                     {
@@ -143,9 +155,9 @@ namespace LiteCyberpunkModManager.Views
                     // If the downloaded .zip is gone too, remove the row entirely
                     string folderName = PathUtils.SanitizeModName(mod.ModName);
                     string zipPath = Path.Combine(
-                        Settings.DefaultModsDir,
+                        SettingsService.LoadSettings().OutputDir,
                         folderName,
-                        Path.GetFileNameWithoutExtension(mod.FileName) + ".zip"
+                        Path.GetFileName(mod.FileName)
                     );
 
                     if (!File.Exists(zipPath))
@@ -179,7 +191,7 @@ namespace LiteCyberpunkModManager.Views
                 if (modDisplay == null) return;
 
                 string folderName = modDisplay.ModName;
-                string fullPath = Path.Combine(Settings.DefaultModsDir, folderName);
+                string fullPath = Path.Combine(SettingsService.LoadSettings().OutputDir, folderName);
 
                 if (Directory.Exists(fullPath))
                 {

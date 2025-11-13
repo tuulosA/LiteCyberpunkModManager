@@ -156,6 +156,7 @@ namespace LiteCyberpunkModManager.Views
 
                 try
                 {
+                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                     File.Copy(PathConfig.DownloadedMods, path, overwrite: true);
                     MessageBox.Show("Modlist exported successfully.", "Export Complete");
                 }

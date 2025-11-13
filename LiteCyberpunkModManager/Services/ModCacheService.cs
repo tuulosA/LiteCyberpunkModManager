@@ -13,6 +13,21 @@ namespace LiteCyberpunkModManager.Services
             var path = PathConfig.ModCache;
             Debug.WriteLine($"[CACHE] Attempting to load mod cache from: {path}");
 
+            // Ensure directory exists and migrate legacy cache if present
+            try
+            {
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
+                if (!File.Exists(path) && File.Exists(PathConfig.LegacyModCache))
+                {
+                    File.Copy(PathConfig.LegacyModCache, path, overwrite: false);
+                    Debug.WriteLine($"[CACHE] Migrated legacy mod cache from {PathConfig.LegacyModCache} -> {path}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CACHE ERROR] Migration/ensure directory failed: {ex.Message}");
+            }
+
             if (!File.Exists(path)) return null;
 
             try

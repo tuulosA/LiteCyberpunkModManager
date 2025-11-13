@@ -68,6 +68,16 @@ namespace LiteCyberpunkModManager.Views
 
             var settings = SettingsService.LoadSettings();
             var api = new NexusApiService(settings.NexusApiKey);
+            api.NotificationRaised += n =>
+            {
+                var icon = n.Type switch
+                {
+                    NotificationType.Error => MessageBoxImage.Error,
+                    NotificationType.Warning => MessageBoxImage.Warning,
+                    _ => MessageBoxImage.Information
+                };
+                MessageBox.Show(n.Message, n.Title, MessageBoxButton.OK, icon);
+            };
             int total = SelectedFileIds.Count;
             bool anySuccess = false;
 
@@ -81,7 +91,7 @@ namespace LiteCyberpunkModManager.Views
                 if (downloadUrl == null) continue;
 
                 string sanitizedModFolder = PathUtils.SanitizeModName(_modName);
-                string modFolderPath = Path.Combine(Settings.DefaultModsDir, sanitizedModFolder);
+                string modFolderPath = Path.Combine(settings.OutputDir, sanitizedModFolder);
                 Directory.CreateDirectory(modFolderPath);
 
                 string savePath = Path.Combine(modFolderPath, file.FileName);
@@ -125,6 +135,7 @@ namespace LiteCyberpunkModManager.Views
         private void SaveDownloadMetadata(int modId, string modName, ModFile file)
         {
             string metadataPath = PathConfig.DownloadedMods;
+            Directory.CreateDirectory(PathConfig.AppDataRoot);
             var entry = new InstalledModInfo
             {
                 ModId = modId,

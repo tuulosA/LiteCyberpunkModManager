@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Text.Json;
-using System.Windows;
+using System;
 using LiteCyberpunkModManager.Models;
 using SharpCompress.Archives;
 using SharpCompress.Common;
@@ -12,6 +12,7 @@ namespace LiteCyberpunkModManager.Services
 {
     public static class ModInstallerService
     {
+        public static event Action<Notification>? NotificationRaised;
         private static Settings Settings => SettingsService.LoadSettings();
         private static string GameDir => Settings.GameInstallationDir;
         private static string ModsDir => Settings.OutputDir;
@@ -30,7 +31,10 @@ namespace LiteCyberpunkModManager.Services
             string ext = Path.GetExtension(zipPath).ToLowerInvariant();
             if (ext != ".zip" && ext != ".rar" && ext != ".7z")
             {
-                MessageBox.Show("Only .zip, .rar or .7z files are supported.", "Unsupported Format", MessageBoxButton.OK, MessageBoxImage.Warning);
+                NotificationRaised?.Invoke(new Notification(
+                    "Unsupported Format",
+                    "Only .zip, .rar or .7z files are supported.",
+                    NotificationType.Warning));
                 return false;
             }
 
@@ -59,8 +63,10 @@ namespace LiteCyberpunkModManager.Services
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to extract the archive. It may be corrupted or unsupported.\n\n" + ex.Message,
-                                "Extraction Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationRaised?.Invoke(new Notification(
+                    "Extraction Error",
+                    "Failed to extract the archive. It may be corrupted or unsupported.\n\n" + ex.Message,
+                    NotificationType.Error));
                 return false;
             }
 
@@ -131,7 +137,10 @@ namespace LiteCyberpunkModManager.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"[ERROR] Install failed: {ex.Message}");
-                MessageBox.Show("Mod installation failed after extraction. Files might be invalid.", "Install Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationRaised?.Invoke(new Notification(
+                    "Install Error",
+                    "Mod installation failed after extraction. Files might be invalid.",
+                    NotificationType.Error));
                 return false;
             }
             finally
@@ -158,6 +167,17 @@ namespace LiteCyberpunkModManager.Services
 
         public static bool UninstallMod(string modName, string fileName)
         {
+            // Ensure app data dir and migrate legacy install tracking if needed
+            try
+            {
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
+                if (!File.Exists(PathConfig.InstalledGameFiles) && File.Exists(PathConfig.LegacyInstalledGameFiles))
+                {
+                    File.Copy(PathConfig.LegacyInstalledGameFiles, PathConfig.InstalledGameFiles, overwrite: false);
+                }
+            }
+            catch { }
+
             if (!File.Exists(PathConfig.InstalledGameFiles)) return false;
 
             try
@@ -184,6 +204,7 @@ namespace LiteCyberpunkModManager.Services
                 }
 
                 var options = new JsonSerializerOptions { WriteIndented = true };
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
                 File.WriteAllText(PathConfig.InstalledGameFiles, JsonSerializer.Serialize(list, options));
 
                 return true;
@@ -222,6 +243,7 @@ namespace LiteCyberpunkModManager.Services
             });
 
             var options = new JsonSerializerOptions { WriteIndented = true };
+            Directory.CreateDirectory(PathConfig.AppDataRoot);
             File.WriteAllText(PathConfig.InstalledGameFiles, JsonSerializer.Serialize(list, options));
         }
 

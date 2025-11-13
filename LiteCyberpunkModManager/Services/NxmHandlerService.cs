@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using System;
 using System.Web;
 using System.Windows;
 using System.Diagnostics;
@@ -15,6 +16,7 @@ namespace LiteCyberpunkModManager.Services
         private readonly HttpClient _http = new();
         private const string Game = "cyberpunk2077";
         private const string ApiBase = "https://api.nexusmods.com/v1";
+        public event Action<Notification>? NotificationRaised;
 
         public async Task HandleAsync(string nxmLink)
         {
@@ -36,14 +38,14 @@ namespace LiteCyberpunkModManager.Services
                 if (pathSegments.Length < 4)
                 {
                     Debug.WriteLine($"Unexpected path segment count: {pathSegments.Length}. Segments: {string.Join(", ", pathSegments)}");
-                    MessageBox.Show("Invalid mod or file ID in .nxm link.", "Invalid Link", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    NotificationRaised?.Invoke(new Notification("Invalid Link", "Invalid mod or file ID in .nxm link.", NotificationType.Warning));
                     return;
                 }
 
                 if (!int.TryParse(pathSegments[1], out int modId) || !int.TryParse(pathSegments[3], out int fileId))
                 {
                     Debug.WriteLine($"Failed to parse modId/fileId. Segments: {string.Join(", ", pathSegments)}");
-                    MessageBox.Show("Invalid mod or file ID in .nxm link.", "Invalid Link", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    NotificationRaised?.Invoke(new Notification("Invalid Link", "Invalid mod or file ID in .nxm link.", NotificationType.Warning));
                     return;
                 }
 
@@ -55,7 +57,7 @@ namespace LiteCyberpunkModManager.Services
                 if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(expires))
                 {
                     Debug.WriteLine("Missing key or expires field in the link.");
-                    MessageBox.Show("Missing key or expires in the .nxm link. Are you logged in?", "Missing Info", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    NotificationRaised?.Invoke(new Notification("Missing Info", "Missing key or expires in the .nxm link. Are you logged in?", NotificationType.Warning));
                     return;
                 }
 
@@ -69,7 +71,7 @@ namespace LiteCyberpunkModManager.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"Exception in HandleAsync: {ex}");
-                MessageBox.Show($"Failed to handle .nxm link.\n\n{ex.Message}", "NXM Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationRaised?.Invoke(new Notification("NXM Error", $"Failed to handle .nxm link.\n\n{ex.Message}", NotificationType.Error));
             }
         }
 
@@ -131,11 +133,12 @@ namespace LiteCyberpunkModManager.Services
             if (string.IsNullOrWhiteSpace(settings.NexusApiKey))
             {
                 Debug.WriteLine("API key is missing or empty.");
-                MessageBox.Show("Please enter your Nexus Mods API key in the Settings tab.", "API Key Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
+                NotificationRaised?.Invoke(new Notification("API Key Missing", "Please enter your Nexus Mods API key in the Settings tab.", NotificationType.Warning));
                 return;
             }
 
             string metadataPath = PathConfig.DownloadedMods;
+            Directory.CreateDirectory(PathConfig.AppDataRoot);
 
             string linkUrl = $"{ApiBase}/games/{Game}/mods/{modId}/files/{fileId}/download_link.json?key={key}&expires={expires}";
             Debug.WriteLine($"Fetching download link: {linkUrl}");
@@ -148,7 +151,7 @@ namespace LiteCyberpunkModManager.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                MessageBox.Show($"Failed to get download link: {response.StatusCode}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationRaised?.Invoke(new Notification("Error", $"Failed to get download link: {response.StatusCode}", NotificationType.Error));
                 return;
             }
 
@@ -161,7 +164,7 @@ namespace LiteCyberpunkModManager.Services
             if (string.IsNullOrEmpty(downloadUrl))
             {
                 Debug.WriteLine("Download URL is empty.");
-                MessageBox.Show("Failed to extract download URL.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationRaised?.Invoke(new Notification("Error", "Failed to extract download URL.", NotificationType.Error));
                 return;
             }
 
@@ -172,7 +175,8 @@ namespace LiteCyberpunkModManager.Services
             string modName = await GetModNameAsync(modId);
             Debug.WriteLine($"Resolved mod name: {modName}");
 
-            string modFolder = Path.Combine(Settings.DefaultModsDir, PathUtils.SanitizeModName(modName));
+            // reuse settings from above
+            string modFolder = Path.Combine(settings.OutputDir, PathUtils.SanitizeModName(modName));
             Directory.CreateDirectory(modFolder);
             string fullPath = Path.Combine(modFolder, fileName);
 
@@ -208,7 +212,7 @@ namespace LiteCyberpunkModManager.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Download] Error during file stream: {ex}");
-                MessageBox.Show($"Download failed:\n\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationRaised?.Invoke(new Notification("Error", $"Download failed:\n\n{ex.Message}", NotificationType.Error));
                 return;
             }
             finally
@@ -256,7 +260,7 @@ namespace LiteCyberpunkModManager.Services
                 App.GlobalFilesView?.RefreshFileList();
             });
 
-            MessageBox.Show($"Successfully downloaded: {fileName}", "NXM Download", MessageBoxButton.OK, MessageBoxImage.Information);
+            NotificationRaised?.Invoke(new Notification("NXM Download", $"Successfully downloaded: {fileName}", NotificationType.Info));
         }
 
 
