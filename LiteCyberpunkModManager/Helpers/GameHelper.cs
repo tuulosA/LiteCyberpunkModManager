@@ -21,6 +21,17 @@ namespace LiteCyberpunkModManager.Helpers
             return Path.Combine(local, "Larian Studios", "Baldur's Gate 3", "Mods");
         }
 
+        public static string GetBg3ModSettingsPath()
+        {
+            var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            return Path.Combine(local,
+                "Larian Studios",
+                "Baldur's Gate 3",
+                "PlayerProfiles",
+                "Public",
+                "modsettings.lsx");
+        }
+
         public static string GetBg3BinDir(Settings s)
         {
             return Path.Combine(s.GameInstallationDir, "bin");
@@ -32,4 +43,3 @@ namespace LiteCyberpunkModManager.Helpers
         }
     }
 }
-

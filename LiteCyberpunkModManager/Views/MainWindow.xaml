@@ -11,6 +11,9 @@
             <TabItem Header="Files">
                 <ContentControl x:Name="FilesTabContent" />
             </TabItem>
+            <TabItem x:Name="Bg3LoadOrderTab" Header="BG3 Load Order">
+                <ContentControl x:Name="Bg3LoadOrderTabContent" />
+            </TabItem>
             <TabItem Header="Settings">
                 <ContentControl x:Name="SettingsTabContent" />
             </TabItem>

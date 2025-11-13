@@ -12,6 +12,7 @@ namespace LiteCyberpunkModManager.Views
         private readonly SettingsView _settingsView;
         private readonly ModListView _modListView;
         private readonly FilesView _filesView;
+        private readonly Bg3LoadOrderView _bg3LoadOrderView;
 
         public MainWindow()
         {
@@ -43,10 +44,12 @@ namespace LiteCyberpunkModManager.Views
             _settingsView = new SettingsView();
             _modListView = new ModListView();
             _filesView = new FilesView();
+            _bg3LoadOrderView = new Bg3LoadOrderView();
 
             SettingsTabContent.Content = _settingsView;
             ModsTabContent.Content = _modListView;
             FilesTabContent.Content = _filesView;
+            Bg3LoadOrderTabContent.Content = _bg3LoadOrderView;
 
             UpdateActiveGameLabel();
         }
@@ -62,6 +65,16 @@ namespace LiteCyberpunkModManager.Views
             };
 
             ActiveGameLabel.Text = display;
+
+            // Show BG3 load-order tab only when BG3 is active
+            if (Bg3LoadOrderTab != null)
+            {
+                Bg3LoadOrderTab.Visibility = currentSettings.SelectedGame == GameId.BaldursGate3
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
+
+            _bg3LoadOrderView.RefreshForCurrentGame();
         }
     }
 }
