@@ -24,8 +24,16 @@
     <SolidColorBrush x:Key="CheckboxBorderBrush" Color="#5A5A5A"/>
 
     <!-- ScrollBar -->
-    <SolidColorBrush x:Key="ScrollBarBackgroundBrush" Color="#2D2D30"/>
-    <SolidColorBrush x:Key="ScrollBarForegroundBrush" Color="#AAAAAA"/>
+    <SolidColorBrush x:Key="ScrollBarBackgroundBrush" Color="#26262A"/>
+    <SolidColorBrush x:Key="ScrollBarForegroundBrush" Color="#707070"/>
+    <LinearGradientBrush x:Key="ScrollBarThumbBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#55595F" Offset="0"/>
+        <GradientStop Color="#3C3F45" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ScrollBarThumbHoverBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#6A6E75" Offset="0"/>
+        <GradientStop Color="#4A4E55" Offset="1"/>
+    </LinearGradientBrush>
 
     <!-- DataGrid -->
     <SolidColorBrush x:Key="AlternatingRowBrush" Color="#252526"/>
@@ -553,6 +561,39 @@
     <Style TargetType="ScrollBar">
         <Setter Property="Background" Value="{StaticResource ScrollBarBackgroundBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ScrollBarForegroundBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid x:Name="Root" Background="{TemplateBinding Background}">
+                        <Track x:Name="PART_Track" IsDirectionReversed="true">
+                            <Track.Thumb>
+                                <Thumb x:Name="Thumb">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border CornerRadius="4"
+                                                    Background="{StaticResource ScrollBarThumbBrush}"/>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter TargetName="Root" Property="Width" Value="Auto"/>
+                            <Setter TargetName="Root" Property="Height" Value="10"/>
+                        </Trigger>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter TargetName="Root" Property="Width" Value="10"/>
+                            <Setter TargetName="Root" Property="Height" Value="Auto"/>
+                        </Trigger>
+                        <Trigger SourceName="Thumb" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Thumb" Property="Background" Value="{StaticResource ScrollBarThumbHoverBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Group Headers -->

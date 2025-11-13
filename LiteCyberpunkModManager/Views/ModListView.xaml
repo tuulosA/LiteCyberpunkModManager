@@ -68,11 +68,16 @@
                             IsHitTestVisible="False"/>
                     </Grid>
 
-                    <ComboBox Width="150" Height="30"
-                              ItemsSource="{Binding AvailableCategories}"
-                              SelectedItem="{Binding SelectedCategory, UpdateSourceTrigger=PropertyChanged}"
-                              Margin="0,0,8,4"
-                              ToolTip="Filter by category"/>
+                    <Border BorderBrush="{DynamicResource ControlBorderBrush}"
+                            BorderThickness="1"
+                            Margin="0,0,8,4">
+                        <ComboBox Width="142" Height="28"
+                                  Margin="2,1,2,1"
+                                  Background="{DynamicResource ControlBackgroundBrush}"
+                                  ItemsSource="{Binding AvailableCategories}"
+                                  SelectedItem="{Binding SelectedCategory, UpdateSourceTrigger=PropertyChanged}"
+                                  ToolTip="Filter by category"/>
+                    </Border>
                 </WrapPanel>
             </ScrollViewer>
 
