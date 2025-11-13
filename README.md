@@ -19,7 +19,8 @@
 ## Getting Started
 
 ### 1. Set up your settings
-<img width="818" alt="settings" src="https://github.com/user-attachments/assets/e792596b-2218-465f-9bcc-17ce33140c83" />
+<img width="1635" height="971" alt="image" src="https://github.com/user-attachments/assets/c2681684-d1bd-43cc-80a1-28be79d7d1c0" />
+
 
 - Input your **Nexus API key** (required for fetching tracked mods).
 - Set your **Game Installation Directory** and **Output Directory** if not set correctly by default.
@@ -43,7 +44,8 @@ You can now:
 - See **status** of mods (e.g., *Downloaded*, *Update Available!*, etc.)
 - **Filter** by mod categories
 - **Search** mods by name
-<img width="819" alt="mod list status messages" src="https://github.com/user-attachments/assets/d9d94b05-cdd7-48a6-9769-7cf363182459" />
+<img width="1636" height="971" alt="image" src="https://github.com/user-attachments/assets/3cf3561e-d992-4024-8341-76594cc51be1" />
+
 
 ---
 
@@ -51,7 +53,8 @@ You can now:
 
 - If you are a **Nexus Premium user**, click **"Download Files"** to fetch files directly
 
-<img width="443" alt="download files" src="https://github.com/user-attachments/assets/890ea63e-c242-489a-9b4c-10f0f7949b25" />
+<img width="882" height="816" alt="image" src="https://github.com/user-attachments/assets/89194fbd-33f5-476a-b8b7-d38d3501fc7e" />
+
 
 - If you're a **non-premium user**, click the orange "Mod manager download" button on Nexus Mods. The app will handle the `.nxm` link and track the download.
 - You can **double click** the mod name in the manager to get to the mod's page.
@@ -64,17 +67,20 @@ You can now:
 
 - Mod files can be deleted with the `Manage Files` button:
 
-<img width="443" alt="manage files" src="https://github.com/user-attachments/assets/a073e4f0-a524-4d7a-b71f-b464f9b582f4" />
+<img width="885" height="595" alt="image" src="https://github.com/user-attachments/assets/db0762d4-8022-44c2-8371-6635e6e812d7" />
+
+
 
 - Multiple mods can be selected at once with ctrl+click, and then clicking `Manage Files` button lets you delete files for selected mods. Without selection all downloaded files are shown.
-![mod list filter and selection](https://github.com/user-attachments/assets/21758337-f8c6-4809-9089-36939ffde845)
+<img width="1636" height="971" alt="image" src="https://github.com/user-attachments/assets/8e875566-ea93-4af2-9bcb-3a582d93646b" />
 
 
 ---
 
 #### Mod Status Meaning
 
-<img width="819" alt="mod list status messages" src="https://github.com/user-attachments/assets/7f02029b-b651-4552-af07-9c7bb87183b5" />
+<img width="1635" height="970" alt="image" src="https://github.com/user-attachments/assets/9cdfaf14-d446-4db6-b5c9-5dec28ba5137" />
+
 
 
 - **Latest Downloaded**: The most recent overall file by timestamp is downloaded.
@@ -90,7 +96,8 @@ Go to the **Files** tab to:
 - **Install** or **Uninstall** mods with one click
 - Delete specific downloaded mod files
 
-<img width="817" alt="file list" src="https://github.com/user-attachments/assets/f19c6202-3821-4bfb-bcf2-f704023a8619" />
+<img width="1634" height="969" alt="image" src="https://github.com/user-attachments/assets/2d79cb0b-d5e5-4801-9097-0e5badeb3351" />
+
 
 <img width="818" alt="mass install" src="https://github.com/user-attachments/assets/e17cd20e-83c6-427e-b384-e49c109960b6" />
 
@@ -106,7 +113,8 @@ The manager automatically handles different archive structures, including:
 - You can export your downloaded mod files into a **modlist.json**, which can be used for mass download.
 - Useful for sharing a mod list you have created.
 
-<img width="818" alt="mass download" src="https://github.com/user-attachments/assets/a3106406-6ff3-486f-951b-6eb940dca0f6" />
+<img width="1634" height="970" alt="image" src="https://github.com/user-attachments/assets/0a613878-acde-4fdd-8cef-5be3d2bcf55b" />
+
 
 
 
