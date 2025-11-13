@@ -15,6 +15,7 @@ namespace LiteCyberpunkModManager.Models
         private string _gameInstallationDir = DefaultGameDir;
         private string _nexusApiKey = "";
         private AppTheme _appTheme = AppTheme.Dark;
+        private GameId _selectedGame = GameId.Cyberpunk2077;
 
         public string OutputDir
         {
@@ -63,6 +64,19 @@ namespace LiteCyberpunkModManager.Models
                 if (_appTheme != value)
                 {
                     _appTheme = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public GameId SelectedGame
+        {
+            get => _selectedGame;
+            set
+            {
+                if (_selectedGame != value)
+                {
+                    _selectedGame = value;
                     OnPropertyChanged();
                 }
             }

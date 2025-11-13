@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -48,6 +48,14 @@ namespace LiteCyberpunkModManager.Views
             {
                 modListView.ReinitializeApiService();
                 await modListView.FetchModsFromApiAsync();
+            }
+
+            // Also refresh Files view to apply per-game filters immediately
+            if (Application.Current.MainWindow is MainWindow mainWindow2 &&
+                mainWindow2.FindName("FilesTabContent") is ContentControl filesTab &&
+                filesTab.Content is FilesView filesView)
+            {
+                filesView.RefreshFileList();
             }
         }
 
@@ -197,7 +205,8 @@ namespace LiteCyberpunkModManager.Views
 
             var tasks = modsToTrack.Select(async mod =>
             {
-                if (await api.TrackModAsync(mod.ModId))
+                var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+                if (await api.TrackModAsync(mod.ModId, slug))
                     Interlocked.Increment(ref successCount);
 
                 int done = Interlocked.Increment(ref completed);
@@ -244,7 +253,8 @@ namespace LiteCyberpunkModManager.Views
             if (doubleConfirm != MessageBoxResult.Yes) return;
 
             var api = new NexusApiService(SettingsService.LoadSettings().NexusApiKey);
-            var modIds = await api.GetTrackedModIdsAsync();
+            var slug2 = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+            var modIds = await api.GetTrackedModIdsAsync(slug2);
 
             if (modIds.Count == 0)
             {
@@ -265,7 +275,8 @@ namespace LiteCyberpunkModManager.Views
 
             var tasks = modIds.Select(async modId =>
             {
-                if (await api.UntrackModAsync(modId))
+                var slug3 = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+                if (await api.UntrackModAsync(modId, slug3))
                     Interlocked.Increment(ref removedCount);
 
                 int done = Interlocked.Increment(ref completed);
@@ -304,3 +315,8 @@ namespace LiteCyberpunkModManager.Views
 
     }
 }
+
+
+
+
+

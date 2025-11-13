@@ -87,7 +87,8 @@ namespace LiteCyberpunkModManager.Views
                 var file = _files.FirstOrDefault(f => f.FileId == fileId);
                 if (file == null) continue;
 
-                var downloadUrl = await api.GetDownloadLinkAsync("cyberpunk2077", _modId, fileId);
+                var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+                var downloadUrl = await api.GetDownloadLinkAsync(slug, _modId, fileId);
                 if (downloadUrl == null) continue;
 
                 string sanitizedModFolder = PathUtils.SanitizeModName(_modName);
@@ -142,7 +143,8 @@ namespace LiteCyberpunkModManager.Views
                 ModName = modName,
                 FileId = file.FileId,
                 FileName = file.FileName,
-                UploadedTimestamp = file.UploadedTimestamp
+                UploadedTimestamp = file.UploadedTimestamp,
+                Game = SettingsService.LoadSettings().SelectedGame
             };
 
             List<InstalledModInfo> list = new();

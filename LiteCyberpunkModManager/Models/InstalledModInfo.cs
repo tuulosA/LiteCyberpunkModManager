@@ -1,4 +1,4 @@
-﻿namespace LiteCyberpunkModManager.Models
+namespace LiteCyberpunkModManager.Models
 {
     public class InstalledModInfo
     {
@@ -7,5 +7,6 @@
         public int FileId { get; set; }
         public string FileName { get; set; } = "";
         public DateTime UploadedTimestamp { get; set; }
+        public GameId Game { get; set; } = GameId.Cyberpunk2077;
     }
 }

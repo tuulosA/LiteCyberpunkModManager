@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using LiteCyberpunkModManager.Models;
 using LiteCyberpunkModManager.Services;
@@ -194,7 +194,8 @@ namespace LiteCyberpunkModManager.Views
                 var modId = selected.ModId;
                 Debug.WriteLine($"[DEBUG] Fetching files for Mod ID: {modId}");
 
-                var files = await _api.GetModFilesAsync("cyberpunk2077", modId);
+                var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+                var files = await _api.GetModFilesAsync(slug, modId);
                 if (files == null)
                 {
                     Debug.WriteLine("[DEBUG] GetModFilesAsync returned null.");
@@ -410,7 +411,8 @@ namespace LiteCyberpunkModManager.Views
             {
                 int modId = selected.ModId;
                 string modName = selected.Name;
-                string url = $"https://www.nexusmods.com/cyberpunk2077/mods/{modId}?tab=files";
+                var pageSlug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+                string url = $"https://www.nexusmods.com/{pageSlug}/mods/{modId}?tab=files";
 
                 try
                 {
@@ -482,7 +484,8 @@ namespace LiteCyberpunkModManager.Views
                 Debug.WriteLine($"[WARN] Failed to save downloaded_mods.json: {ex.Message}");
             }
 
-            var trackedModIds = await _api.GetTrackedModIdsAsync();
+            var slugForIds = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+            var trackedModIds = await _api.GetTrackedModIdsAsync(slugForIds);
             if (!modsToDownload.All(m => trackedModIds.Contains(m.ModId)))
             {
                 MessageBox.Show("The mod list does not match your currently tracked mods.\nPlease import the list first in Settings.", "Modlist Mismatch", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -520,7 +523,8 @@ namespace LiteCyberpunkModManager.Views
                 progressWindow.SetOverallProgress((double)completed / total * 100);
                 progressWindow.SetStatusText("Getting download link...");
 
-                string? downloadUrl = await _api.GetDownloadLinkAsync("cyberpunk2077", modId, fileId);
+                var slug2 = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+                string? downloadUrl = await _api.GetDownloadLinkAsync(slug2, modId, fileId);
                 if (string.IsNullOrWhiteSpace(downloadUrl))
                 {
                     Debug.WriteLine($"[WARN] No download URL found for {modName}");
@@ -573,3 +577,4 @@ namespace LiteCyberpunkModManager.Views
 
     }
 }
+

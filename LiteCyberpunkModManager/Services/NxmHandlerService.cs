@@ -14,7 +14,7 @@ namespace LiteCyberpunkModManager.Services
     public class NxmHandlerService
     {
         private readonly HttpClient _http = new();
-        private const string Game = "cyberpunk2077";
+        private string CurrentGameSlug => GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
         private const string ApiBase = "https://api.nexusmods.com/v1";
         public event Action<Notification>? NotificationRaised;
 
@@ -78,7 +78,7 @@ namespace LiteCyberpunkModManager.Services
 
         private async Task<DateTime> GetFileUploadTimeAsync(int modId, int fileId)
         {
-            string url = $"{ApiBase}/games/{Game}/mods/{modId}/files/{fileId}.json";
+            string url = $"{ApiBase}/games/{CurrentGameSlug}/mods/{modId}/files/{fileId}.json";
             _http.DefaultRequestHeaders.Clear();
             _http.DefaultRequestHeaders.Add("apikey", SettingsService.LoadSettings().NexusApiKey);
 
@@ -111,7 +111,7 @@ namespace LiteCyberpunkModManager.Services
 
         private async Task<string> GetFileDisplayNameAsync(int modId, int fileId)
         {
-            string url = $"{ApiBase}/games/{Game}/mods/{modId}/files/{fileId}.json";
+            string url = $"{ApiBase}/games/{CurrentGameSlug}/mods/{modId}/files/{fileId}.json";
             var response = await _http.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
@@ -140,7 +140,7 @@ namespace LiteCyberpunkModManager.Services
             string metadataPath = PathConfig.DownloadedMods;
             Directory.CreateDirectory(PathConfig.AppDataRoot);
 
-            string linkUrl = $"{ApiBase}/games/{Game}/mods/{modId}/files/{fileId}/download_link.json?key={key}&expires={expires}";
+            string linkUrl = $"{ApiBase}/games/{CurrentGameSlug}/mods/{modId}/files/{fileId}/download_link.json?key={key}&expires={expires}";
             Debug.WriteLine($"Fetching download link: {linkUrl}");
 
             _http.DefaultRequestHeaders.Clear();
@@ -228,7 +228,8 @@ namespace LiteCyberpunkModManager.Services
                 ModName = modName,
                 FileId = fileId,
                 FileName = fileName,
-                UploadedTimestamp = await GetFileUploadTimeAsync(modId, fileId)
+                UploadedTimestamp = await GetFileUploadTimeAsync(modId, fileId),
+                Game = SettingsService.LoadSettings().SelectedGame
             };
 
             var list = new System.Collections.Generic.List<InstalledModInfo>();
@@ -266,7 +267,7 @@ namespace LiteCyberpunkModManager.Services
 
         private async Task<string> GetModNameAsync(int modId)
         {
-            var url = $"{ApiBase}/games/{Game}/mods/{modId}.json";
+            var url = $"{ApiBase}/games/{CurrentGameSlug}/mods/{modId}.json";
             Debug.WriteLine($"Fetching mod name from: {url}");
 
             var response = await _http.GetAsync(url);

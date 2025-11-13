@@ -52,19 +52,16 @@ namespace LiteCyberpunkModManager.ViewModels
 
         private void LoadFiles()
         {
-            var metadataPath = PathConfig.DownloadedMods;          // downloaded_mods.json
-            var installPath = PathConfig.InstalledGameFiles;       // installed_game_files.json
+            var selectedGame = SettingsService.LoadSettings().SelectedGame;
+            var slug = GameHelper.GetNexusSlug(selectedGame);
+            var metadataPath = System.IO.Path.Combine(PathConfig.AppDataRoot, $"downloaded_mods_{slug}.json");
+            var installPath = System.IO.Path.Combine(PathConfig.AppDataRoot, $"installed_game_files_{slug}.json");
 
-            // Ensure app data dir exists and migrate legacy metadata if present
             try
             {
                 Directory.CreateDirectory(PathConfig.AppDataRoot);
-                if (!File.Exists(metadataPath) && File.Exists(PathConfig.LegacyDownloadedMods))
-                    File.Copy(PathConfig.LegacyDownloadedMods, metadataPath, overwrite: false);
-                if (!File.Exists(installPath) && File.Exists(PathConfig.LegacyInstalledGameFiles))
-                    File.Copy(PathConfig.LegacyInstalledGameFiles, installPath, overwrite: false);
             }
-            catch { /* best effort */ }
+            catch { }
 
             // Cache for category lookup
             var cachedMods = ModCacheService.LoadCachedMods() ?? new List<Mod>();
@@ -72,15 +69,17 @@ namespace LiteCyberpunkModManager.ViewModels
                 .GroupBy(m => m.Name, System.StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), System.StringComparer.OrdinalIgnoreCase);
 
-            // Load downloaded metadata (optional)
+            // Load downloaded metadata (optional) and filter by selected game
             var downloadedList = File.Exists(metadataPath)
                 ? (JsonSerializer.Deserialize<List<InstalledModInfo>>(File.ReadAllText(metadataPath)) ?? new())
                 : new List<InstalledModInfo>();
+            downloadedList = downloadedList.Where(d => d.Game == selectedGame).ToList();
 
-            // Load install tracking (optional)
+            // Load install tracking (optional) and filter by selected game
             var installedList = File.Exists(installPath)
                 ? (JsonSerializer.Deserialize<List<InstalledGameFile>>(File.ReadAllText(installPath)) ?? new())
                 : new List<InstalledGameFile>();
+            installedList = installedList.Where(i => i.Game == selectedGame).ToList();
 
             // Index installed by (ModName, FileName[zip])
             var installedByKey = installedList.ToDictionary(
@@ -196,5 +195,6 @@ namespace LiteCyberpunkModManager.ViewModels
         public string ModName { get; set; } = "";
         public string FileName { get; set; } = ""; // zip filename
         public List<string> InstalledPaths { get; set; } = new(); // .archive paths
+        public GameId Game { get; set; } = GameId.Cyberpunk2077;
     }
 }

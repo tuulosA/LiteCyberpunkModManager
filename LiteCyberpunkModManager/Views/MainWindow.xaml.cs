@@ -1,4 +1,5 @@
-﻿using System.Windows;
+using System;
+using System.Windows;
 using LiteCyberpunkModManager.Models;
 using LiteCyberpunkModManager.Services;
 using System.Windows.Media;
@@ -32,6 +33,13 @@ namespace LiteCyberpunkModManager.Views
                 MessageBox.Show("Please enter your Nexus Mods API key in the Settings tab.", "API Key Missing");
             }
 
+            // First-run prompt: choose game if not set explicitly (optional)
+            if (!Enum.IsDefined(typeof(GameId), _settings.SelectedGame))
+            {
+                _settings.SelectedGame = GameId.Cyberpunk2077;
+                SettingsService.SaveSettings(_settings);
+            }
+
             _settingsView = new SettingsView();
             _modListView = new ModListView();
             _filesView = new FilesView();
@@ -42,3 +50,5 @@ namespace LiteCyberpunkModManager.Views
         }
     }
 }
+
+

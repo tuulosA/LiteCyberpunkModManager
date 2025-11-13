@@ -10,14 +10,17 @@ namespace LiteCyberpunkModManager.Services
     {
         public static List<Mod>? LoadCachedMods()
         {
-            var path = PathConfig.ModCache;
+            var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+            var path = Path.Combine(PathConfig.AppDataRoot, $"mod_cache_{slug}.json");
             Debug.WriteLine($"[CACHE] Attempting to load mod cache from: {path}");
 
             // Ensure directory exists and migrate legacy cache if present
             try
             {
                 Directory.CreateDirectory(PathConfig.AppDataRoot);
-                if (!File.Exists(path) && File.Exists(PathConfig.LegacyModCache))
+                // Only migrate the legacy cache into the per-game file for Cyberpunk.
+                // Avoid copying Cyberpunk cache into BG3 cache.
+                if (slug == "cyberpunk2077" && !File.Exists(path) && File.Exists(PathConfig.LegacyModCache))
                 {
                     File.Copy(PathConfig.LegacyModCache, path, overwrite: false);
                     Debug.WriteLine($"[CACHE] Migrated legacy mod cache from {PathConfig.LegacyModCache} -> {path}");
@@ -46,7 +49,8 @@ namespace LiteCyberpunkModManager.Services
 
         public static void SaveCachedMods(List<Mod> mods)
         {
-            var path = PathConfig.ModCache;
+            var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+            var path = Path.Combine(PathConfig.AppDataRoot, $"mod_cache_{slug}.json");
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);

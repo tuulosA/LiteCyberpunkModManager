@@ -16,6 +16,7 @@ namespace LiteCyberpunkModManager.ViewModels
     {
         private NexusApiService _apiService;
         private string _statusMessage = "Ready.";
+        private string _lastLoadedSlug = string.Empty;
 
         public ObservableCollection<ModDisplay> Mods { get; set; } = new();
         public ListCollectionView ModsGrouped { get; set; }
@@ -147,7 +148,8 @@ namespace LiteCyberpunkModManager.ViewModels
 
                     try
                     {
-                        remoteFiles = await _apiService.GetModFilesAsync("cyberpunk2077", mod.ModId);
+                        var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+                        remoteFiles = await _apiService.GetModFilesAsync(slug, mod.ModId);
                     }
                     catch
                     {
@@ -260,7 +262,8 @@ namespace LiteCyberpunkModManager.ViewModels
         public async Task UpdateModStatusAsync(int modId)
         {
             var installed = LoadInstalledMetadata(); // reloads from disk every time
-            var remoteFiles = await _apiService.GetModFilesAsync("cyberpunk2077", modId);
+            var slug2 = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+            var remoteFiles = await _apiService.GetModFilesAsync(slug2, modId);
 
             var modDisplay = Mods.FirstOrDefault(m => m.ModId == modId);
             if (modDisplay == null) return;
@@ -290,7 +293,8 @@ namespace LiteCyberpunkModManager.ViewModels
 
             try
             {
-                var mods = await _apiService.GetTrackedModsAsync();
+                var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+                var mods = await _apiService.GetTrackedModsAsync(slug);
                 if (mods != null && mods.Count > 0)
                 {
                     ModCacheService.SaveCachedMods(mods);
@@ -308,22 +312,15 @@ namespace LiteCyberpunkModManager.ViewModels
         private List<InstalledModInfo> LoadInstalledMetadata()
         {
             var metadataPath = PathConfig.DownloadedMods;
-            try
-            {
-                Directory.CreateDirectory(PathConfig.AppDataRoot);
-                if (!File.Exists(metadataPath) && File.Exists(PathConfig.LegacyDownloadedMods))
-                {
-                    File.Copy(PathConfig.LegacyDownloadedMods, metadataPath, overwrite: false);
-                }
-            }
-            catch { }
 
             if (!File.Exists(metadataPath)) return new();
 
             try
             {
                 string json = File.ReadAllText(metadataPath);
-                return JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+                var list = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+                var selectedGame = SettingsService.LoadSettings().SelectedGame;
+                return list.Where(x => x.Game == selectedGame).ToList();
             }
             catch
             {
@@ -336,6 +333,21 @@ namespace LiteCyberpunkModManager.ViewModels
         {
             StatusMessage = "Loading mods from cache...";
             Mods.Clear();
+
+            var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+
+            // If the selected game changed since last load, force an API fetch
+            if (!string.Equals(_lastLoadedSlug, slug, StringComparison.OrdinalIgnoreCase))
+            {
+                StatusMessage = "Game changed — fetching from Nexus API...";
+                var fresh = await TryFetchFromApiAsync();
+                if (fresh != null && fresh.Count > 0)
+                {
+                    await PopulateModsAsync(fresh);
+                    _lastLoadedSlug = slug;
+                    return;
+                }
+            }
 
             List<Mod>? mods = ModCacheService.LoadCachedMods();
 
@@ -356,6 +368,7 @@ namespace LiteCyberpunkModManager.ViewModels
             }
 
             await PopulateModsAsync(mods);
+            _lastLoadedSlug = slug;
         }
 
 
@@ -364,6 +377,7 @@ namespace LiteCyberpunkModManager.ViewModels
             StatusMessage = "Fetching mods from Nexus API...";
             Mods.Clear();
 
+            var slug = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
             var mods = await TryFetchFromApiAsync();
 
             if (mods == null || mods.Count == 0)
@@ -385,6 +399,7 @@ namespace LiteCyberpunkModManager.ViewModels
             }
 
             await PopulateModsAsync(mods);
+            _lastLoadedSlug = slug;
         }
 
 
@@ -399,14 +414,6 @@ namespace LiteCyberpunkModManager.ViewModels
         protected void OnPropertyChanged([CallerMemberName] string name = "") =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        private class InstalledModInfo
-        {
-            public int ModId { get; set; }
-            public string ModName { get; set; } = "";
-            public int FileId { get; set; }
-            public string FileName { get; set; } = "";
-            public System.DateTime UploadedTimestamp { get; set; }
-        }
     }
 
     public class ModDisplay : INotifyPropertyChanged

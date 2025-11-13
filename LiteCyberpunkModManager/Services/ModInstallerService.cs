@@ -74,6 +74,49 @@ namespace LiteCyberpunkModManager.Services
             try
             {
                 var allFiles = Directory.GetFiles(tempExtractDir, "*", SearchOption.AllDirectories);
+
+                // BG3 install strategy
+                if (Settings.SelectedGame == GameId.BaldursGate3)
+                {
+                    string userModsDir = GameHelper.GetBg3UserModsDir();
+                    Directory.CreateDirectory(userModsDir);
+                    string binDir = GameHelper.GetBg3BinDir(Settings);
+                    string seDir = GameHelper.GetBg3ScriptExtenderDir(Settings);
+                    Directory.CreateDirectory(binDir);
+
+                    foreach (var file in allFiles)
+                    {
+                        string rel = Path.GetRelativePath(tempExtractDir, file);
+                        string relNorm = rel.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+                        string extLocal = Path.GetExtension(file);
+
+                        string? target = null;
+                        if (extLocal.Equals(".pak", StringComparison.OrdinalIgnoreCase))
+                        {
+                            target = Path.Combine(userModsDir, Path.GetFileName(file));
+                        }
+                        else if (relNorm.StartsWith($"bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string sub = relNorm.Substring($"bin{Path.DirectorySeparatorChar}".Length);
+                            target = Path.Combine(binDir, sub);
+                        }
+                        else if (relNorm.StartsWith($"Scripts{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string sub = relNorm.Substring($"Scripts{Path.DirectorySeparatorChar}".Length);
+                            target = Path.Combine(seDir, sub);
+                        }
+
+                        if (target != null)
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                            File.Copy(file, target, overwrite: true);
+                            installedPaths.Add(target);
+                        }
+                    }
+
+                    SaveInstallRecord(modName, zipFileName, installedPaths);
+                    return true;
+                }
                 var archiveFiles = allFiles.Where(f => f.EndsWith(".archive", StringComparison.OrdinalIgnoreCase)).ToList();
                 bool onlyArchives = archiveFiles.Count > 0 && allFiles.All(f => f.EndsWith(".archive", StringComparison.OrdinalIgnoreCase));
 
@@ -239,7 +282,8 @@ namespace LiteCyberpunkModManager.Services
             {
                 ModName = modName,
                 FileName = fileName,
-                InstalledPaths = paths
+                InstalledPaths = paths,
+                Game = Settings.SelectedGame
             });
 
             var options = new JsonSerializerOptions { WriteIndented = true };
@@ -255,5 +299,6 @@ namespace LiteCyberpunkModManager.Services
         public string ModName { get; set; } = "";
         public string FileName { get; set; } = "";
         public List<string> InstalledPaths { get; set; } = new();
+        public GameId Game { get; set; } = GameId.Cyberpunk2077;
     }
 }
