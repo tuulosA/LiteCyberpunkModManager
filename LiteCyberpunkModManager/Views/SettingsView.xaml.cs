@@ -42,20 +42,23 @@ namespace LiteCyberpunkModManager.Views
 
             MessageBox.Show("Settings saved successfully.", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            if (Application.Current.MainWindow is MainWindow mainWindow &&
-                mainWindow.FindName("ModsTabContent") is ContentControl modsTab &&
-                modsTab.Content is ModListView modListView)
+            if (Application.Current.MainWindow is MainWindow mainWindow)
             {
-                modListView.ReinitializeApiService();
-                await modListView.FetchModsFromApiAsync();
-            }
+                // Update header immediately so user sees the new game selection
+                mainWindow.UpdateActiveGameLabel();
 
-            // Also refresh Files view to apply per-game filters immediately
-            if (Application.Current.MainWindow is MainWindow mainWindow2 &&
-                mainWindow2.FindName("FilesTabContent") is ContentControl filesTab &&
-                filesTab.Content is FilesView filesView)
-            {
-                filesView.RefreshFileList();
+                if (mainWindow.FindName("ModsTabContent") is ContentControl modsTab &&
+                    modsTab.Content is ModListView modListView)
+                {
+                    modListView.ReinitializeApiService();
+                    await modListView.FetchModsFromApiAsync();
+                }
+
+                if (mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
+                    filesTab.Content is FilesView filesView)
+                {
+                    filesView.RefreshFileList();
+                }
             }
         }
 

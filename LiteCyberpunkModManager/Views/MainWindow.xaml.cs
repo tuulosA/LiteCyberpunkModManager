@@ -47,6 +47,21 @@ namespace LiteCyberpunkModManager.Views
             SettingsTabContent.Content = _settingsView;
             ModsTabContent.Content = _modListView;
             FilesTabContent.Content = _filesView;
+
+            UpdateActiveGameLabel();
+        }
+
+        public void UpdateActiveGameLabel()
+        {
+            var currentSettings = SettingsService.LoadSettings();
+
+            string display = currentSettings.SelectedGame switch
+            {
+                GameId.BaldursGate3 => "Baldur's Gate 3",
+                _ => "Cyberpunk 2077"
+            };
+
+            ActiveGameLabel.Text = display;
         }
     }
 }
