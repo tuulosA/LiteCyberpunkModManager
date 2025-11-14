@@ -324,7 +324,7 @@ namespace LiteCyberpunkModManager.Services
                     : "Unknown Name";
 
                 var category = root.TryGetProperty("category_id", out var catProp)
-                    ? CategoryHelper.GetCategoryName(catProp.GetInt32())
+                    ? CategoryHelper.GetCategoryName(game, catProp.GetInt32())
                     : "Unknown";
 
                 return new Mod
