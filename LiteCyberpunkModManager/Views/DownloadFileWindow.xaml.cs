@@ -217,8 +217,7 @@ namespace LiteCyberpunkModManager.Views
 
                 bool isAlreadyDownloaded = _downloadedMetadata.Any(d =>
                     d.ModId == _modId &&
-                    d.FileName.Equals(file.FileName, StringComparison.OrdinalIgnoreCase) &&
-                    d.UploadedTimestamp == file.UploadedTimestamp);
+                    d.FileId == file.FileId);
 
                 if (isAlreadyDownloaded)
                 {

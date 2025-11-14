@@ -44,6 +44,49 @@ namespace LiteCyberpunkModManager.Views
             Loaded += ModListView_Loaded;
         }
 
+        private void SaveMassDownloadMetadata(int modId, string modName, int fileId, string fileName, DateTime uploadedTimestamp)
+        {
+            try
+            {
+                string metadataPath = PathConfig.DownloadedMods;
+                Directory.CreateDirectory(PathConfig.AppDataRoot);
+
+                var entry = new InstalledModInfo
+                {
+                    ModId = modId,
+                    ModName = modName,
+                    FileId = fileId,
+                    FileName = fileName,
+                    UploadedTimestamp = uploadedTimestamp,
+                    Game = SettingsService.LoadSettings().SelectedGame
+                };
+
+                List<InstalledModInfo> list = new();
+                if (File.Exists(metadataPath))
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(metadataPath);
+                        list = JsonSerializer.Deserialize<List<InstalledModInfo>>(json) ?? new();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[WARN] Could not read existing mass-download metadata: {ex.Message}");
+                    }
+                }
+
+                list.RemoveAll(m => m.ModId == modId && m.FileName.Equals(fileName, System.StringComparison.OrdinalIgnoreCase));
+                list.Add(entry);
+
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                File.WriteAllText(metadataPath, JsonSerializer.Serialize(list, options));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ERROR] Failed to persist mass-download metadata: {ex.Message}");
+            }
+        }
+
         private void EnsureModsViewHooked()
         {
             if (ModsListView == null) return;
@@ -471,20 +514,8 @@ namespace LiteCyberpunkModManager.Views
                 return;
             }
 
-            // save the used json into the Mods folder
-            try
-            {
-                string modsDir = SettingsService.LoadSettings().OutputDir;
-                Directory.CreateDirectory(modsDir); // just in case
-                string savePath = Path.Combine(modsDir, "downloaded_mods.json");
-                File.WriteAllText(savePath, json);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[WARN] Failed to save downloaded_mods.json: {ex.Message}");
-            }
-
-            var slugForIds = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
+            var selectedGame = SettingsService.LoadSettings().SelectedGame;
+            var slugForIds = GameHelper.GetNexusSlug(selectedGame);
             var trackedModIds = await _api.GetTrackedModIdsAsync(slugForIds);
             if (!modsToDownload.All(m => trackedModIds.Contains(m.ModId)))
             {
@@ -497,6 +528,24 @@ namespace LiteCyberpunkModManager.Views
             {
                 MessageBox.Show("Mass downloading requires a Nexus Mods Premium account.", "Premium Required", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
+            }
+
+            // Pre-fetch remote file metadata so we know the real upload timestamps
+            var uploadMap = new Dictionary<(int ModId, int FileId), DateTime>();
+            foreach (var group in modsToDownload.GroupBy(m => m.ModId))
+            {
+                try
+                {
+                    var remoteFiles = await _api.GetModFilesAsync(slugForIds, group.Key);
+                    foreach (var f in remoteFiles)
+                    {
+                        uploadMap[(group.Key, f.FileId)] = f.UploadedTimestamp;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[WARN] Failed to prefetch files for mod {group.Key}: {ex.Message}");
+                }
             }
 
             var progressWindow = new MassDownloadBarWindow();
@@ -523,8 +572,7 @@ namespace LiteCyberpunkModManager.Views
                 progressWindow.SetOverallProgress((double)completed / total * 100);
                 progressWindow.SetStatusText("Getting download link...");
 
-                var slug2 = GameHelper.GetNexusSlug(SettingsService.LoadSettings().SelectedGame);
-                string? downloadUrl = await _api.GetDownloadLinkAsync(slug2, modId, fileId);
+                string? downloadUrl = await _api.GetDownloadLinkAsync(slugForIds, modId, fileId);
                 if (string.IsNullOrWhiteSpace(downloadUrl))
                 {
                     Debug.WriteLine($"[WARN] No download URL found for {modName}");
@@ -551,6 +599,10 @@ namespace LiteCyberpunkModManager.Views
                 if (success)
                 {
                     Debug.WriteLine($"[SUCCESS] Downloaded {modName}");
+                    DateTime uploadedTs = uploadMap.TryGetValue((modId, fileId), out var ts)
+                        ? ts
+                        : DateTime.UtcNow;
+                    SaveMassDownloadMetadata(modId, modName, fileId, fileName, uploadedTs);
                     await _viewModel.UpdateModStatusAsync(modId);
                 }
                 else

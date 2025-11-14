@@ -212,49 +212,68 @@ namespace LiteCyberpunkModManager.ViewModels
         private string GetUpdateStatus(int modId, List<ModFile> latestFiles, List<InstalledModInfo> installedFiles)
         {
             var installedForMod = installedFiles.Where(f => f.ModId == modId).ToList();
-            if (!installedForMod.Any() || latestFiles.Count == 0)
+            if (!installedForMod.Any())
             {
-                Debug.WriteLine($"[StatusCheck] ModId {modId}: No installed files or no remote files. -> Not Downloaded");
+                Debug.WriteLine($"[StatusCheck] ModId {modId}: No installed files. -> Not Downloaded");
                 return "Not Downloaded";
             }
 
-            var newestRemote = latestFiles.OrderByDescending(f => f.UploadedTimestamp).FirstOrDefault();
+            if (latestFiles == null || latestFiles.Count == 0)
+            {
+                Debug.WriteLine($"[StatusCheck] ModId {modId}: No remote files. -> Downloaded");
+                return "Downloaded";
+            }
+
+            var newestRemote = latestFiles
+                .OrderByDescending(f => f.UploadedTimestamp)
+                .FirstOrDefault();
+
             if (newestRemote == null)
             {
                 Debug.WriteLine($"[StatusCheck] ModId {modId}: No newest remote file found. -> Downloaded");
                 return "Downloaded";
             }
 
-            Debug.WriteLine($"[StatusCheck] ModId {modId}: Newest remote file: {newestRemote.FileName} (Uploaded: {newestRemote.UploadedTimestamp:O})");
+            Debug.WriteLine($"[StatusCheck] ModId {modId}: Newest remote file: {newestRemote.FileName} (FileId: {newestRemote.FileId}, Uploaded: {newestRemote.UploadedTimestamp:O})");
 
-            // 1. Check if any installed file has a *newer remote* with the SAME filename
+            // Latest Downloaded: newest remote file is installed
+            bool hasLatest = installedForMod.Any(inst =>
+                inst.FileId == newestRemote.FileId ||
+                (inst.FileName.Equals(newestRemote.FileName, StringComparison.OrdinalIgnoreCase) &&
+                 inst.UploadedTimestamp == newestRemote.UploadedTimestamp));
+
+            if (hasLatest)
+            {
+                Debug.WriteLine($"[StatusCheck] -> Latest Downloaded");
+                return "Latest Downloaded";
+            }
+
+            // Update Available!: newer file with same filename exists
             foreach (var installed in installedForMod)
             {
-                Debug.WriteLine($"[StatusCheck] Checking installed file: {installed.FileName} (Uploaded: {installed.UploadedTimestamp:O})");
-
                 var newerSameNameRemote = latestFiles.FirstOrDefault(remote =>
                     remote.FileName.Equals(installed.FileName, StringComparison.OrdinalIgnoreCase) &&
                     remote.UploadedTimestamp > installed.UploadedTimestamp);
 
                 if (newerSameNameRemote != null)
                 {
-                    Debug.WriteLine($"[StatusCheck] -> UPDATE: Newer file with the same filename found -> Update Available!");
+                    Debug.WriteLine($"[StatusCheck] -> Update Available! (newer file with same filename {installed.FileName})");
                     return "Update Available!";
                 }
             }
 
-            // 2. Check if installed file matches the newest overall file
-            bool hasLatest = installedForMod.Any(inst =>
-                inst.UploadedTimestamp == newestRemote.UploadedTimestamp);
+            // Downloaded: some file installed, newer files exist but with different names
+            bool anyNewerOverall = latestFiles.Any(remote =>
+                installedForMod.All(inst => remote.UploadedTimestamp > inst.UploadedTimestamp));
 
-            if (hasLatest)
+            if (anyNewerOverall)
             {
-                Debug.WriteLine($"[StatusCheck] -> MATCH: Installed file matches newest remote overall -> Latest Downloaded");
-                return "Latest Downloaded";
+                Debug.WriteLine($"[StatusCheck] -> Downloaded (installed, but newer alternative files exist)");
+                return "Downloaded";
             }
 
-            // 3. Otherwise, a file is installed but newer files exist
-            Debug.WriteLine($"[StatusCheck] -> FALLBACK: Installed file(s) exist but not the newest -> Downloaded");
+            // Fallback: treat as Downloaded
+            Debug.WriteLine($"[StatusCheck] -> Downloaded (fallback)");
             return "Downloaded";
         }
 
