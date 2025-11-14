@@ -114,7 +114,8 @@ The manager automatically handles different archive structures, including:
 - You can export your downloaded mod files into a **modlist.json**, which can be used for mass download.
 - Useful for sharing a mod list you have created.
 
-<img width="1633" height="969" alt="image" src="https://github.com/user-attachments/assets/3036a40c-c627-47de-88e0-88fe48f57a70" />
+<img width="1633" height="969" alt="image" src="https://github.com/user-attachments/assets/35555f60-949b-488e-912a-e45002e223be" />
+
 
 
 
