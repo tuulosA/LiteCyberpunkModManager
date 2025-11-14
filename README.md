@@ -99,7 +99,8 @@ Go to the **Files** tab to:
 <img width="1634" height="969" alt="image" src="https://github.com/user-attachments/assets/2d79cb0b-d5e5-4801-9097-0e5badeb3351" />
 
 
-<img width="818" alt="mass install" src="https://github.com/user-attachments/assets/e17cd20e-83c6-427e-b384-e49c109960b6" />
+<img width="1636" height="972" alt="image" src="https://github.com/user-attachments/assets/082d748b-20d3-4481-aa3c-4b830958f144" />
+
 
 The manager automatically handles different archive structures, including:
 - Mods packed with a clean structure like: somezip.zip/archive/pc/mod/...
