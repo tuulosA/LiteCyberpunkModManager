@@ -46,34 +46,28 @@ You can now:
 - **Search** mods by name
 <img width="1636" height="971" alt="image" src="https://github.com/user-attachments/assets/3cf3561e-d992-4024-8341-76594cc51be1" />
 
-
 ---
 
 ### 4. Download Mod Files
 
 - If you are a **Nexus Premium user**, click **"Download Files"** to fetch files directly
 
-<img width="882" height="816" alt="image" src="https://github.com/user-attachments/assets/89194fbd-33f5-476a-b8b7-d38d3501fc7e" />
-
+<img width="441" height="408" alt="image" src="https://github.com/user-attachments/assets/89194fbd-33f5-476a-b8b7-d38d3501fc7e" />
 
 - If you're a **non-premium user**, click the orange "Mod manager download" button on Nexus Mods. The app will handle the `.nxm` link and track the download.
 - You can **double click** the mod name in the manager to get to the mod's page.
 
 <img width="704" alt="nexus mods example" src="https://github.com/user-attachments/assets/2acb7a29-e40a-4341-82f6-86f2a6a26e5c" />
 
-
 - All downloaded files will appear in your game’s `Mods` directory:
 <img width="641" alt="downloaded mods location" src="https://github.com/user-attachments/assets/24663491-9811-43c6-a508-0011bac81483" />
 
 - Mod files can be deleted with the `Manage Files` button:
 
-<img width="885" height="595" alt="image" src="https://github.com/user-attachments/assets/db0762d4-8022-44c2-8371-6635e6e812d7" />
-
-
+<img width="443" height="298" alt="image" src="https://github.com/user-attachments/assets/db0762d4-8022-44c2-8371-6635e6e812d7" />
 
 - Multiple mods can be selected at once with ctrl+click, and then clicking `Manage Files` button lets you delete files for selected mods. Without selection all downloaded files are shown.
 <img width="1636" height="971" alt="image" src="https://github.com/user-attachments/assets/8e875566-ea93-4af2-9bcb-3a582d93646b" />
-
 
 ---
 
@@ -115,11 +109,6 @@ The manager automatically handles different archive structures, including:
 - Useful for sharing a mod list you have created.
 
 <img width="1633" height="969" alt="image" src="https://github.com/user-attachments/assets/35555f60-949b-488e-912a-e45002e223be" />
-
-
-
-
-
 
 ---
 
