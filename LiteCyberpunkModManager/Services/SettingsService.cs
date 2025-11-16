@@ -82,6 +82,12 @@ namespace LiteCyberpunkModManager.Services
                     File.Copy(PathConfig.LegacySettingsFile, PathConfig.SettingsFile, overwrite: false);
                     Debug.WriteLine($"[SettingsService] Migrated legacy settings.json from {PathConfig.LegacySettingsFile} -> {PathConfig.SettingsFile}");
                 }
+                else if (File.Exists(PathConfig.LegacyAppDataSettingsFile))
+                {
+                    Directory.CreateDirectory(PathConfig.AppDataRoot);
+                    File.Copy(PathConfig.LegacyAppDataSettingsFile, PathConfig.SettingsFile, overwrite: false);
+                    Debug.WriteLine($"[SettingsService] Migrated legacy settings.json from {PathConfig.LegacyAppDataSettingsFile} -> {PathConfig.SettingsFile}");
+                }
             }
             catch (Exception ex)
             {

@@ -6,12 +6,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <AssemblyName>LiteCPMM</AssemblyName>
-    <ApplicationIcon>Resources\LITECPMM.ico</ApplicationIcon>
+    <AssemblyName>HMM</AssemblyName>
+    <ApplicationIcon>Resources\HMM.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\LITECPMM.ico" />
+    <None Remove="Resources\HMM.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\LITECPMM.ico" />
+    <Content Include="Resources\HMM.ico" />
   </ItemGroup>
 
   <!-- Do NOT copy settings.json to build or publish output -->

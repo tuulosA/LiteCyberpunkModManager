@@ -80,12 +80,12 @@ namespace LiteCyberpunkModManager.Views
             var themeDict = new ResourceDictionary();
             if (theme == AppTheme.Dark)
             {
-                themeDict.Source = new Uri("/LiteCPMM;component/Resources/DarkTheme.xaml", UriKind.Relative);
+                themeDict.Source = new Uri("/HMM;component/Resources/DarkTheme.xaml", UriKind.Relative);
                 Debug.WriteLine("[SettingsView] Applied Dark theme.");
             }
             else
             {
-                themeDict.Source = new Uri("/LiteCPMM;component/Resources/LightTheme.xaml", UriKind.Relative);
+                themeDict.Source = new Uri("/HMM;component/Resources/LightTheme.xaml", UriKind.Relative);
                 Debug.WriteLine("[SettingsView] Applied Light theme.");
             }
 

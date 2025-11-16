@@ -1,6 +1,6 @@
-# Lite CPMM - Cyberpunk Mod Manager (Lite)
+# Helix Mod Manager (HMM)
 
-**Lite CPMM** is a lightweight, Nexus-integrated mod manager designed specifically for Cyberpunk 2077. It lets you download, manage, and install your mods (which you are tracking on Nexus Mods) easily using the Nexus Mods API.
+**Helix Mod Manager (HMM)** is a lightweight, Nexus-integrated mod manager for Cyberpunk 2077 and Baldur's Gate 3. It lets you download, manage, and install your tracked Nexus Mods quickly through the Nexus Mods API.
 
 ---
 

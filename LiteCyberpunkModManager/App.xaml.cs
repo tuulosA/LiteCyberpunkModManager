@@ -45,8 +45,8 @@ namespace LiteCyberpunkModManager
 
             var settings = SettingsService.LoadSettings();
             var themeUri = settings.AppTheme == AppTheme.Dark
-                ? "/LiteCPMM;component/Resources/DarkTheme.xaml"
-                : "/LiteCPMM;component/Resources/LightTheme.xaml";
+                ? "/HMM;component/Resources/DarkTheme.xaml"
+                : "/HMM;component/Resources/LightTheme.xaml";
 
             Debug.WriteLine($"Loading theme: {themeUri}");
 
@@ -73,7 +73,7 @@ namespace LiteCyberpunkModManager
 
                 var commandKey = key?.CreateSubKey(@"shell\open\command");
 
-                string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "LiteCPMM.exe";
+                string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "HMM.exe";
                 commandKey?.SetValue("", $"\"{exePath}\" \"%1\"");
 
                 Debug.WriteLine($"NXM protocol registered. exePath = {exePath}");

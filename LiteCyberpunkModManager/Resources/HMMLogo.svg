@@ -1,0 +1,46 @@
+﻿<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="256" height="256" fill="#050608"/>
+
+  <g transform="translate(128 128) scale(1.25,1.14) translate(-128 -128)">
+
+    <!-- Blue ladder bars, slightly increased spacing but more subtle -->
+    <g stroke="#14BFFF" stroke-width="13" stroke-linecap="round">
+      <!-- Upper pair -->
+      <line x1="88" y1="64.5" x2="116" y2="80.5" />
+      <line x1="96" y1="89.5" x2="124" y2="105.5" />
+      <!-- Lower pair -->
+      <line x1="132" y1="150.5" x2="160" y2="166.5" />
+      <line x1="140" y1="175.5" x2="168" y2="191.5" />
+    </g>
+
+    <!-- White helix strands -->
+    <path
+      d="M 72 32
+         L 72 96
+         L 184 160
+         L 184 224"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="13"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+
+    <path
+      d="M 184 32
+         L 184 96
+         L 72 160
+         L 72 224"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="13"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+
+    <!-- Terminal dots -->
+    <g fill="#050608" stroke="#FFFFFF" stroke-width="11">
+      <circle cx="184" cy="32" r="11" />
+      <circle cx="184" cy="224" r="11" />
+    </g>
+
+  </g>
+</svg>

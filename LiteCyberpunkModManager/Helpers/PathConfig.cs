@@ -7,10 +7,14 @@ namespace LiteCyberpunkModManager.Helpers
 {
     public static class PathConfig
     {
-        // Application data root: %LocalAppData%/LiteCPMM
-        public static string AppDataRoot => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "LiteCPMM");
+        private static string LocalAppData => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        // Application data root: %LocalAppData%/HelixModManager
+        public static string AppDataRoot => Path.Combine(LocalAppData, "HelixModManager");
+
+        // Legacy app data from LiteCPMM for migration support
+        public static string LegacyAppDataRoot => Path.Combine(LocalAppData, "LiteCPMM");
+        public static string LegacyAppDataSettingsFile => Path.Combine(LegacyAppDataRoot, "settings.json");
 
         // New canonical paths under AppData
         public static string SettingsFile => Path.Combine(AppDataRoot, "settings.json");

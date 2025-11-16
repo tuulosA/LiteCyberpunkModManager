@@ -16,7 +16,7 @@ namespace LiteCyberpunkModManager.Helpers
             {
                 var darkTheme = new ResourceDictionary
                 {
-                    Source = new Uri("/LiteCPMM;component/Resources/DarkTheme.xaml", UriKind.Relative)
+                    Source = new Uri("/HMM;component/Resources/DarkTheme.xaml", UriKind.Relative)
                 };
                 window.Resources.MergedDictionaries.Add(darkTheme);
 
