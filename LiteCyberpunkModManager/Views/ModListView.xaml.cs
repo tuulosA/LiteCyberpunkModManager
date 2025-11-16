@@ -10,6 +10,7 @@ using LiteCyberpunkModManager.Helpers;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Windows.Data;
+using System.Threading.Tasks;
 
 namespace LiteCyberpunkModManager.Views
 {
@@ -530,26 +531,37 @@ namespace LiteCyberpunkModManager.Views
                 return;
             }
 
+            var progressWindow = new MassDownloadBarWindow();
+            progressWindow.SetModName("Preparing downloads...");
+            progressWindow.SetFileName(string.Empty);
+            progressWindow.SetFileCounter(0, modsToDownload.Count);
+            progressWindow.SetStatusText("Fetching metadata...");
+            progressWindow.SetOverallProgress(0);
+            progressWindow.SetFileProgress(0);
+            progressWindow.Show();
+            await Task.Yield();
+
             // Pre-fetch remote file metadata so we know the real upload timestamps
             var uploadMap = new Dictionary<(int ModId, int FileId), DateTime>();
+            int metadataCount = 0;
             foreach (var group in modsToDownload.GroupBy(m => m.ModId))
             {
                 try
                 {
+                    progressWindow.SetStatusText($"Fetching metadata ({metadataCount}/{modsToDownload.Count})...");
                     var remoteFiles = await _api.GetModFilesAsync(slugForIds, group.Key);
                     foreach (var f in remoteFiles)
                     {
                         uploadMap[(group.Key, f.FileId)] = f.UploadedTimestamp;
                     }
+                    metadataCount += group.Count();
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"[WARN] Failed to prefetch files for mod {group.Key}: {ex.Message}");
                 }
             }
-
-            var progressWindow = new MassDownloadBarWindow();
-            progressWindow.Show();
+            progressWindow.SetStatusText("Starting downloads...");
 
             int total = modsToDownload.Count;
             int completed = 0;
