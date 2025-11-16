@@ -1,4 +1,4 @@
-namespace LiteCyberpunkModManager.Models
+namespace HelixModManager.Models
 {
     public enum NotificationType
     {
@@ -23,4 +23,5 @@ namespace LiteCyberpunkModManager.Models
         }
     }
 }
+
 

@@ -1,4 +1,4 @@
-namespace LiteCyberpunkModManager.Models
+namespace HelixModManager.Models
 {
     public class InstalledModInfo
     {
@@ -10,3 +10,4 @@ namespace LiteCyberpunkModManager.Models
         public GameId Game { get; set; } = GameId.Cyberpunk2077;
     }
 }
+

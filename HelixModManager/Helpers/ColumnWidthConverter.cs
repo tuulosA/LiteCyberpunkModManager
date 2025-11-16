@@ -1,7 +1,7 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public class ColumnWidthConverter : IValueConverter
     {
@@ -21,3 +21,4 @@ namespace LiteCyberpunkModManager.Views
             => throw new NotImplementedException();
     }
 }
+

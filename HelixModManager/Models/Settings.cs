@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Helpers;
 
-namespace LiteCyberpunkModManager.Models
+namespace HelixModManager.Models
 {
     public enum AppTheme
     {
@@ -138,3 +138,4 @@ namespace LiteCyberpunkModManager.Models
     }
 
 }
+

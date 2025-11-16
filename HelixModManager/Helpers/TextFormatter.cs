@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Documents;
 
-namespace LiteCyberpunkModManager.Helpers
+namespace HelixModManager.Helpers
 {
     public static class TextFormatter
     {
@@ -78,3 +78,4 @@ namespace LiteCyberpunkModManager.Helpers
         }
     }
 }
+

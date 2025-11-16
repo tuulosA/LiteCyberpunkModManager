@@ -1,12 +1,12 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
-using LiteCyberpunkModManager.Helpers;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
+using HelixModManager.Helpers;
+using HelixModManager.Models;
+using HelixModManager.Services;
 
-namespace LiteCyberpunkModManager.ViewModels
+namespace HelixModManager.ViewModels
 {
     public class FilesViewModel : INotifyPropertyChanged
     {
@@ -16,7 +16,7 @@ namespace LiteCyberpunkModManager.ViewModels
         public int TotalCount => FilteredDownloadedFiles.Count;
         public int InstalledCount => FilteredDownloadedFiles.Count(x => x.Status.StartsWith("Installed", System.StringComparison.OrdinalIgnoreCase));
         public int NotInstalledCount => TotalCount - InstalledCount;
-        public string SummaryText => $"{TotalCount} files — {InstalledCount} installed, {NotInstalledCount} not installed";
+        public string SummaryText => $"{TotalCount} files � {InstalledCount} installed, {NotInstalledCount} not installed";
 
         public void RefreshSummary()
         {
@@ -198,3 +198,4 @@ namespace LiteCyberpunkModManager.ViewModels
         public GameId Game { get; set; } = GameId.Cyberpunk2077;
     }
 }
+

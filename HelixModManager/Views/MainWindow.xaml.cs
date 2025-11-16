@@ -1,10 +1,10 @@
 using System;
 using System.Windows;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
+using HelixModManager.Models;
+using HelixModManager.Services;
 using System.Windows.Media;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class MainWindow : Window
     {
@@ -78,5 +78,6 @@ namespace LiteCyberpunkModManager.Views
         }
     }
 }
+
 
 

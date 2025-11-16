@@ -1,7 +1,7 @@
-﻿<UserControl x:Class="LiteCyberpunkModManager.Views.FilesView"
+<UserControl x:Class="HelixModManager.Views.FilesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:LiteCyberpunkModManager.ViewModels"
+             xmlns:vm="clr-namespace:HelixModManager.ViewModels"
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
 
     <!-- Group the files by Category -->
@@ -205,3 +205,4 @@
 
     </Grid>
 </UserControl>
+

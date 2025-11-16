@@ -1,14 +1,14 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System;
-using LiteCyberpunkModManager.Models;
+using HelixModManager.Models;
 using SharpCompress.Archives;
 using SharpCompress.Common;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Helpers;
 using System.Diagnostics;
 
 
-namespace LiteCyberpunkModManager.Services
+namespace HelixModManager.Services
 {
     public static class ModInstallerService
     {
@@ -302,3 +302,4 @@ namespace LiteCyberpunkModManager.Services
         public GameId Game { get; set; } = GameId.Cyberpunk2077;
     }
 }
+

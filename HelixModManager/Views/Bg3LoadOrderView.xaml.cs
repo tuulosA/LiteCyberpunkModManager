@@ -2,10 +2,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
+using HelixModManager.Models;
+using HelixModManager.Services;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class Bg3LoadOrderView : UserControl
     {
@@ -84,4 +84,5 @@ namespace LiteCyberpunkModManager.Views
         }
     }
 }
+
 

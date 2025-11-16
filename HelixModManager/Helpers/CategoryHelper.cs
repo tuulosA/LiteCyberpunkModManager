@@ -1,4 +1,4 @@
-namespace LiteCyberpunkModManager.Helpers
+namespace HelixModManager.Helpers
 {
     public static class CategoryHelper
     {
@@ -68,3 +68,4 @@ namespace LiteCyberpunkModManager.Helpers
         }
     }
 }
+

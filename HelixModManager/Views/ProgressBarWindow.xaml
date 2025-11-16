@@ -1,4 +1,4 @@
-﻿<Window x:Class="LiteCyberpunkModManager.Views.ProgressBarWindow"
+<Window x:Class="HelixModManager.Views.ProgressBarWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Downloading..."
@@ -29,3 +29,4 @@
 
     </StackPanel>
 </Window>
+

@@ -1,6 +1,6 @@
-﻿using System.Windows;
+using System.Windows;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class MassDownloadBarWindow : Window
     {
@@ -40,3 +40,4 @@ namespace LiteCyberpunkModManager.Views
         }
     }
 }
+

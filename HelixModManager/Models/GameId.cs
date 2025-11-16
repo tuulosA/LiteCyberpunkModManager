@@ -1,4 +1,4 @@
-namespace LiteCyberpunkModManager.Models
+namespace HelixModManager.Models
 {
     public enum GameId
     {
@@ -6,4 +6,5 @@ namespace LiteCyberpunkModManager.Models
         BaldursGate3
     }
 }
+
 

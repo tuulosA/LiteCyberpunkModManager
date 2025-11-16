@@ -1,4 +1,4 @@
-﻿namespace LiteCyberpunkModManager.Models
+namespace HelixModManager.Models
 {
     public class ModFile
     {
@@ -9,3 +9,4 @@
         public string Description { get; set; } = "";
     }
 }
+

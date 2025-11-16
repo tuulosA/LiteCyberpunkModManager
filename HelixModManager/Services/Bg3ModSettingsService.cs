@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using LiteCyberpunkModManager.Helpers;
-using LiteCyberpunkModManager.Models;
+using HelixModManager.Helpers;
+using HelixModManager.Models;
 
-namespace LiteCyberpunkModManager.Services
+namespace HelixModManager.Services
 {
     public static class Bg3ModSettingsService
     {
@@ -120,4 +120,5 @@ namespace LiteCyberpunkModManager.Services
         }
     }
 }
+
 

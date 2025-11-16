@@ -1,10 +1,10 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Helpers;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class ManageFilesWindow : Window
     {
@@ -86,3 +86,4 @@ namespace LiteCyberpunkModManager.Views
         }
     }
 }
+

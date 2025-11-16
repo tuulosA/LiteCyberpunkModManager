@@ -1,13 +1,13 @@
-﻿using System.IO.Pipes;
+using System.IO.Pipes;
 using System.IO;
 using System.Diagnostics;
 
-namespace LiteCyberpunkModManager.Services
+namespace HelixModManager.Services
 {
     public static class SingleInstanceManager
     {
-        private const string MutexName = "LiteCyberpunkModManager_Mutex";
-        private const string PipeName = "LiteCyberpunkModManager_NXMPipe";
+        private const string MutexName = "HelixModManager_Mutex";
+        private const string PipeName = "HelixModManager_NXMPipe";
 
         private static Mutex? _mutex;
         public static bool IsPrimaryInstance { get; private set; }
@@ -64,3 +64,4 @@ namespace LiteCyberpunkModManager.Services
         }
     }
 }
+

@@ -1,6 +1,6 @@
-﻿using System.Windows;
+using System.Windows;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class ProgressWindow : Window
     {
@@ -26,3 +26,4 @@ namespace LiteCyberpunkModManager.Views
         }
     }
 }
+

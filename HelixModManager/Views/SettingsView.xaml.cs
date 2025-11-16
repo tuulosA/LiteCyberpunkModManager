@@ -4,12 +4,12 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using LiteCyberpunkModManager.Helpers;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
-using LiteCyberpunkModManager.ViewModels;
+using HelixModManager.Helpers;
+using HelixModManager.Models;
+using HelixModManager.Services;
+using HelixModManager.ViewModels;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class SettingsView : UserControl
     {
@@ -318,6 +318,7 @@ namespace LiteCyberpunkModManager.Views
 
     }
 }
+
 
 
 

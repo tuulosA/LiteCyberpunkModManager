@@ -1,5 +1,5 @@
-﻿
-namespace LiteCyberpunkModManager.Models
+
+namespace HelixModManager.Models
 {
     public static class AppThemeValues
     {
@@ -7,3 +7,4 @@ namespace LiteCyberpunkModManager.Models
 
     }
 }
+

@@ -1,12 +1,12 @@
-﻿using System.Windows;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
-using LiteCyberpunkModManager.ViewModels;
+using System.Windows;
+using HelixModManager.Models;
+using HelixModManager.Services;
+using HelixModManager.ViewModels;
 using Microsoft.Win32;
 using System.Diagnostics;
-using LiteCyberpunkModManager.Views;
+using HelixModManager.Views;
 
-namespace LiteCyberpunkModManager
+namespace HelixModManager
 {
     public partial class App : Application
     {
@@ -115,3 +115,4 @@ namespace LiteCyberpunkModManager
         }
     }
 }
+

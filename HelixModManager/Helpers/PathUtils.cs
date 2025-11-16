@@ -1,6 +1,6 @@
-﻿using System.IO;
+using System.IO;
 
-namespace LiteCyberpunkModManager.Helpers
+namespace HelixModManager.Helpers
 {
     public static class PathUtils
     {
@@ -10,3 +10,4 @@ namespace LiteCyberpunkModManager.Helpers
         }
     }
 }
+

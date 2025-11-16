@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Models;
+using HelixModManager.Helpers;
 
-namespace LiteCyberpunkModManager.Services
+namespace HelixModManager.Services
 {
     public class SettingsService
     {
@@ -96,3 +96,4 @@ namespace LiteCyberpunkModManager.Services
         }
     }
 }
+

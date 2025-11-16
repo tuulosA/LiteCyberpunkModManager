@@ -1,15 +1,15 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
-using LiteCyberpunkModManager.Models;
+using HelixModManager.Models;
 using System.IO;
-using LiteCyberpunkModManager.Services;
+using HelixModManager.Services;
 using System.Text.Json;
-using LiteCyberpunkModManager.ViewModels;
+using HelixModManager.ViewModels;
 using System.Windows.Media;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Helpers;
 using System.Diagnostics;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class DownloadFileWindow : Window
     {
@@ -282,3 +282,4 @@ namespace LiteCyberpunkModManager.Views
         }
     }
 }
+

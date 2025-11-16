@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using LiteCyberpunkModManager.Helpers;
-using LiteCyberpunkModManager.Models;
+using HelixModManager.Helpers;
+using HelixModManager.Models;
 
-namespace LiteCyberpunkModManager.Services
+namespace HelixModManager.Services
 {
     public static class ModCacheService
     {
@@ -65,3 +65,4 @@ namespace LiteCyberpunkModManager.Services
         }
     }
 }
+

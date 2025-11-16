@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace LiteCyberpunkModManager.Helpers
+namespace HelixModManager.Helpers
 {
     public static class FileNameHelper
     {
@@ -13,7 +13,7 @@ namespace LiteCyberpunkModManager.Helpers
         /// <summary>
         /// Takes Nexus "name" (human display name) and ensures the final filename
         /// ends with exactly one ".zip". If the name itself ends with an archive
-        /// extension (even multiple), they’re removed before adding ".zip".
+        /// extension (even multiple), they�re removed before adding ".zip".
         /// </summary>
         public static string NormalizeDisplayFileName(string apiName)
         {
@@ -48,3 +48,4 @@ namespace LiteCyberpunkModManager.Helpers
         }
     }
 }
+

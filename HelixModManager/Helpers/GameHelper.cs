@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using LiteCyberpunkModManager.Models;
+using HelixModManager.Models;
 
-namespace LiteCyberpunkModManager.Helpers
+namespace HelixModManager.Helpers
 {
     public static class GameHelper
     {
@@ -43,3 +43,4 @@ namespace LiteCyberpunkModManager.Helpers
         }
     }
 }
+

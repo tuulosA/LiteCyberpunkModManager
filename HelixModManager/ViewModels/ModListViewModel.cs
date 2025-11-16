@@ -1,16 +1,16 @@
-ï»¿using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
+using HelixModManager.Models;
+using HelixModManager.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Data;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Helpers;
 using System.Diagnostics;
 using System.Linq;
 
-namespace LiteCyberpunkModManager.ViewModels
+namespace HelixModManager.ViewModels
 {
     public class ModListViewModel : INotifyPropertyChanged
     {
@@ -94,7 +94,7 @@ namespace LiteCyberpunkModManager.ViewModels
             };
 
             ModsGrouped.Refresh();
-            RefreshSummary(); // <â€” added
+            RefreshSummary(); // <— added
         }
 
 
@@ -203,7 +203,7 @@ namespace LiteCyberpunkModManager.ViewModels
 
             SelectedCategory = "All";
             ApplyFilters();
-            RefreshSummary(); // <â€” added
+            RefreshSummary(); // <— added
 
             StatusMessage = $"Mods loaded ({modDisplays.Length}).";
         }
@@ -300,7 +300,7 @@ namespace LiteCyberpunkModManager.ViewModels
             }
 
             RefreshModList();
-            RefreshSummary(); // <â€” added
+            RefreshSummary(); // <— added
         }
 
         private async Task<List<Mod>?> TryFetchFromApiAsync()
@@ -358,7 +358,7 @@ namespace LiteCyberpunkModManager.ViewModels
             // If the selected game changed since last load, force an API fetch
             if (!string.Equals(_lastLoadedSlug, slug, StringComparison.OrdinalIgnoreCase))
             {
-                StatusMessage = "Game changed â€” fetching from Nexus API...";
+                StatusMessage = "Game changed — fetching from Nexus API...";
                 var fresh = await TryFetchFromApiAsync();
                 if (fresh != null && fresh.Count > 0)
                 {
@@ -425,7 +425,7 @@ namespace LiteCyberpunkModManager.ViewModels
         public void RefreshModList()
         {
             ModsGrouped.Refresh();
-            RefreshSummary(); // <â€” added
+            RefreshSummary(); // <— added
         }
 
 
@@ -461,3 +461,4 @@ namespace LiteCyberpunkModManager.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
+

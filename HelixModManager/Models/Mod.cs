@@ -1,5 +1,5 @@
 
-namespace LiteCyberpunkModManager.Models
+namespace HelixModManager.Models
 {
     public class Mod
     {
@@ -8,3 +8,4 @@ namespace LiteCyberpunkModManager.Models
         public string Category { get; set; } = string.Empty;
     }
 }
+

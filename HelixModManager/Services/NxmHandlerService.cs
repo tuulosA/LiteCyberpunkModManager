@@ -1,15 +1,15 @@
-﻿using System.IO;
+using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System;
 using System.Web;
 using System.Windows;
 using System.Diagnostics;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Views;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Models;
+using HelixModManager.Views;
+using HelixModManager.Helpers;
 
-namespace LiteCyberpunkModManager.Services
+namespace HelixModManager.Services
 {
     public class NxmHandlerService
     {
@@ -292,3 +292,4 @@ namespace LiteCyberpunkModManager.Services
         }
     }
 }
+

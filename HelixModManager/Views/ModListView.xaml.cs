@@ -1,18 +1,18 @@
 using System.Windows;
 using System.Windows.Controls;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
-using LiteCyberpunkModManager.ViewModels;
+using HelixModManager.Models;
+using HelixModManager.Services;
+using HelixModManager.ViewModels;
 using System.IO;
 using System.Text.Json;
 using System.Diagnostics;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Helpers;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Windows.Data;
 using System.Threading.Tasks;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class ModListView : UserControl
     {
@@ -641,4 +641,5 @@ namespace LiteCyberpunkModManager.Views
 
     }
 }
+
 

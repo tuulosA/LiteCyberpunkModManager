@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 // Removed direct UI dependency; UI should subscribe to notifications
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Models;
+using HelixModManager.Helpers;
 
-namespace LiteCyberpunkModManager.Services
+namespace HelixModManager.Services
 {
     public class NexusApiService
     {
@@ -442,3 +442,4 @@ namespace LiteCyberpunkModManager.Services
 
     }
 }
+

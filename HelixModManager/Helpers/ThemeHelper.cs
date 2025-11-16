@@ -1,8 +1,8 @@
-﻿using System.Windows;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
+using System.Windows;
+using HelixModManager.Models;
+using HelixModManager.Services;
 
-namespace LiteCyberpunkModManager.Helpers
+namespace HelixModManager.Helpers
 {
     public static class ThemeHelper
     {
@@ -32,3 +32,4 @@ namespace LiteCyberpunkModManager.Helpers
         }
     }
 }
+

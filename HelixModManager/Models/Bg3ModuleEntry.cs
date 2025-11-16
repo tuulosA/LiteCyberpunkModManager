@@ -1,6 +1,6 @@
 using System;
 
-namespace LiteCyberpunkModManager.Models
+namespace HelixModManager.Models
 {
     public class Bg3ModuleEntry
     {
@@ -10,4 +10,5 @@ namespace LiteCyberpunkModManager.Models
         public long Version64 { get; set; }
     }
 }
+
 

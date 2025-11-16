@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using LiteCyberpunkModManager.Models;
-using LiteCyberpunkModManager.Services;
+using HelixModManager.Models;
+using HelixModManager.Services;
 
-namespace LiteCyberpunkModManager.Helpers
+namespace HelixModManager.Helpers
 {
     public static class PathConfig
     {
@@ -47,3 +47,4 @@ namespace LiteCyberpunkModManager.Helpers
         public static string LegacyInstalledGameFiles => Path.Combine(Settings.DefaultModsDir, "installed_game_files.json");
     }
 }
+

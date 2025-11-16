@@ -1,13 +1,13 @@
-ï»¿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
-using LiteCyberpunkModManager.ViewModels;
-using LiteCyberpunkModManager.Services;
+using HelixModManager.ViewModels;
+using HelixModManager.Services;
 using System.IO;
-using LiteCyberpunkModManager.Models;
+using HelixModManager.Models;
 using System.Diagnostics;
-using LiteCyberpunkModManager.Helpers;
+using HelixModManager.Helpers;
 
-namespace LiteCyberpunkModManager.Views
+namespace HelixModManager.Views
 {
     public partial class FilesView : UserControl
     {
@@ -48,7 +48,7 @@ namespace LiteCyberpunkModManager.Views
                 return;
             }
 
-            // Filter out rows that canâ€™t be installed (no zip on disk)
+            // Filter out rows that can’t be installed (no zip on disk)
             var installable = new List<InstalledModDisplay>();
             var skipped = new List<InstalledModDisplay>();
 
@@ -57,7 +57,7 @@ namespace LiteCyberpunkModManager.Views
                 string folderName = PathUtils.SanitizeModName(mod.ModName);
                 string zipPath = Path.Combine(SettingsService.LoadSettings().OutputDir, folderName, Path.GetFileName(mod.FileName));
 
-                // â€œIsMissingDownloadâ€ is great, but double-check disk too
+                // “IsMissingDownload” is great, but double-check disk too
                 if (mod.IsMissingDownload || !File.Exists(zipPath))
                     skipped.Add(mod);
                 else
@@ -66,9 +66,9 @@ namespace LiteCyberpunkModManager.Views
 
             if (skipped.Count > 0)
             {
-                var names = string.Join("\nâ€¢ ", skipped.Select(m => $"{m.ModName} â€” {m.FileName}"));
+                var names = string.Join("\n• ", skipped.Select(m => $"{m.ModName} — {m.FileName}"));
                 MessageBox.Show(
-                    $"These file(s) canâ€™t be installed because the downloaded .zip is missing:\n\nâ€¢ {names}",
+                    $"These file(s) can’t be installed because the downloaded .zip is missing:\n\n• {names}",
                     "Some items were skipped",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
@@ -96,7 +96,7 @@ namespace LiteCyberpunkModManager.Views
 
                     if (!File.Exists(zipPath))
                     {
-                        // Shouldnâ€™t happen now, but be defensive
+                        // Shouldn’t happen now, but be defensive
                         current++;
                         Application.Current.Dispatcher.Invoke(() =>
                         {
@@ -214,3 +214,4 @@ namespace LiteCyberpunkModManager.Views
 
     }
 }
+

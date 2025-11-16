@@ -1,4 +1,4 @@
-﻿<Window x:Class="LiteCyberpunkModManager.Views.DownloadFileWindow"
+<Window x:Class="HelixModManager.Views.DownloadFileWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Download Files" Height="550" Width="600"
@@ -44,3 +44,4 @@
         </StackPanel>
     </Grid>
 </Window>
+
