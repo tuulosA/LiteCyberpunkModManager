@@ -6,7 +6,7 @@
 
 ## Features
 
-- Fetch tracked mods using your Nexus Mods API key (account login integration to be implemented)
+- Fetch tracked mods after linking your Nexus Mods account via SSO (API key is stored automatically)
 - Filter based on category and search mods based on name
 - Check available update status
 - Download individual mod files (Premium + non-premium Nexus Mods account support)
