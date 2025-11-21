@@ -18,6 +18,9 @@ namespace HelixModManager.Models
         private string _nexusApiKey = "";
         private AppTheme _appTheme = AppTheme.Dark;
         private GameId _selectedGame = GameId.Cyberpunk2077;
+        private string? _nexusSsoRequestId;
+        private string? _nexusSsoConnectionToken;
+        private DateTimeOffset? _nexusSsoLinkedAt;
 
         public Settings()
         {
@@ -89,6 +92,45 @@ namespace HelixModManager.Models
                     OnPropertyChanged();
                     UpdateOutputDirIfDefault(previousGame);
                     UpdateGameInstallationDirIfDefault(previousGame);
+                }
+            }
+        }
+
+        public string? NexusSsoRequestId
+        {
+            get => _nexusSsoRequestId;
+            set
+            {
+                if (_nexusSsoRequestId != value)
+                {
+                    _nexusSsoRequestId = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string? NexusSsoConnectionToken
+        {
+            get => _nexusSsoConnectionToken;
+            set
+            {
+                if (_nexusSsoConnectionToken != value)
+                {
+                    _nexusSsoConnectionToken = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public DateTimeOffset? NexusSsoLinkedAt
+        {
+            get => _nexusSsoLinkedAt;
+            set
+            {
+                if (_nexusSsoLinkedAt != value)
+                {
+                    _nexusSsoLinkedAt = value;
+                    OnPropertyChanged();
                 }
             }
         }

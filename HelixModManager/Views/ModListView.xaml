@@ -132,10 +132,11 @@
                                         <TextBlock Text="Status" FontWeight="Bold"/>
 
                                         <!-- Excel-style down triangle when NO filter -->
-                                        <TextBlock Text="?"
+                                        <TextBlock Text="▼"
                                FontSize="13"
                                Margin="4,0,0,0"
                                Foreground="Gray"
+                               FontFamily="Segoe UI Symbol"
                                VerticalAlignment="Center">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">

@@ -94,13 +94,25 @@
                         </Grid>
                     </StackPanel>
 
-                    <!-- Nexus API key -->
+                    <!-- Nexus account linking -->
                     <StackPanel Margin="0,8,0,4">
-                        <TextBlock Text="Nexus Mods API Key"
+                        <TextBlock Text="Nexus Mods Account"
                                    Margin="0,8,0,2"/>
-                        <PasswordBox x:Name="ApiKeyBox"
-                                     HorizontalAlignment="Stretch"
-                                     PasswordChanged="ApiKeyBox_PasswordChanged"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Button x:Name="LinkNexusAccountButton"
+                                    Content="Link Nexus Account"
+                                    Width="170"
+                                    Click="LinkNexusAccount_Click"/>
+                            <Button x:Name="UnlinkNexusAccountButton"
+                                    Content="Unlink"
+                                    Width="90"
+                                    Margin="8,0,0,0"
+                                    Click="UnlinkNexusAccount_Click"/>
+                        </StackPanel>
+                        <TextBlock x:Name="SsoStatusText"
+                                   Margin="0,6,0,0"
+                                   Foreground="{DynamicResource DisabledTextBrush}"
+                                   Text="Not linked"/>
                     </StackPanel>
 
                     <!-- Theme + Game selection -->

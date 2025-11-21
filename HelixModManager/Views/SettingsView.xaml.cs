@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,7 +15,9 @@ namespace HelixModManager.Views
 {
     public partial class SettingsView : UserControl
     {
-        private Settings _settings;
+        private readonly Settings _settings;
+        private readonly NexusSsoService _ssoService = new();
+        private CancellationTokenSource? _ssoLinkCancellation;
 
         public SettingsView()
         {
@@ -29,36 +33,147 @@ namespace HelixModManager.Views
             Debug.WriteLine($"    NexusApiKey: {_settings.NexusApiKey}");
 
             DataContext = _settings;
-            ApiKeyBox.Password = _settings.NexusApiKey;
+            UpdateSsoStatusText();
         }
 
         private async void SaveSettings_Click(object sender, RoutedEventArgs e)
         {
-            _settings.NexusApiKey = ApiKeyBox.Password;
-
             Debug.WriteLine("[SettingsView] Saving settings...");
             SettingsService.SaveSettings(_settings);
             ApplyTheme(_settings.AppTheme);
 
             MessageBox.Show("Settings saved successfully.", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            if (Application.Current.MainWindow is MainWindow mainWindow)
+            await RefreshViewsAsync();
+        }
+
+        private async Task RefreshViewsAsync()
+        {
+            if (Application.Current.MainWindow is not MainWindow mainWindow)
+                return;
+
+            mainWindow.UpdateActiveGameLabel();
+
+            if (mainWindow.FindName("ModsTabContent") is ContentControl modsTab &&
+                modsTab.Content is ModListView modListView)
             {
-                // Update header immediately so user sees the new game selection
-                mainWindow.UpdateActiveGameLabel();
+                modListView.ReinitializeApiService();
+                await modListView.FetchModsFromApiAsync();
+            }
 
-                if (mainWindow.FindName("ModsTabContent") is ContentControl modsTab &&
-                    modsTab.Content is ModListView modListView)
-                {
-                    modListView.ReinitializeApiService();
-                    await modListView.FetchModsFromApiAsync();
-                }
+            if (mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
+                filesTab.Content is FilesView filesView)
+            {
+                filesView.RefreshFileList();
+            }
+        }
 
-                if (mainWindow.FindName("FilesTabContent") is ContentControl filesTab &&
-                    filesTab.Content is FilesView filesView)
+        private async void LinkNexusAccount_Click(object sender, RoutedEventArgs e)
+        {
+            if (_ssoLinkCancellation != null)
+                return;
+
+            if (sender is not Button button)
+                return;
+
+            button.IsEnabled = false;
+            var progress = new Progress<string>(message => SsoStatusText.Text = message);
+            _ssoLinkCancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+
+            try
+            {
+                var result = await _ssoService.LinkAccountAsync(_settings, progress, _ssoLinkCancellation.Token);
+                if (result.Success && !string.IsNullOrWhiteSpace(result.ApiKey))
                 {
-                    filesView.RefreshFileList();
+                    _settings.NexusApiKey = result.ApiKey;
+                    UpdateSsoStatusText();
+                    MessageBox.Show("Successfully linked your Nexus Mods account.", "Linked", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await RefreshViewsAsync();
                 }
+                else if (result.IsCancelled)
+                {
+                    var message = result.ErrorMessage ?? "SSO linking cancelled.";
+                    SsoStatusText.Text = message;
+                    UpdateUnlinkButtonState();
+                }
+                else
+                {
+                    var message = result.ErrorMessage ?? "Unable to link your Nexus Mods account.";
+                    SsoStatusText.Text = message;
+                    UpdateUnlinkButtonState();
+                    MessageBox.Show(message, "Link Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                var message = $"Failed to link Nexus Mods account.{Environment.NewLine}{ex.Message}";
+                SsoStatusText.Text = "Link failed.";
+                MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                button.IsEnabled = true;
+                _ssoLinkCancellation?.Dispose();
+                _ssoLinkCancellation = null;
+
+                if (string.IsNullOrWhiteSpace(_settings.NexusApiKey))
+                {
+                    UpdateSsoStatusText();
+                }
+            }
+        }
+
+        private async void UnlinkNexusAccount_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(_settings.NexusApiKey))
+                return;
+
+            var confirm = MessageBox.Show(
+                "Unlinking will remove your stored Nexus Mods API key. Continue?",
+                "Unlink Account",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            _settings.NexusApiKey = string.Empty;
+            _settings.NexusSsoLinkedAt = null;
+            _settings.NexusSsoRequestId = null;
+            _settings.NexusSsoConnectionToken = null;
+            SettingsService.SaveSettings(_settings);
+            UpdateSsoStatusText();
+            MessageBox.Show("Your Nexus Mods account has been unlinked.", "Unlinked", MessageBoxButton.OK, MessageBoxImage.Information);
+            await RefreshViewsAsync();
+        }
+
+        private void UpdateSsoStatusText()
+        {
+            if (!string.IsNullOrWhiteSpace(_settings.NexusApiKey))
+            {
+                if (_settings.NexusSsoLinkedAt.HasValue)
+                {
+                    var timestamp = _settings.NexusSsoLinkedAt.Value.ToLocalTime().ToString("g");
+                    SsoStatusText.Text = $"Linked ({timestamp})";
+                }
+                else
+                {
+                    SsoStatusText.Text = "Linked";
+                }
+            }
+            else
+            {
+                SsoStatusText.Text = "Not linked";
+            }
+
+            UpdateUnlinkButtonState();
+        }
+
+        private void UpdateUnlinkButtonState()
+        {
+            if (UnlinkNexusAccountButton != null)
+            {
+                UnlinkNexusAccountButton.IsEnabled = !string.IsNullOrWhiteSpace(_settings.NexusApiKey);
             }
         }
 
@@ -139,14 +254,6 @@ namespace HelixModManager.Views
                 MessageBox.Show($"Failed to open game directory.\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-
-        private void ApiKeyBox_PasswordChanged(object sender, RoutedEventArgs e)
-        {
-            _settings.NexusApiKey = ApiKeyBox.Password;
-        }
-
-
         private void ExportModlist_Click(object sender, RoutedEventArgs e)
         {
             var saveFileDialog = new Microsoft.Win32.SaveFileDialog
