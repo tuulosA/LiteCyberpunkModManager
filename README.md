@@ -22,7 +22,7 @@
 <img width="1635" height="971" alt="image" src="https://github.com/user-attachments/assets/c2681684-d1bd-43cc-80a1-28be79d7d1c0" />
 
 
-- Input your **Nexus API key** (required for fetching tracked mods).
+- Click **Link Nexus Account** to open the Nexus Mods SSO flow. The app watches the websocket for the API key and stores it automatically (no manual copy/paste).
 - Set your **Game Installation Directory** and **Output Directory** if not set correctly by default.
 - Here you can **export** and **import** mod lists, as well as **clear** all your tracked mods on Nexus Mods.
 
@@ -116,8 +116,19 @@ The manager automatically handles different archive structures, including:
 
 - Windows 10/11
 - Cyberpunk 2077 installed
-- Nexus Mods account (API key)
+- Nexus Mods account (SSO link required to fetch API key)
 - .NET Desktop Runtime 8.0 or later (required to run the app)
+
+---
+
+## Building / Releasing
+
+1. Restore dependencies: `dotnet restore HelixModManager/HelixModManager.csproj`
+2. Publish for Windows:  
+   `dotnet publish HelixModManager/HelixModManager.csproj -c Release -r win-x64 --self-contained false`
+   - Add `/p:PublishSingleFile=true` if you want a single executable.
+   - Use `--self-contained true` to bundle the .NET runtime.
+3. Distribute everything under `HelixModManager/bin/Release/net8.0-windows/win-x64/publish/` (zip the folder or your single file build).
 
 ---
 
