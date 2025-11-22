@@ -19,7 +19,7 @@
 ## Getting Started
 
 ### 1. Set up your settings
-<img width="1635" height="971" alt="image" src="https://github.com/user-attachments/assets/c2681684-d1bd-43cc-80a1-28be79d7d1c0" />
+<img width="1634" height="969" alt="Screenshot 2025-11-22 114250" src="https://github.com/user-attachments/assets/7ca6e0b3-f64a-4684-9f98-8802ff9fff91" />
 
 
 - Click **Link Nexus Account** to open the Nexus Mods SSO flow. The app watches the websocket for the API key and stores it automatically (no manual copy/paste).
