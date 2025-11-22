@@ -121,17 +121,6 @@ The manager automatically handles different archive structures, including:
 
 ---
 
-## Building / Releasing
-
-1. Restore dependencies: `dotnet restore HelixModManager/HelixModManager.csproj`
-2. Publish for Windows:  
-   `dotnet publish HelixModManager/HelixModManager.csproj -c Release -r win-x64 --self-contained false`
-   - Add `/p:PublishSingleFile=true` if you want a single executable.
-   - Use `--self-contained true` to bundle the .NET runtime.
-3. Distribute everything under `HelixModManager/bin/Release/net8.0-windows/win-x64/publish/` (zip the folder or your single file build).
-
----
-
 ## License
 
 MIT License
