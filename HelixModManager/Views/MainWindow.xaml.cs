@@ -31,7 +31,7 @@ namespace HelixModManager.Views
 
             if (string.IsNullOrWhiteSpace(_settings.NexusApiKey))
             {
-                MessageBox.Show("Please enter your Nexus Mods API key in the Settings tab.", "API Key Missing");
+                MessageBox.Show("Please link your Nexus Mods account in the Settings tab.", "API Key Missing");
             }
 
             // First-run prompt: choose game if not set explicitly (optional)
