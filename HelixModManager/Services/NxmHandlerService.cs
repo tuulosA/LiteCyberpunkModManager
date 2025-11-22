@@ -133,7 +133,7 @@ namespace HelixModManager.Services
             if (string.IsNullOrWhiteSpace(settings.NexusApiKey))
             {
                 Debug.WriteLine("API key is missing or empty.");
-                NotificationRaised?.Invoke(new Notification("API Key Missing", "Please enter your Nexus Mods API key in the Settings tab.", NotificationType.Warning));
+                NotificationRaised?.Invoke(new Notification("API Key Missing", "Please link your Nexus Mods account in the Settings tab.", NotificationType.Warning));
                 return;
             }
 
